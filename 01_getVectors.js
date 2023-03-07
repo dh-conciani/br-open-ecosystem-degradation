@@ -1,22 +1,38 @@
 // get time-series of degradation vectors and compute statistical summaries
 // dhemerson.costa@ipam.org.br (ipam and mapbiomas brazil) 
 
-// get mapbiomas land cover
-var mapbiomas = ee.Image('projects/mapbiomas-workspace/public/collection7/mapbiomas_collection70_integration_v2')
-  .select(['classification_2021']);
+// get mapbiomas land cover (col 7)
+var mapbiomas = ee.Image('projects/mapbiomas-workspace/public/collection7/mapbiomas_collection70_integration_v2');
   
-// get only native vegetation
-var mapbiomas_native = mapbiomas.remap({
+// get only native vegetation in the last year (2021)
+var mapbiomas_native = mapbiomas.select(['classification_2021']).remap({
   from: [3, 4, 5, 11, 12, 13, 32, 49, 50],
   to:   [3, 4, 5, 11, 12, 13, 32, 49, 50],
   defaultValue: 0})
   .rename('native_vegetation');
+  
+// reclassify anthropogenic classes to 'farming' over the entire time-series
+var mapbiomas_anthropogenic = ee.Image([]);
+ee.List.sequence({
+  start: 1985, end: 2021, step: 1}).getInfo().forEach(function(year_i) {
+    var x = mapbiomas.select(['classification_' + year_i])
+      .remap({
+        from: [0], 
+        to:   [0],
+        defaultValue: null
+      });
+    // store 
+    mapbiomas_anthropogenic = mapbiomas_anthropogenic.addBands(
+      x.rename('classification_' + year_i));
+  });
+
+print(mapbiomas_anthropogenic);
 
 // function to get info only for native vegetation and fill masked values as zero
 var fill_map = function(image) {
   return image.updateMask(mapbiomas_native.neq(0))
   .unmask(0)
-  .updateMask(mapbiomas);
+  .updateMask(mapbiomas.select(0));
 };
 
 // get fire frequency from mapbiomas fogo (col 1)
@@ -34,6 +50,7 @@ var deforestation = fill_map(
   );
 
 // years as anthropogenic use
+
 
 
 

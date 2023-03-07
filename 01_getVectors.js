@@ -2,17 +2,18 @@
 // dhemerson.costa@ipam.org.br (ipam and mapbiomas brazil) 
 
 // fire
-var fire = ee.Image('projects/mapbiomas-workspace/public/collection7/mapbiomas-fire-collection1-1-annual-burned-coverage-1');
-var fire_freq = ee.Image('projects/mapbiomas-workspace/public/collection7/mapbiomas-fire-collection1-1-fire-frequency-1');
-fire_freq = fire_freq.select(['fire_frequency_1985_2021']).divide(100).int();
+var fire_freq = ee.Image('projects/mapbiomas-workspace/public/collection7/mapbiomas-fire-collection1-1-fire-frequency-1')
+  .select(['fire_frequency_1985_2021']).divide(100).int();
 
-Map.addLayer(fire_freq.randomVisualizer());
+// deforestation (from natural to anthropogenic)
+var deforestation = ee.Image('projects/mapbiomas-workspace/public/collection7_1/mapbiomas_collection71_deforestation_frequency_v1')
+  .select(['desmatamento_frequencia_1987_2020']).divide(100).int();
 
-// lcluc change
 
-
-// deforestation 
+// lcluc change 
 
 
 // climatic
 
+Map.addLayer(fire_freq.randomVisualizer(), {}, 'fire_freq');
+Map.addLayer(deforestation.randomVisualizer(), {}, 'deforestation freq');

@@ -1,4 +1,4 @@
-// get time-series of degradation vectors and compute statistical summaries
+// get disturbance frequency based on mapbiomas products 
 // dhemerson.costa@ipam.org.br (ipam and mapbiomas brazil) 
 
 // get mapbiomas land cover

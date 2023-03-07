@@ -12,18 +12,27 @@ var mapbiomas_native = mapbiomas.remap({
   defaultValue: 0})
   .rename('native_vegetation');
 
-
 // get fire frequency from mapbiomas fogo (col 1)
 var fire_freq = ee.Image('projects/mapbiomas-workspace/public/collection7/mapbiomas-fire-collection1-1-fire-frequency-1')
   .select(['fire_frequency_1985_2021']).divide(100).int()
+  .updateMask(mapbiomas_native.neq(0))
+  .unmask(0)
+  .updateMask(mapbiomas)
   .rename('fire_freq');
 
 // get deforestation frequency from mapbiomas lcluc (col 7.1)
 var deforestation = ee.Image('projects/mapbiomas-workspace/public/collection7_1/mapbiomas_collection71_deforestation_frequency_v1')
   .select(['desmatamento_frequencia_1987_2020']).divide(100).int()
+  .updateMask(mapbiomas_native.neq(0))
+  .unmask(0)
+  .updateMask(mapbiomas)
   .rename('deforestation_freq');
 
-// years with anthropogenic use
+// years as anthropogenic use
+
+
+
+
 // climatic
 
 // read palettes
@@ -34,7 +43,7 @@ var vis = {
 };
 
 // plot data
-Map.addLayer(mapbiomas, vis, 'land cover 2021', false);
+//Map.addLayer(mapbiomas, vis, 'land cover 2021', false);
 Map.addLayer(mapbiomas_native, vis, 'native vegetation 2021', false);
-Map.addLayer(fire_freq, {palette: ['green', 'red'], min:1, max:37}, 'fire_freq');
-Map.addLayer(deforestation, {palette: ['green', 'red'], min:1, max:3}, 'deforestation freq');
+Map.addLayer(fire_freq, {palette: ['white', 'green', 'yellow', 'orange', 'red'], min:0, max:15}, 'fire_freq');
+Map.addLayer(deforestation, {palette: ['white', 'green', 'yellow', 'orange', 'red'], min:0, max:5}, 'deforestation freq');

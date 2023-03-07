@@ -12,7 +12,7 @@ var mapbiomas_native = mapbiomas.remap({
   defaultValue: 0})
   .rename('native_vegetation');
 
-// 
+// function to get info only for native vegetation and fill masked values as zero
 var fill_map = function(image) {
   return image.updateMask(mapbiomas_native.neq(0))
   .unmask(0)

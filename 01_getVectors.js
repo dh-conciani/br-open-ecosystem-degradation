@@ -9,8 +9,8 @@ var fire_freq = ee.Image('projects/mapbiomas-workspace/public/collection7/mapbio
 var deforestation = ee.Image('projects/mapbiomas-workspace/public/collection7_1/mapbiomas_collection71_deforestation_frequency_v1')
   .select(['desmatamento_frequencia_1987_2020']).divide(100).int();
 
+// years with anthropogenic use
 
-// lcluc change 
 
 
 // climatic

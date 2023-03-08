@@ -18,6 +18,12 @@ var fillMap = function(image) {
   .updateMask(mapbiomas.select(0));
 };
 
+// function to count the number of years as a respective class
+var calculateNumberOfPresence = function (image) {
+    var nChanges = image.reduce(ee.Reducer.sum());
+    return nChanges.rename('number_of_presence');
+};
+
 // reclassify anthropogenic classes to 'farming' over the entire time-series
 // set the years to be used in the process
 var years_list = [
@@ -30,8 +36,8 @@ var mapbiomas_anthropogenic = ee.Image(
   years_list.map(function(year_i) {
     var x = mapbiomas.select(['classification_' + year_i])
       .remap({
-        from: [15, 18, 19, 39, 20, 40, 62, 41, 36, 46, 47, 48, 9,  21, 24, 30, 25], 
-        to:   [14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14],
+        from: [15, 18, 19, 39, 20, 40, 62, 41, 36, 46, 47, 48, 9, 21, 24, 30, 25], 
+        to:   [ 1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 1,  1,  1,  1,  1],
         defaultValue: null
       });
     // store 
@@ -40,11 +46,7 @@ var mapbiomas_anthropogenic = ee.Image(
 );
 
 // get the number of years as anthropogenic use
-
-
-
-
-
+var anthropogenic_freq = calculateNumberOfPresence(mapbiomas_anthropogenic);
 
 // get fire frequency from mapbiomas fogo (col 1)
 var fire_freq = fillMap(
@@ -54,7 +56,7 @@ var fire_freq = fillMap(
   );
 
 // get deforestation frequency from mapbiomas lcluc (col 7.1)
-var deforestation = fillMap(
+var deforestation_freq = fillMap(
   ee.Image('projects/mapbiomas-workspace/public/collection7_1/mapbiomas_collection71_deforestation_frequency_v1')
   .select(['desmatamento_frequencia_1987_2020']).divide(100).int()
   .rename('deforestation_freq')
@@ -80,4 +82,4 @@ Map.addLayer(mapbiomas_anthropogenic.select(['classification_2021']), vis, 'anth
 //Map.addLayer(mapbiomas, vis, 'land cover 2021', false);
 Map.addLayer(mapbiomas_native, vis, 'native vegetation 2021', false);
 Map.addLayer(fire_freq, {palette: ['white', 'green', 'yellow', 'orange', 'red'], min:0, max:15}, 'fire_freq');
-Map.addLayer(deforestation, {palette: ['white', 'green', 'yellow', 'orange', 'red'], min:0, max:5}, 'deforestation freq');
+Map.addLayer(deforestation_freq, {palette: ['white', 'green', 'yellow', 'orange', 'red'], min:0, max:5}, 'deforestation freq');

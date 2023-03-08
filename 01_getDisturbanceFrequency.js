@@ -2,7 +2,7 @@
 // dhemerson.costa@ipam.org.br 
 
 // set metadata
-var version = '1';
+var version = '2';
 var output = 'projects/mapbiomas-workspace/DEGRADACAO/DISTURBIOS/disturbance_frequency';
 
 // get mapbiomas land cover (col 7)
@@ -69,6 +69,12 @@ var deforestation_freq = fillMap(
 // climatic
 ///////////
 
+// perform the sum of all disturbances
+var disturbance_freq = anthropogenic_freq
+                        .add(deforestation_freq)
+                        .add(fire_freq)
+                        .rename('sum_of_disturbance');
+
 // read mapbiomas palette
 var vis = {
     'min': 0,
@@ -77,6 +83,7 @@ var vis = {
 };
 
 // plot data
+Map.addLayer(disturbance_freq, {palette: ['white', 'green', 'yellow', 'orange', 'red'], min:0, max:20}, 'sum of disturbances');
 Map.addLayer(anthropogenic_freq, {palette: ['white', 'green', 'yellow', 'orange', 'red'], min:0, max:10}, 'anthropogenic freq');
 Map.addLayer(deforestation_freq, {palette: ['white', 'green', 'yellow', 'orange', 'red'], min:0, max:5}, 'deforestation freq');
 Map.addLayer(fire_freq, {palette: ['white', 'green', 'yellow', 'orange', 'red'], min:0, max:15}, 'fire_freq');
@@ -85,6 +92,7 @@ Map.addLayer(fire_freq, {palette: ['white', 'green', 'yellow', 'orange', 'red'],
 var disturbance_freq = anthropogenic_freq
       .addBands(deforestation_freq)
       .addBands(fire_freq)
+      .addBands(disturbance_freq)
       .set('territory', 'BRAZIL')
       .set('collection', 1)
       .set('version', 1)

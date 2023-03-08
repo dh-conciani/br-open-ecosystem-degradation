@@ -21,24 +21,27 @@ var territory = ee.FeatureCollection('projects/mapbiomas-workspace/AUXILIAR/biom
 
 
 // set funciton to get the maximum value to be used in [range] normalization 
-var getMax = function(image, feature) {
-  return image.reduceRegion({
+var getParams = function(image, feature) {
+  // get maximum
+  var max_values = image.reduceRegion({
     reducer: ee.Reducer.max(),
     geometry: feature.geometry(),
     scale: 30,
     maxPixels: 1e13
   });
+  
+  // get miminum
+  var min_values = image.reduceRegion({
+    reducer: ee.Reducer.max(),
+    geometry: feature.geometry(),
+    scale: 30,
+    maxPixels: 1e13
+  });
+  
+  return feature.set(x);
+  
 };
 
-// set funciton to get the minimum value to be used in [range] normalization 
-var getMin = function(image) {
-  return image.reduceRegion({
-    reducer: ee.Reducer.max(),
-    geometry: feature.geometry(),
-    scale: 30,
-    maxPixels: 1e13
-  });
-};
 
 Map.addLayer(territory.geometry())
 

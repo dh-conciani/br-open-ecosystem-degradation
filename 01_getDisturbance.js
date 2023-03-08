@@ -39,6 +39,8 @@ var mapbiomas_anthropogenic = ee.Image(
   })
 );
 
+// get the number of years as anthropogenic use
+
 
 
 

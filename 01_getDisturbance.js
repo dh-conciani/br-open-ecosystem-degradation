@@ -46,7 +46,7 @@ var mapbiomas_anthropogenic = ee.Image(
 );
 
 // get the number of years as anthropogenic use
-var anthropogenic_freq = calculateNumberOfPresence(mapbiomas_anthropogenic);
+var anthropogenic_freq = fillMap(calculateNumberOfPresence(mapbiomas_anthropogenic).rename('anthropogenic_freq'));
 
 // get fire frequency from mapbiomas fogo (col 1)
 var fire_freq = fillMap(
@@ -78,8 +78,8 @@ var vis = {
 };
 
 // plot data
-Map.addLayer(mapbiomas_anthropogenic.select(['classification_2021']), vis, 'anthropogenic 2021')
-//Map.addLayer(mapbiomas, vis, 'land cover 2021', false);
-Map.addLayer(mapbiomas_native, vis, 'native vegetation 2021', false);
-Map.addLayer(fire_freq, {palette: ['white', 'green', 'yellow', 'orange', 'red'], min:0, max:15}, 'fire_freq');
+Map.addLayer(anthropogenic_freq, {palette: ['white', 'green', 'yellow', 'orange', 'red'], min:0, max:15}, 'anthropogenic freq');
 Map.addLayer(deforestation_freq, {palette: ['white', 'green', 'yellow', 'orange', 'red'], min:0, max:5}, 'deforestation freq');
+Map.addLayer(fire_freq, {palette: ['white', 'green', 'yellow', 'orange', 'red'], min:0, max:15}, 'fire_freq');
+//Map.addLayer(mapbiomas, vis, 'land cover 2021', false);
+//Map.addLayer(mapbiomas_native, vis, 'native vegetation 2021', false);

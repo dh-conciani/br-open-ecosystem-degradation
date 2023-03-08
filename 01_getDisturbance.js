@@ -1,5 +1,9 @@
 // get time-series of degradation vectors and compute statistical summaries
-// dhemerson.costa@ipam.org.br (ipam and mapbiomas brazil) 
+// dhemerson.costa@ipam.org.br 
+
+// set metadata
+var version = '1';
+var output = 'projects/mapbiomas-workspace/DEGRADACAO/DISTURBIOS/disturbance_frequency';
 
 // get mapbiomas land cover (col 7)
 var mapbiomas = ee.Image('projects/mapbiomas-workspace/public/collection7/mapbiomas_collection70_integration_v2');
@@ -62,15 +66,10 @@ var deforestation_freq = fillMap(
   .rename('deforestation_freq')
   );
 
-// years as anthropogenic use
-
-
-
-
-
 // climatic
+///////////
 
-// read palettes
+// read mapbiomas palette
 var vis = {
     'min': 0,
     'max': 49,
@@ -78,8 +77,32 @@ var vis = {
 };
 
 // plot data
-Map.addLayer(anthropogenic_freq, {palette: ['white', 'green', 'yellow', 'orange', 'red'], min:0, max:15}, 'anthropogenic freq');
+Map.addLayer(anthropogenic_freq, {palette: ['white', 'green', 'yellow', 'orange', 'red'], min:0, max:10}, 'anthropogenic freq');
 Map.addLayer(deforestation_freq, {palette: ['white', 'green', 'yellow', 'orange', 'red'], min:0, max:5}, 'deforestation freq');
 Map.addLayer(fire_freq, {palette: ['white', 'green', 'yellow', 'orange', 'red'], min:0, max:15}, 'fire_freq');
 //Map.addLayer(mapbiomas, vis, 'land cover 2021', false);
 //Map.addLayer(mapbiomas_native, vis, 'native vegetation 2021', false);
+
+
+// combine into a single image
+var disturbance_freq = anthropogenic_freq
+      .addBands(deforestation_freq)
+      .addBands(fire_freq)
+      .set('territory', 'BRAZIL')
+      .set('collection', 1)
+      .set('version', 1)
+      .set('source', 'ipam')
+      .set('theme', 'degradation');
+  
+// export
+Export.image.toAsset({
+    "image": disturbance_freq.toInt8(),
+    "description": 'brazil_disturbance_frequency_' + version,
+    "assetId": output + '/' + 'brazil_disturbance_frequency_' + version,
+    "scale": 30,
+    "pyramidingPolicy": {
+        '.default': 'mode'
+    },
+    "maxPixels": 1e13,
+    "region": mapbiomas.select(0).geometry()
+});  

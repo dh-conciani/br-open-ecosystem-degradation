@@ -20,7 +20,6 @@ var classes = [3, 4, 5, 11, 12, 13, 32, 49, 50];
 var territory = ee.FeatureCollection('projects/mapbiomas-workspace/AUXILIAR/biomas-2019').first();
 
 
-
 // set funciton to get the maximum value to be used in [range] normalization 
 var getMax = function(image, feature) {
   return image.reduceRegion({

@@ -3,7 +3,7 @@
 
 // insert metadata
 var root = 'projects/mapbiomas-workspace/DEGRADACAO/DISTURBIOS/disturbance_frequency/brazil_disturbance_frequency_';
-var input_version = 1;
+var input_version = 2;
 var output_version = 2;
 
 // read distubance database 
@@ -23,27 +23,30 @@ var territory = ee.FeatureCollection('projects/mapbiomas-workspace/AUXILIAR/biom
 // set funciton to get the maximum value to be used in [range] normalization 
 var getParams = function(image, feature) {
   // get maximum
-  var max_values = image.reduceRegion({
-    reducer: ee.Reducer.max(),
-    geometry: feature.geometry(),
-    scale: 30,
-    maxPixels: 1e13
+  var max_values = image.rename(['anthropogenic_freq_max', 'deforestation_freq_max', 'fire_freq_max', 'sum_of_disturbance_max'])
+    .reduceRegion({
+      reducer: ee.Reducer.max(),
+      geometry: feature.geometry(),
+      scale: 30,
+      maxPixels: 1e13
   });
   
   // get miminum
-  var min_values = image.reduceRegion({
-    reducer: ee.Reducer.max(),
-    geometry: feature.geometry(),
-    scale: 30,
-    maxPixels: 1e13
+  var min_values = image.rename(['anthropogenic_freq_min', 'deforestation_freq_min', 'fire_freq_min', 'sum_of_disturbance_min'])
+    .reduceRegion({
+      reducer: ee.Reducer.max(),
+      geometry: feature.geometry(),
+      scale: 30,
+      maxPixels: 1e13
   });
   
-  return feature.set(x);
+  return feature.set(max_values)
+                .set(min_values);
   
 };
 
 
 Map.addLayer(territory.geometry())
 
-var x = getMax(disturbance, territory);
+var x = getParams(disturbance, territory);
 print(x)

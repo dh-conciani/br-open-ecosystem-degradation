@@ -1,4 +1,4 @@
-// normalize disturbance frequencies by variable~biome
+// normalize disturbance frequencies by using 'range' [min-max] per variable~biome 
 // dhemerson.costa@ipam.org.br
 
 // insert metadata

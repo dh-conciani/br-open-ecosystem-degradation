@@ -9,14 +9,12 @@ var output_version = 2;
 // read distubance database 
 var disturbance = ee.Image(root + input_version);
 
-// read mapbiomas collection 7 native vegetation in the last year
+// read mapbiomas collection 7 in the last year
 var mapbiomas = ee.Image('projects/mapbiomas-workspace/public/collection7/mapbiomas_collection70_integration_v2')
-  .select(['classification_2021']).remap({
-      from: [3, 4, 5, 11, 12, 13, 32, 49, 50],
-      to:   [3, 4, 5, 11, 12, 13, 32, 49, 50],
-      defaultValue: 0})
-  .rename('native_vegetation');
+  .select(['classification_2021']);
 
+// set classes in which parameters will be estimated (only native vegetation)
+var classes = [3, 4, 5, 11, 12, 13, 32, 49, 50];
 
 // read normalization territory (biomes)
 var territory = ee.FeatureCollection('projects/mapbiomas-workspace/AUXILIAR/biomas-2019').first();

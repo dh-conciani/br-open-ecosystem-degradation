@@ -9,5 +9,41 @@ var output_version = 2;
 // read distubance database 
 var disturbance = ee.Image(root + input_version);
 
+// set funciton to get the maximum value to be used in normalization 
+var getMax = function(image) {
+  return image.reduceRegion({
+    reducer: ee.Reducer.max(),
+    geometry: geometry,
+    scale: 30,
+    maxPixels: 1e13
+  });
+};
 
-Map.addLayer(disturbance.randomVisualizer())
+// set funciton to get the minimum value to be used in normalization 
+var getMin = function(image) {
+  return image.reduceRegion({
+    reducer: ee.Reducer.max(),
+    geometry: geometry,
+    scale: 30,
+    maxPixels: 1e13
+  });
+};
+
+
+print(max, min)
+// Print the maximum value
+//print('Maximum value:', max.get('band_name'));
+
+
+
+
+
+
+// Define the visualization parameters.
+var vizParams = {
+  bands: ['deforestation_freq', 'fire_freq', 'anthropogenic_freq'],
+  min: 0,
+  max: 3,
+};
+
+Map.addLayer(disturbance, vizParams, 'Disturbance RGB')

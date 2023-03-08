@@ -14,7 +14,8 @@ var mapbiomas = ee.Image('projects/mapbiomas-workspace/public/collection7/mapbio
   .select(['classification_2021']);
 
 // set classes in which parameters will be estimated (only native vegetation)
-var classes = [3, 4, 5, 11, 12, 13, 32, 49, 50];
+//var classes = [3, 4, 5, 11, 12, 13, 32, 49, 50];
+var classes = [4, 12];
 
 // read normalization territory (biomes)
 var territory = ee.FeatureCollection('projects/mapbiomas-workspace/AUXILIAR/biomas-2019').first();
@@ -47,6 +48,5 @@ var getParams = function(image, feature) {
 
 
 Map.addLayer(territory.geometry())
-
 var x = getParams(disturbance, territory);
 print(x)

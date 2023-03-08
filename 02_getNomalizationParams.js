@@ -24,8 +24,7 @@ var territory = ee.FeatureCollection('projects/mapbiomas-workspace/AUXILIAR/biom
 // set funciton to get the maximum value to be used in [range] normalization 
 var getParams = function(image, feature) {
   // get data for the class i
-  var class_i = disturbance.where(mapbiomas.eq(4), disturbance);
-  Map.addLayer(class_i.randomVisualizer());
+  var class_i = disturbance.updateMask(mapbiomas.eq(12));
 
   // get maximum
   var max_values = class_i.rename(['anthropogenic_freq_max', 'deforestation_freq_max', 'fire_freq_max', 'sum_of_disturbance_max'])
@@ -46,7 +45,8 @@ var getParams = function(image, feature) {
   });
   
   return feature.set(max_values)
-                .set(min_values);
+                .set(min_values)
+                .set('class_id', 12);
   
 };
 

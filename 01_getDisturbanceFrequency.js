@@ -80,9 +80,6 @@ var vis = {
 Map.addLayer(anthropogenic_freq, {palette: ['white', 'green', 'yellow', 'orange', 'red'], min:0, max:10}, 'anthropogenic freq');
 Map.addLayer(deforestation_freq, {palette: ['white', 'green', 'yellow', 'orange', 'red'], min:0, max:5}, 'deforestation freq');
 Map.addLayer(fire_freq, {palette: ['white', 'green', 'yellow', 'orange', 'red'], min:0, max:15}, 'fire_freq');
-//Map.addLayer(mapbiomas, vis, 'land cover 2021', false);
-//Map.addLayer(mapbiomas_native, vis, 'native vegetation 2021', false);
-
 
 // combine into a single image
 var disturbance_freq = anthropogenic_freq

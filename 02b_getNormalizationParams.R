@@ -79,11 +79,3 @@ for (i in 1:length(unique(territory_list))) {
     
   }
 }
-
-
-
-
-## bind data
-max_values <- cbind(as.data.frame(max_values), 
-                    'biome'= territory_list[i],
-                    'class'= classes[j])

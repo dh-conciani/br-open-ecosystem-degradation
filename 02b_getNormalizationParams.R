@@ -48,6 +48,20 @@ for (i in 1:length(unique(territory_list))) {
       maxPixels= 1e13
     )$getInfo()
     
+    ## replace NULL by zero
+    if (is.null(max_values$anthropogenic_freq)) {
+      max_values$anthropogenic_freq <- 0
+    }
+    if (is.null(max_values$deforestation_freq)) {
+      max_values$deforestation_freq <- 0
+    }
+    if (is.null(max_values$fire_freq)) {
+      max_values$fire_freq <- 0
+    }
+    if (is.null(max_values$sum_of_disturbance)) {
+      max_values$sum_of_disturbance <- 0
+    }
+    
     ## bind data
     max_values <- cbind(as.data.frame(max_values), 
                         'biome'= territory_list[i],
@@ -65,4 +79,11 @@ for (i in 1:length(unique(territory_list))) {
     
   }
 }
-  
+
+
+
+
+## bind data
+max_values <- cbind(as.data.frame(max_values), 
+                    'biome'= territory_list[i],
+                    'class'= classes[j])

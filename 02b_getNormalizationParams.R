@@ -44,10 +44,38 @@ territory_i <- territory$filterMetadata('Bioma', 'equals', territory_list[1])
 
 ## for each class [j]
 
-  ## get disturbance data [ij] 
+## get disturbance data [ij] 
 disturbance_ij = disturbance$
   clip(territory_i)$
   updateMask(mapbiomas$eq(classes[1]))
 
-Map$addLayer(disturbance_ij)  
+## get parameters 
+## maximum values
+max_values <- disturbance_ij$rename(c('anthropogenic_freq_max',
+                                      'deforestation_freq_max',
+                                      'fire_freq_max',
+                                      'sum_of_disturbance_max'))$
+                                          reduceRegion(
+                                          reducer= ee$Reducer$max(),
+                                          geometry= territory_i,
+                                          scale= 30,
+                                          maxPixels= 1e13
+                                      )$getInfo()
+
+## minimun values
+min_values <- disturbance_ij$rename(c('anthropogenic_freq_max',
+                                      'deforestation_freq_max',
+                                      'fire_freq_max',
+                                      'sum_of_disturbance_max'))$
+                                          reduceRegion(
+                                            reducer= ee$Reducer$min(),
+                                            geometry= territory_i,
+                                            scale= 30,
+                                            maxPixels= 1e13
+                                      )$getInfo()
+
+
+
+
+ 
   

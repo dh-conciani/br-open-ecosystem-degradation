@@ -33,6 +33,8 @@ var driverFolder = 'AREA-EXPORT-DEGRADATION';
 // Image area in km2
 var pixelArea = ee.Image.pixelArea().divide(10000);
   
+// create recipe to bind data
+var recipe = ee.FeatureCollection([]);
 
 classes.forEach(function(class_i) {
   
@@ -100,10 +102,13 @@ classes.forEach(function(class_i) {
   
   areas = ee.FeatureCollection(areas).flatten();
   
-  Export.table.toDrive({
-      collection: areas,
-      description: 'disturbance_freq_per_biome_class_id_' + class_i,
+  recipe = recipe.merge(areas);
+
+});
+
+Export.table.toDrive({
+      collection: recipe,
+      description: 'disturbance_freq_per_biome_class',
       folder: driverFolder,
       fileFormat: 'CSV'
-  });
 });

@@ -38,7 +38,7 @@ classes.forEach(function(class_i) {
   
   // get the classification for the file[i] 
   var asset_i = disturbance.updateMask(mapbiomas.eq(class_i));
-  Map.addLayer(asset_i);
+  Map.addLayer(asset_i, {}, 'class ' + class_i);
   
   // Geometry to export
   var geometry = asset_i.geometry();

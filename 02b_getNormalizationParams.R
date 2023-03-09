@@ -23,59 +23,46 @@ territory_list <- territory$aggregate_array('Bioma')$getInfo()
 
 ## for each territory
 for (i in 1:length(unique(territory_list))) {
+  print(paste0('processing -->', territory_list[i]))
+  print(paste0(i, ' of ', length(territory_list)))
+  
   ## get territory [i]
   territory_i <- territory$filterMetadata('Bioma', 'equals', territory_list[i])
+  
   ## for each class [j]
   for (j in 1:length(unique(classes))) {
+    print(paste0('processing class ', classes[j]))
+    print(paste0(j, ' of ', length(classes)))
+    
     ## get disturbance data [ij] 
     disturbance_ij = disturbance$
       clip(territory_i)$
       updateMask(mapbiomas$eq(classes[j]))
     
+    ## get parameters 
+    ## maximum values
+    max_values <- disturbance_ij$reduceRegion(
+      reducer= ee$Reducer$max(),
+      geometry= territory_i,
+      scale= 30,
+      maxPixels= 1e13
+    )$getInfo()
     
+    ## bind data
+    max_values <- cbind(as.data.frame(max_values), 
+                        'biome'= territory_list[i],
+                        'class'= classes[j])
+    
+    ## merge with processed data
+    if (exists('repository') == FALSE) {
+      repository <- max_values
+    } else {
+      repository <- rbind(repository, max_values)
+    }
+    
+    ## store locally
+    write.csv2(repository, './_aux/params_disturbance_freq_v2.csv', row.names= FALSE)
     
   }
 }
-
-
-
-## get territory [i]
-territory_i <- territory$filterMetadata('Bioma', 'equals', territory_list[1])
-
-## for each class [j]
-
-## get disturbance data [ij] 
-disturbance_ij = disturbance$
-  clip(territory_i)$
-  updateMask(mapbiomas$eq(classes[1]))
-
-## get parameters 
-## maximum values
-max_values <- disturbance_ij$rename(c('anthropogenic_freq_max',
-                                      'deforestation_freq_max',
-                                      'fire_freq_max',
-                                      'sum_of_disturbance_max'))$
-                                          reduceRegion(
-                                          reducer= ee$Reducer$max(),
-                                          geometry= territory_i,
-                                          scale= 30,
-                                          maxPixels= 1e13
-                                      )$getInfo()
-
-## minimun values
-min_values <- disturbance_ij$rename(c('anthropogenic_freq_max',
-                                      'deforestation_freq_max',
-                                      'fire_freq_max',
-                                      'sum_of_disturbance_max'))$
-                                          reduceRegion(
-                                            reducer= ee$Reducer$min(),
-                                            geometry= territory_i,
-                                            scale= 30,
-                                            maxPixels= 1e13
-                                      )$getInfo()
-
-
-
-
- 
   

@@ -5,7 +5,7 @@
 // calculate area of @author João Siqueira
 
 // disturbance frequency data
-var disturbance = ee.Image('');
+var disturbance = ee.Image('projects/mapbiomas-workspace/DEGRADACAO/DISTURBIOS/disturbance_frequency/brazil_disturbance_frequency_agreement_2');
 
 // mapbiomas data (last year)
 var mapbiomas = ee.Image('projects/mapbiomas-workspace/public/collection7/mapbiomas_collection70_integration_v2')
@@ -25,7 +25,7 @@ Map.addLayer(territory.randomVisualizer());
 var scale = 30;
 
 // define the years to bem computed 
-var bands = ['anthropogenic_freq', 'deforestation_freq', 'fire_freq', 'sum_of_disturbance'];
+var bands = ['constant'];
 
 // define a Google Drive output folder 
 var driverFolder = 'AREA-EXPORT-DEGRADATION';
@@ -40,7 +40,7 @@ classes.forEach(function(class_i) {
   
   // get the classification for the file[i] 
   var asset_i = disturbance.updateMask(mapbiomas.eq(class_i));
-  Map.addLayer(asset_i, {}, 'class ' + class_i);
+  Map.addLayer(asset_i.randomVisualizer(), {}, 'class ' + class_i);
   
   // Geometry to export
   var geometry = asset_i.geometry();
@@ -108,7 +108,7 @@ classes.forEach(function(class_i) {
 
 Export.table.toDrive({
       collection: recipe,
-      description: 'disturbance_freq_per_biome_class',
+      description: 'disturbance_agreement_per_biome_class',
       folder: driverFolder,
       fileFormat: 'CSV'
 });

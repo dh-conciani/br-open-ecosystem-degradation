@@ -4,7 +4,14 @@
 // an adaptation from:
 // calculate area of @author João Siqueira
 
-// native classes
+// disturbance frequency data
+var disturbance = ee.Image('projects/mapbiomas-workspace/DEGRADACAO/DISTURBIOS/disturbance_frequency/brazil_disturbance_frequency_2');
+
+// mapbiomas data (last year)
+var mapbiomas = ee.Image('projects/mapbiomas-workspace/public/collection7/mapbiomas_collection70_integration_v2')
+                  .select(['classification_2021']);
+                  
+// native classes in which statistics will be processed
 var classes = [3, 4, 5, 11, 12, 13, 32, 49, 50];
 
 // define classification regions 
@@ -22,17 +29,20 @@ var bands = ['anthropogenic_freq', 'deforestation_freq', 'fire_freq', 'sum_of_di
 
 // define a Google Drive output folder 
 var driverFolder = 'AREA-EXPORT-DEGRADATION';
-
-// get the classification for the file[i] 
-var asset_i = ee.Image('projects/mapbiomas-workspace/DEGRADACAO/DISTURBIOS/disturbance_frequency/brazil_disturbance_frequency_2');
                 
 // Image area in km2
 var pixelArea = ee.Image.pixelArea().divide(10000);
   
-// Geometry to export
-var geometry = asset_i.geometry();
 
 classes.forEach(function(class_i) {
+  
+  // get the classification for the file[i] 
+  var asset_i = disturbance.updateMask(mapbiomas.eq(class_i));
+  Map.addLayer(asset_i);
+  
+  // Geometry to export
+  var geometry = asset_i.geometry();
+  
   // convert a complex object to a simple feature collection 
   var convert2table = function (obj) {
     obj = ee.Dictionary(obj);

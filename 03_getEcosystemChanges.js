@@ -43,20 +43,15 @@ var mapbiomas_native = ee.Image(years_mapbiomas.map(function(year_i) {
   })
 );
 
-print(mapbiomas_native);
-Map.addLayer(mapbiomas_native, {}, 's');
+// get the number of native vegetation classes
+var calculateNumberOfClasses = function (image) {
+    return image.reduce(ee.Reducer.countDistinctNonNull())
+                .rename('number_of_classes');
+};
 
+var native_classes = calculateNumberOfClasses(mapbiomas_native);
 
-
-
-
-var mapbiomas = ee.Image('');
-
-
-
-
-
-
+Map.addLayer(native_classes, {palette:['green', 'yellow', 'red'], min:1, max:3}, 'classes')
 
 
 

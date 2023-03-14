@@ -377,3 +377,5 @@ var Chart = {
 };
 
 Chart.init();
+
+// adicionar dado de area queimada

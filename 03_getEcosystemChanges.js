@@ -3,7 +3,7 @@
 // read disturbance combination
 var combination = ee.Image('projects/mapbiomas-workspace/DEGRADACAO/DISTURBIOS/disturbance_frequency/brazil_disturbance_frequency_agreement_2');
 
-// list years to be processed with gfcc
+// list years to be processed - gfcc
 var years_gfcc = [2000, 2005, 2010, 2015];
 
 // transpose gfcc into imagecollection to multi-band per-year data
@@ -19,25 +19,35 @@ var gfcc = ee.Image(years_gfcc.map(function(year_i) {
           )
         );
 
-print(ee.Image(gfcc))
+// get changes in tree cover
+var gfcc_change = gfcc.select('tc_2015').subtract(gfcc.select('tc_2000'));
+
+// list years to be processed - mapbiomas
+var years_mapbiomas = [
+  1985, 1986, 1987, 1988, 1989, 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003,
+  2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021];
 
 
-
-                  ;
-var treeCanopyCover = dataset.select('tree_canopy_cover');
-var treeCanopyCoverVis = {
-  min: 0.0,
-  max: 100.0,
-  palette: ['ffffff', 'afce56', '5f9c00', '0e6a00', '003800'],
-};
-
-Map.addLayer(treeCanopyCover.mean(), treeCanopyCoverVis, 'Tree Canopy Cover');
+// get mapbiomas changes among native classes
 
 
 
 
 
 
+var mapbiomas = ee.Image('projects/mapbiomas-workspace/public/collection7/mapbiomas_collection70_integration_v2');
+
+
+
+
+
+
+
+
+
+
+//Map.addLayer(gfcc,  {min: 0.0, max: 100.0, palette: ['ffffff', 'afce56', '5f9c00', '0e6a00', '003800']}, 'Tree Canopy Cover');
+Map.addLayer(gfcc_change, {palette:['red', 'yellow', 'green'], min: -20, max: 20}, 'change');
 Map.addLayer(combination, {
   palette: ['#C0C0C0', '#606060', '#20F0E2', '#FFEC33', '#EF9A2C', '#529CA8', '#00F318', 'red'], 
   min: 1, max: 8

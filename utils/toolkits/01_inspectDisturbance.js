@@ -172,6 +172,7 @@ var Chart = {
 
     legend: {
        0: { 'color': palette[0], 'name': 'Ausência de dados' },
+       1: { 'color': 'white', 'name': 'Fire'}, 
         3: { 'color': palette[3], 'name': 'Formação Florestal' },
         4: { 'color': palette[4], 'name': 'Formação Savânica' },
         5: { 'color': palette[5], 'name': 'Mangue' },
@@ -379,4 +380,311 @@ var Chart = {
 
 Chart.init();
 
+//////////////////////////////////////
 // adicionar dado de area queimada
+var fire = ee.Image('projects/mapbiomas-workspace/public/collection7/mapbiomas-fire-collection1-1-annual-burned-coverage-1');
+
+// years to be processed
+var years = [1985, 1986, 1987, 1988, 1989, 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
+             1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012,
+             2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021];
+
+// binarize
+var fire_bin = ee.Image(years.map(function(year_i) {
+  return fire.select('burned_coverage_' + year_i)
+             .remap({
+               from: [1],
+               to: [1],
+               defaultValue: 1
+             })
+             .rename('classification_' + year_i);
+}));
+
+print(fire_bin);
+
+
+var Chart = {
+
+    options: {
+        'title': 'Fire Inspector',
+        'legend': 'none',
+        'chartArea': {
+            left: 30,
+            right: 2,
+        },
+        'titleTextStyle': {
+            color: '#ffffff',
+            fontSize: 10,
+            bold: true,
+            italic: false
+        },
+        'tooltip': {
+            textStyle: {
+                fontSize: 10,
+            },
+            // isHtml: true
+        },
+        'backgroundColor': '#21242E',
+        'pointSize': 6,
+        'crosshair': {
+            trigger: 'both',
+            orientation: 'vertical',
+            focused: {
+                color: '#dddddd'
+            }
+        },
+        'hAxis': {
+            // title: 'Date', //muda isso aqui
+            slantedTextAngle: 90,
+            slantedText: true,
+            textStyle: {
+                color: '#ffffff',
+                fontSize: 8,
+                fontName: 'Arial',
+                bold: false,
+                italic: false
+            },
+            titleTextStyle: {
+                color: '#ffffff',
+                fontSize: 10,
+                fontName: 'Arial',
+                bold: true,
+                italic: false
+            },
+            viewWindow: {
+                max: 37,
+                min: 0
+            },
+            gridlines: {
+                color: '#21242E',
+                interval: 1
+            },
+            minorGridlines: {
+                color: '#21242E'
+            }
+        },
+        'vAxis': {
+            title: 'Class', // muda isso aqui
+            textStyle: {
+                color: '#ffffff',
+                fontSize: 10,
+                bold: false,
+                italic: false
+            },
+            titleTextStyle: {
+                color: '#ffffff',
+                fontSize: 10,
+                bold: false,
+                italic: false
+            },
+            viewWindow: {
+                max: 1,
+                min: 0
+            },
+            gridlines: {
+                color: '#21242E',
+                interval: 2
+            },
+            minorGridlines: {
+                color: '#21242E'
+            }
+        },
+        'lineWidth': 0,
+        // 'width': '300px',
+        // 'height': '200px',
+        'margin': '0px 0px 0px 0px',
+        'series': {
+            0: { color: '#21242E' }
+        },
+
+    },
+
+    assets: {
+        image: fire_bin,
+    },
+
+    data: {
+        image: null,
+        point: null
+    },
+
+    legend: {
+      1: { 'color': 'white', 'name': 'Fire'}
+    },
+
+    loadData: function () {
+        Chart.data.image = ee.ImageCollection(Chart.assets.image).min();
+    },
+
+    init: function () {
+        Chart.loadData();
+        Chart.ui.init();
+    },
+
+    getSamplePoint: function (image, points) {
+
+        var sample = image.sampleRegions({
+            'collection': points,
+            'scale': 30,
+            'geometries': true
+        });
+
+        return sample;
+    },
+
+    ui: {
+
+        init: function () {
+
+            Chart.ui.form.init();
+            Chart.ui.activateMapOnClick();
+
+        },
+
+        activateMapOnClick: function () {
+
+            Map.onClick(
+                function (coords) {
+                    var point = ee.Geometry.Point(coords.lon, coords.lat);
+
+                    var bandNames = Chart.data.image.bandNames();
+
+                    var newBandNames = bandNames.map(
+                        function (bandName) {
+                            var name = ee.String(ee.List(ee.String(bandName).split('_')).get(1));
+
+                            return name;
+                        }
+                    );
+
+                    var image = Chart.data.image.select(bandNames, newBandNames);
+
+                    Chart.ui.inspect(image, point);
+                }
+            );
+        },
+
+        refreshGraph: function (sample) {
+
+            sample.evaluate(
+                function (featureCollection) {
+
+                    if (featureCollection !== null) {
+                        // print(featureCollection.features);
+
+                        var pixels = featureCollection.features.map(
+                            function (features) {
+                                return features.properties;
+                            }
+                        );
+
+                        var bands = Object.getOwnPropertyNames(pixels[0]);
+
+                        // Add class value
+                        var dataTable = bands.map(
+                            function (band) {
+                                var value = pixels.map(
+                                    function (pixel) {
+                                        return pixel[band];
+                                    }
+                                );
+
+                                return [band].concat(value);
+                            }
+                        );
+
+                        // Add point style and tooltip
+                        dataTable = dataTable.map(
+                            function (point) {
+                                var color = Chart.legend[point[1]].color;
+                                var name = Chart.legend[point[1]].name;
+                                var value = String(point[1]);
+
+                                var style = 'point {size: 4; fill-color: ' + color + '}';
+                                var tooltip = 'year: ' + point[0] + ', class: [' + value + '] ' + name;
+
+                                return point.concat(style).concat(tooltip);
+                            }
+                        );
+
+                        var headers = [
+                            'serie',
+                            'id',
+                            { 'type': 'string', 'role': 'style' },
+                            { 'type': 'string', 'role': 'tooltip' }
+                        ];
+
+                        dataTable = [headers].concat(dataTable);
+
+                        Chart.ui.form.chartInspector.setDataTable(dataTable);
+
+                    }
+                }
+            );
+        },
+
+        refreshMap: function () {
+
+            var pointLayer = Map.layers().filter(
+                function (layer) {
+                    return layer.get('name') === 'Point';
+                }
+            );
+
+            if (pointLayer.length > 0) {
+                Map.remove(pointLayer[0]);
+                Map.addLayer(Chart.data.point, {}, 'Point');
+            } else {
+                Map.addLayer(Chart.data.point, {}, 'Point');
+            }
+
+        },
+
+        inspect: function (image, point) {
+
+            // aqui pode fazer outras coisas além de atualizar o gráfico
+            Chart.data.point = Chart.getSamplePoint(image, ee.FeatureCollection(point));
+
+            Chart.ui.refreshMap(Chart.data.point);
+            Chart.ui.refreshGraph(Chart.data.point);
+
+        },
+
+        form: {
+
+            init: function () {
+
+                Chart.ui.form.panelChart.add(Chart.ui.form.chartInspector);
+                Chart.ui.form.chartInspector.setOptions(Chart.options);
+
+                Chart.ui.form.chartInspector.onClick(
+                    function (xValue, yValue, seriesName) {
+                        print(xValue, yValue, seriesName);
+                    }
+                );
+
+                Map.add(Chart.ui.form.panelChart);
+            },
+
+            panelChart: ui.Panel({
+                'layout': ui.Panel.Layout.flow('vertical'),
+                'style': {
+                    'width': '450px',
+                    // 'height': '200px',
+                    'position': 'bottom-right',
+                    'margin': '0px 0px 0px 0px',
+                    'padding': '0px',
+                    'backgroundColor': '#21242E'
+                },
+            }),
+
+            chartInspector: ui.Chart([
+                ['Serie', ''],
+                ['', -1000], // número menor que oin mínimo para não aparecer no gráfico na inicialização
+            ])
+        }
+    }
+};
+
+Chart.init();
+

@@ -113,7 +113,7 @@ var Chart = {
                 italic: false
             },
             viewWindow: {
-                max: 36,
+                max: 37,
                 min: 0
             },
             gridlines: {
@@ -377,4 +377,3 @@ var Chart = {
 };
 
 Chart.init();
-

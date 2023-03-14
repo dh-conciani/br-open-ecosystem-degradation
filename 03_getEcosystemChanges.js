@@ -1,4 +1,9 @@
-// compute native vegetation state change (mapbiomas) and tree cover change
+// compute ecosystem changes  
+// native vegetation state change (mapbiomas) and tree cover change
+
+// set metadata
+var version = '2';
+var output = 'projects/mapbiomas-workspace/DEGRADACAO/DISTURBIOS/disturbance_frequency';
 
 // read disturbance combination
 var combination = ee.Image('projects/mapbiomas-workspace/DEGRADACAO/DISTURBIOS/disturbance_frequency/brazil_disturbance_frequency_agreement_2');
@@ -24,7 +29,7 @@ var gfcc = ee.Image(years_gfcc.map(function(year_i) {
         );
 
 // get changes in tree cover
-var gfcc_change = gfcc.select('tc_2015').subtract(gfcc.select('tc_2000'));
+var gfcc_change = gfcc.select('tc_2015').subtract(gfcc.select('tc_2000')).rename('tree_cover_change');
 
 // get mapbiomas native vegetation classes over time-series
 var mapbiomas_native = ee.Image(years_mapbiomas.map(function(year_i) {
@@ -51,14 +56,34 @@ var calculateNumberOfClasses = function (image) {
 
 var native_classes = calculateNumberOfClasses(mapbiomas_native);
 
-Map.addLayer(native_classes, {palette:['green', 'yellow', 'red'], min:1, max:3}, 'classes')
+// combine changes
+var changes = native_classes.addBands(gfcc_change)
+    // add metadata
+    .set('territory', 'BRAZIL')
+    .set('collection', 1)
+    .set('version', version)
+    .set('source', 'ipam')
+    .set('theme', 'degradation');
 
-
-
-
+// plot
+Map.addLayer(native_classes, {palette:['green', 'yellow', 'red'], min:1, max:3}, 'classes');
 //Map.addLayer(gfcc,  {min: 0.0, max: 100.0, palette: ['ffffff', 'afce56', '5f9c00', '0e6a00', '003800']}, 'Tree Canopy Cover');
 Map.addLayer(gfcc_change, {palette:['red', 'yellow', 'green'], min: -20, max: 20}, 'change');
 Map.addLayer(combination, {
   palette: ['#C0C0C0', '#606060', '#20F0E2', '#FFEC33', '#EF9A2C', '#529CA8', '#00F318', 'red'], 
   min: 1, max: 8
   }, 'Disturbance');
+  
+
+// export
+Export.image.toAsset({
+    "image": changes.toInt8(),
+    "description": 'ecosystem_changes_' + version,
+    "assetId": output + '/' + 'ecosystem_changes_' + version,
+    "scale": 30,
+    "pyramidingPolicy": {
+        '.default': 'mode'
+    },
+    "maxPixels": 1e13,
+    "region": combination.select(0).geometry()
+});  

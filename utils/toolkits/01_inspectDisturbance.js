@@ -62,7 +62,7 @@ Map.add(legends);
 
 ///////////////////////////////// painel de classes mapbiomas 
 // ler plaheta
-
+/*
 var palette = require('users/mapbiomas/modules:Palettes.js').get('classification7');
 
 var Chart = {
@@ -384,8 +384,7 @@ var Chart = {
 
 Chart.init();
 
-
-/*
+*/
 
 //////////////////////////////////////
 // adicionar dado de area queimada
@@ -584,7 +583,9 @@ var Chart = {
                             }
                         );
                         print('pixels fire', pixels)
+
                         var bands = Object.getOwnPropertyNames(pixels[1]);
+                        //var bands = years
                         
                         // Add class value
                         var dataTable = bands.map(
@@ -693,4 +694,4 @@ var Chart = {
 };
 
 Chart.init();
-*/
+

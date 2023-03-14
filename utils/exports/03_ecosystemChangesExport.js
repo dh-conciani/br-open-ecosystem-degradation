@@ -48,7 +48,7 @@ disturbances.forEach(function(disturbance_i) {
     
     // get the classification for the file[i] 
     var asset_ij = image.updateMask(mapbiomas.eq(class_j)).updateMask(disturbance.eq(disturbance_i));
-    Map.addLayer(asset_ij.randomVisualizer(), {}, 'class ' + class_j + ' traj ', disturbance_i);
+    Map.addLayer(asset_ij.randomVisualizer(), {}, 'class ' + class_j + ' traj ', disturbance_i, false);
     
     // Geometry to export
     var geometry = asset_ij.geometry();

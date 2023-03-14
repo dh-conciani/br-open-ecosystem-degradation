@@ -161,7 +161,8 @@ var Chart = {
     },
 
     assets: {
-        image: ee.Image('projects/mapbiomas-workspace/public/collection7/mapbiomas_collection70_integration_v2')
+        image: ee.Image('projects/mapbiomas-workspace/public/collection7/mapbiomas_collection70_integration_v2'),
+        fire: ee.Image('projects/mapbiomas-workspace/public/collection7/mapbiomas-fire-collection1-1-annual-burned-coverage-1')
     },
 
     data: {

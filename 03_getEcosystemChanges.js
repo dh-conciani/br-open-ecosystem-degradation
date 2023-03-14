@@ -6,9 +6,13 @@ var combination = ee.Image('projects/mapbiomas-workspace/DEGRADACAO/DISTURBIOS/d
 // list years to be processed - gfcc
 var years_gfcc = [2000, 2005, 2010, 2015];
 
+// list years to be processed - mapbiomas
+var years_mapbiomas = [
+  1985, 1986, 1987, 1988, 1989, 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003,
+  2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021];
+
 // transpose gfcc into imagecollection to multi-band per-year data
 var gfcc = ee.Image(years_gfcc.map(function(year_i) {
-  // get year i
   return  ee.ImageCollection('NASA/MEASURES/GFCC/TC/v3')
             .filter(ee.Filter.date(year_i + '-01-01', year_i + '-12-30'))
             .select('tree_canopy_cover')
@@ -22,20 +26,31 @@ var gfcc = ee.Image(years_gfcc.map(function(year_i) {
 // get changes in tree cover
 var gfcc_change = gfcc.select('tc_2015').subtract(gfcc.select('tc_2000'));
 
-// list years to be processed - mapbiomas
-var years_mapbiomas = [
-  1985, 1986, 1987, 1988, 1989, 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003,
-  2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021];
+// get mapbiomas native vegetation classes over time-series
+var mapbiomas_native = ee.Image(years_mapbiomas.map(function(year_i) {
+  return ee.Image('projects/mapbiomas-workspace/public/collection7/mapbiomas_collection70_integration_v2')
+            .select('classification_' + year_i)
+            .remap({
+               from: [3, 4, 5, 11, 12, 13, 32, 49, 50],
+               to:   [3, 4, 5, 11, 12, 13, 32, 49, 50],
+               defaultValue: 0
+            })
+            .rename('classification_' + year_i)
+            .selfMask()
+            .updateMask(
+              ee.Image('projects/mapbiomas-workspace/public/collection7/mapbiomas_collection70_integration_v2')
+                .select('classification_2021'));
+  })
+);
+
+print(mapbiomas_native);
+Map.addLayer(mapbiomas_native, {}, 's');
 
 
-// get mapbiomas changes among native classes
 
 
 
-
-
-
-var mapbiomas = ee.Image('projects/mapbiomas-workspace/public/collection7/mapbiomas_collection70_integration_v2');
+var mapbiomas = ee.Image('');
 
 
 

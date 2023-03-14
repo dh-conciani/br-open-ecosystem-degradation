@@ -62,6 +62,7 @@ Map.add(legends);
 
 ///////////////////////////////// painel de classes mapbiomas 
 // ler plaheta
+/*
 var palette = require('users/mapbiomas/modules:Palettes.js').get('classification7');
 
 var Chart = {
@@ -262,15 +263,17 @@ var Chart = {
                 function (featureCollection) {
 
                     if (featureCollection !== null) {
-                        // print(featureCollection.features);
+                        print('features lcluc', featureCollection.features);
 
                         var pixels = featureCollection.features.map(
                             function (features) {
                                 return features.properties;
                             }
                         );
-
+                        
+                        print('pixels lcluc', pixels);
                         var bands = Object.getOwnPropertyNames(pixels[0]);
+                        print('bands lcluc', bands);
 
                         // Add class value
                         var dataTable = bands.map(
@@ -378,7 +381,10 @@ var Chart = {
     }
 };
 
+
 Chart.init();
+
+*/
 
 //////////////////////////////////////
 // adicionar dado de area queimada
@@ -397,14 +403,12 @@ var fire_bin = ee.Image(years.map(function(year_i) {
                to: [1],
                defaultValue: 1
              })
-             .rename('classification_' + year_i);
+             .rename('classification_' + year_i)
+             .unmask(0);
 }));
-
-print(fire_bin);
-
+Map.addLayer(fire_bin, {}, 'fire')
 
 var Chart = {
-
     options: {
         'title': 'Fire Inspector',
         'legend': 'none',
@@ -509,7 +513,8 @@ var Chart = {
     },
 
     legend: {
-      1: { 'color': 'white', 'name': 'Fire'}
+      0: { 'color': 'white', 'name': 'Unburned'},
+      1: { 'color': 'red', 'name': 'Burned'}
     },
 
     loadData: function () {
@@ -556,7 +561,7 @@ var Chart = {
                             return name;
                         }
                     );
-
+                    
                     var image = Chart.data.image.select(bandNames, newBandNames);
 
                     Chart.ui.inspect(image, point);
@@ -577,9 +582,10 @@ var Chart = {
                                 return features.properties;
                             }
                         );
-
-                        var bands = Object.getOwnPropertyNames(pixels[0]);
-
+                        print('pixels fire', pixels)
+                        //print(ee.List(pixels))
+                        var bands = Object.getOwnPropertyNames(pixels[1]).evaluate();
+                        
                         // Add class value
                         var dataTable = bands.map(
                             function (band) {

@@ -2,7 +2,7 @@
 // native vegetation state change (mapbiomas) and tree cover change
 
 // set metadata
-var version = '2';
+var version = 2;
 var output = 'projects/mapbiomas-workspace/DEGRADACAO/DISTURBIOS/disturbance_frequency';
 
 // read disturbance combination

@@ -62,7 +62,7 @@ Map.add(legends);
 
 ///////////////////////////////// painel de classes mapbiomas 
 // ler plaheta
-/*
+
 var palette = require('users/mapbiomas/modules:Palettes.js').get('classification7');
 
 var Chart = {
@@ -384,7 +384,8 @@ var Chart = {
 
 Chart.init();
 
-*/
+
+/*
 
 //////////////////////////////////////
 // adicionar dado de area queimada
@@ -406,7 +407,7 @@ var fire_bin = ee.Image(years.map(function(year_i) {
              .rename('classification_' + year_i)
              .unmask(0);
 }));
-Map.addLayer(fire_bin, {}, 'fire')
+
 
 var Chart = {
     options: {
@@ -583,8 +584,7 @@ var Chart = {
                             }
                         );
                         print('pixels fire', pixels)
-                        //print(ee.List(pixels))
-                        var bands = Object.getOwnPropertyNames(pixels[1]).evaluate();
+                        var bands = Object.getOwnPropertyNames(pixels[1]);
                         
                         // Add class value
                         var dataTable = bands.map(
@@ -693,4 +693,4 @@ var Chart = {
 };
 
 Chart.init();
-
+*/

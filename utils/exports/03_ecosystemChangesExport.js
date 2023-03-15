@@ -48,7 +48,7 @@ disturbances.forEach(function(disturbance_i) {
     
     // get the classification for the file[i] 
     var asset_ij = image.updateMask(mapbiomas.eq(class_j)).updateMask(disturbance.eq(disturbance_i));
-    Map.addLayer(asset_ij.randomVisualizer(), {}, 'class ' + class_j + ' traj ', disturbance_i, false);
+    //Map.addLayer(asset_ij.randomVisualizer(), {}, 'class ' + class_j + ' traj ', disturbance_i, false);
     
     // Geometry to export
     var geometry = asset_ij.geometry();
@@ -66,7 +66,7 @@ disturbances.forEach(function(disturbance_i) {
                 var area = classAndArea.get('sum');
                 var tableColumns = ee.Feature(null)
                     .set('biome', territory)
-                    .set('disturbance_1985_2021', classId)
+                    .set('value', classId)
                     .set('area', area)
                     .set('class_id', class_j)
                     .set('disturbance_id', disturbance_i);

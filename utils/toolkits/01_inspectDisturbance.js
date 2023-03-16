@@ -1,9 +1,6 @@
 // toolkit para inspecionar dados de disturbio para os biomas
 // dhemerson.costa@ipam.org.br
 
-// ler dados
-var disturbance_interaction = ee.Image('projects/mapbiomas-workspace/DEGRADACAO/DISTURBIOS/disturbance_frequency/brazil_disturbance_frequency_agreement_2');
-
 // carregar mosaico 2021
 var landsat = ee.ImageCollection('projects/nexgenmap/MapBiomas2/LANDSAT/BRAZIL/mosaics-2')
     .filterMetadata('year', 'equals', 2021);
@@ -17,10 +14,56 @@ Map.addLayer(landsat, {
     },
     'Landsat 2021', false);
 
+// get only native vegetation in the last year (2021)
+var mapbiomas_native =  ee.Image('projects/mapbiomas-workspace/public/collection7/mapbiomas_collection70_integration_v2')
+    .select(['classification_2021']).remap({
+      from: [3, 4, 5, 11, 12, 13, 32, 49, 50],
+      to:   [3, 4, 5, 11, 12, 13, 32, 49, 50],
+      defaultValue: 0})
+    .rename('native_vegetation')
+    .selfMask()
+    //.aside(Map.addLayer);
+
+
+// read disturbance frequencies
+var disturbance = ee.Image('projects/mapbiomas-workspace/DEGRADACAO/DISTURBIOS/disturbance_frequency/brazil_disturbance_frequency_2')
+                    .updateMask(mapbiomas_native)
+
+// isolate each one
+var fire_freq = disturbance.select('fire_freq');
+var deforestation_freq = disturbance.select('deforestation_freq');
+var anthropogenic_freq = disturbance.select('anthropogenic_freq');
+var disturbance_freq = disturbance.select('sum_of_disturbance');
+
+
+// plot data
+Map.addLayer(disturbance_freq, {palette: ['white', 'green', 'yellow', 'orange', 'red'], min:0, max:20}, 'Sum', false);
+Map.addLayer(anthropogenic_freq, {palette: ['white', 'green', 'yellow', 'orange', 'red'], min:0, max:10}, 'Years as anthropic', false);
+Map.addLayer(deforestation_freq, {palette: ['white', 'green', 'yellow', 'orange', 'red'], min:0, max:5}, 'Number of veg. loss events', false);
+Map.addLayer(fire_freq, {palette: ['white', 'green', 'yellow', 'orange', 'red'], min:0, max:15}, 'Fire Count', false);
+
+// ler dados
+var disturbance_interaction = ee.Image('projects/mapbiomas-workspace/DEGRADACAO/DISTURBIOS/disturbance_frequency/brazil_disturbance_frequency_agreement_2');
+
+
 Map.addLayer(disturbance_interaction, {
   palette: ['#C0C0C0', '#606060', '#20F0E2', '#FFEC33', '#EF9A2C', '#529CA8', '#00F318', 'red'], 
   min: 1, max: 8
   }, 'Disturbance');
+
+// rfead ecosystem changes
+var changes = ee.Image('projects/mapbiomas-workspace/DEGRADACAO/DISTURBIOS/disturbance_frequency/ecosystem_changes_2');
+
+
+Map.addLayer(changes.select('number_of_classes'), {palette:['green', 'yellow', 'red'], min:1, max:4}, 'NV Classes', false);
+Map.addLayer(changes.select('tree_cover_change'),  {min: -25, max: 30, palette: ['red', 'white', 'green']}, 'Tree Canopy Cover Change', false);
+
+
+
+
+
+
+
 
 ////////////////////////////// crair legenda
 var legends = [
@@ -62,11 +105,9 @@ Map.add(legends);
 
 ///////////////////////////////// painel de classes mapbiomas 
 // ler plaheta
-/*
+
 var palette = require('users/mapbiomas/modules:Palettes.js').get('classification7');
-
 var Chart = {
-
     options: {
         'title': 'Inspector',
         'legend': 'none',
@@ -158,19 +199,15 @@ var Chart = {
         'series': {
             0: { color: '#21242E' }
         },
-
     },
-
     assets: {
         image: ee.Image('projects/mapbiomas-workspace/public/collection7/mapbiomas_collection70_integration_v2'),
         fire: ee.Image('projects/mapbiomas-workspace/public/collection7/mapbiomas-fire-collection1-1-annual-burned-coverage-1')
     },
-
     data: {
         image: null,
         point: null
     },
-
     legend: {
        0: { 'color': palette[0], 'name': 'Ausência de dados' },
        1: { 'color': 'white', 'name': 'Fire'}, 
@@ -204,67 +241,47 @@ var Chart = {
         33: { 'color': palette[33], 'name': 'Rio, Lago e Oceano' },
         31: { 'color': palette[31], 'name': 'Aquicultura' },
     },
-
     loadData: function () {
         Chart.data.image = ee.ImageCollection(Chart.assets.image).min();
     },
-
     init: function () {
         Chart.loadData();
         Chart.ui.init();
     },
-
     getSamplePoint: function (image, points) {
-
         var sample = image.sampleRegions({
             'collection': points,
             'scale': 30,
             'geometries': true
         });
-
         return sample;
     },
-
     ui: {
-
         init: function () {
-
             Chart.ui.form.init();
             Chart.ui.activateMapOnClick();
-
         },
-
         activateMapOnClick: function () {
-
             Map.onClick(
                 function (coords) {
                     var point = ee.Geometry.Point(coords.lon, coords.lat);
-
                     var bandNames = Chart.data.image.bandNames();
-
                     var newBandNames = bandNames.map(
                         function (bandName) {
                             var name = ee.String(ee.List(ee.String(bandName).split('_')).get(1));
-
                             return name;
                         }
                     );
-
                     var image = Chart.data.image.select(bandNames, newBandNames);
-
                     Chart.ui.inspect(image, point);
                 }
             );
         },
-
         refreshGraph: function (sample) {
-
             sample.evaluate(
                 function (featureCollection) {
-
                     if (featureCollection !== null) {
                         print('features lcluc', featureCollection.features);
-
                         var pixels = featureCollection.features.map(
                             function (features) {
                                 return features.properties;
@@ -274,7 +291,6 @@ var Chart = {
                         print('pixels lcluc', pixels);
                         var bands = Object.getOwnPropertyNames(pixels[0]);
                         print('bands lcluc', bands);
-
                         // Add class value
                         var dataTable = bands.map(
                             function (band) {
@@ -283,84 +299,62 @@ var Chart = {
                                         return pixel[band];
                                     }
                                 );
-
                                 return [band].concat(value);
                             }
                         );
-
                         // Add point style and tooltip
                         dataTable = dataTable.map(
                             function (point) {
                                 var color = Chart.legend[point[1]].color;
                                 var name = Chart.legend[point[1]].name;
                                 var value = String(point[1]);
-
                                 var style = 'point {size: 4; fill-color: ' + color + '}';
                                 var tooltip = 'year: ' + point[0] + ', class: [' + value + '] ' + name;
-
                                 return point.concat(style).concat(tooltip);
                             }
                         );
-
                         var headers = [
                             'serie',
                             'id',
                             { 'type': 'string', 'role': 'style' },
                             { 'type': 'string', 'role': 'tooltip' }
                         ];
-
                         dataTable = [headers].concat(dataTable);
-
                         Chart.ui.form.chartInspector.setDataTable(dataTable);
-
                     }
                 }
             );
         },
-
         refreshMap: function () {
-
             var pointLayer = Map.layers().filter(
                 function (layer) {
                     return layer.get('name') === 'Point';
                 }
             );
-
             if (pointLayer.length > 0) {
                 Map.remove(pointLayer[0]);
                 Map.addLayer(Chart.data.point, {}, 'Point');
             } else {
                 Map.addLayer(Chart.data.point, {}, 'Point');
             }
-
         },
-
         inspect: function (image, point) {
-
             // aqui pode fazer outras coisas além de atualizar o gráfico
             Chart.data.point = Chart.getSamplePoint(image, ee.FeatureCollection(point));
-
             Chart.ui.refreshMap(Chart.data.point);
             Chart.ui.refreshGraph(Chart.data.point);
-
         },
-
         form: {
-
             init: function () {
-
                 Chart.ui.form.panelChart.add(Chart.ui.form.chartInspector);
                 Chart.ui.form.chartInspector.setOptions(Chart.options);
-
                 Chart.ui.form.chartInspector.onClick(
                     function (xValue, yValue, seriesName) {
                         print(xValue, yValue, seriesName);
                     }
                 );
-
                 Map.add(Chart.ui.form.panelChart);
             },
-
             panelChart: ui.Panel({
                 'layout': ui.Panel.Layout.flow('vertical'),
                 'style': {
@@ -372,7 +366,6 @@ var Chart = {
                     'backgroundColor': '#21242E'
                 },
             }),
-
             chartInspector: ui.Chart([
                 ['Serie', ''],
                 ['', -1000], // número menor que oin mínimo para não aparecer no gráfico na inicialização
@@ -380,12 +373,13 @@ var Chart = {
         }
     }
 };
-
-
 Chart.init();
 
-*/
 
+
+
+
+/*
 //////////////////////////////////////
 // adicionar dado de area queimada
 var fire = ee.Image('projects/mapbiomas-workspace/public/collection7/mapbiomas-fire-collection1-1-annual-burned-coverage-1');
@@ -694,4 +688,4 @@ var Chart = {
 };
 
 Chart.init();
-
+*/

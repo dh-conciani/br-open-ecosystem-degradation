@@ -26,35 +26,50 @@ var mapbiomas_native = ee.Image(years_list.map(function(year_i) {
                to:   native_classes,
                // And set other classes to zero
                defaultValue: 0
-            })
-            .rename('classification_' + year_i);
-  return (native_i);
+            }).rename('classification_' + year_i);
+            
+  return native_i;
   })
 );
 
-
-// remap all native vegetation classes to [1] 
+// Remap all native vegetation classes to [1] 
 var native_bin = ee.Image(years_list.map(function(year_i) {
-  return mapbiomas_native
-            .select('classification_' + year_i)
-            .remap({
+    // Select native vegetation classes for the year [i]
+    var native_bin_i = mapbiomas_native.select('classification_' + year_i).remap({
                from: native_classes,
-               to:   ee.List.repeat(1, ee.List(native_classes).length()),
+               // And binarize them for 0-1
+               to:   ee.List.repeat({value:1, count: ee.List(native_classes).length()}),
                defaultValue: 0
-            })
-            .rename('classification_' + year_i)
-            .selfMask()
-            .updateMask(
-               mapbiomas_native.select('classification_2021')
-              );
+            }).rename('classification_' + year_i);
+            
+  return native_bin_i;
   })
 );
 
-// read brazil boundaries
+// Remap all "No apply" classes to [1]
+var ignore_bin = ee.Image(years_list.map(function(year_i) {
+    // Select native vegetation classes for the year [i]
+    var ignore_bin_i = collection.select('classification_' + year_i).remap({
+               from: no_apply,
+               // And binarize them for 0-1
+               to:   ee.List.repeat({value:1, count: ee.List(native_classes).length()}),
+               defaultValue: 0
+            }).rename('classification_' + year_i);
+            
+  return ignore_bin_i;
+  })
+);
+
+// Read Brazil boundaries
 var brazil = ee.Image('projects/mapbiomas-workspace/AUXILIAR/biomas-2019-raster');
 
-// get years as native vegetation 
+// Compute the number of years as native vegetation 
 var native_freq = native_bin.reduce('sum').unmask(0).updateMask(brazil).rename('native_freq');
+
+// Compute the number of years as native vegetation 
+var native_freq = native_bin.reduce('sum').unmask(0).updateMask(brazil).rename('native_freq');
+
+
 
 // get stable native vegetation
 var stable = mapbiomas_native.select('classification_1985').updateMask(native_freq.eq(37));

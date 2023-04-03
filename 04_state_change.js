@@ -2,8 +2,8 @@
 // GT Degradação- MapBiomas
 // dhemerson.costa@ipam.org.br
 
-// set assessment packages
-// check legned ids here:
+// Set IDs 'packages'
+// check ids here: https://mapbiomas-br-site.s3.amazonaws.com/downloads/_EN__C%C3%B3digos_da_legenda_Cole%C3%A7%C3%A3o_7.pdf
 var native_classes = [3, 4, 5, 11, 12, 13, 29, 32, 49, 50];
 var anthropogenic_classes = [15, 18, 19, 39, 20, 40, 62, 41, 36, 46, 47, 48, 9, 21, 24, 30];
 var dont_apply = [27, 33];
@@ -20,8 +20,8 @@ var mapbiomas_native = ee.Image(years_list.map(function(year_i) {
   return ee.Image('projects/mapbiomas-workspace/public/collection7/mapbiomas_collection70_integration_v2')
             .select('classification_' + year_i)
             .remap({
-               from: classes,
-               to:   classes,
+               from: native_classes,
+               to:   native_classes,
                defaultValue: 0
             })
             .rename('classification_' + year_i)
@@ -37,8 +37,8 @@ var native_bin = ee.Image(years_list.map(function(year_i) {
   return mapbiomas_native
             .select('classification_' + year_i)
             .remap({
-               from: classes,
-               to:   ee.List.repeat(1, ee.List(classes).length()),
+               from: native_classes,
+               to:   ee.List.repeat(1, ee.List(native_classes).length()),
                defaultValue: 0
             })
             .rename('classification_' + year_i)

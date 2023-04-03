@@ -1,9 +1,13 @@
-// state change assessment
-// gt degradação- mapbiomas
+// Ecosystem State Change
+// GT Degradação- MapBiomas
 // dhemerson.costa@ipam.org.br
 
-// detect trajectories and state changes over native vegetation 
-var classes = [3, 4, 5, 11, 12, 13, 32, 49, 50];
+// set assessment packages
+// check legned ids here:
+var native_classes = [3, 4, 5, 11, 12, 13, 29, 32, 49, 50];
+var anthropogenic_classes = [15, 18, 19, 39, 20, 40, 62, 41, 36, 46, 47, 48, 9, 21, 24, 30];
+var dont_apply = [27, 33];
+var soil = [25];
 
 // set the years to be used in the process
 var years_list = [
@@ -45,21 +49,35 @@ var native_bin = ee.Image(years_list.map(function(year_i) {
   })
 );
 
+// read brazil boundaries
+var brazil = ee.Image('projects/mapbiomas-workspace/AUXILIAR/biomas-2019-raster');
+
 // get years as native vegetation 
-var native_freq = native_bin.reduce('sum').rename('native_freq');
-Map.addLayer(native_freq,  {palette: ['white', 'green', 'yellow', 'orange', 'red'], min:0, max:10}, 'Years as native vegetation', false);
+var native_freq = native_bin.reduce('sum').unmask(0).updateMask(brazil).rename('native_freq');
 
 // get stable native vegetation
 var stable = mapbiomas_native.select('classification_1985').updateMask(native_freq.eq(37));
 
-// read mapbiomas palette
+// secondary vegetation age
+var secondary = ee.Image('projects/mapbiomas-workspace/public/collection7_1/mapbiomas_collection71_secondary_vegetation_age_v1')
+                 .select('secondary_vegetation_age_2021')
+                 .unmask(0)
+                 .updateMask(brazil);
+
+
+
+// data visualization
 var vis = {
     'min': 0,
     'max': 49,
     'palette': require('users/mapbiomas/modules:Palettes.js').get('classification6')
 };
 
+Map.addLayer(native_freq,  {palette: ['white', 'green', 'yellow', 'orange', 'red'], min:0, max:37}, 'Years as native vegetation', false);
 Map.addLayer(stable, vis, 'Stable native vegetation', false);
+Map.addLayer(secondary, {palette: ['red', 'orange', 'yellow', 'green'], min:1, max:15}, 'Secondary vegetation age', false);
+
+
 
 // read disturbance frequencies
 var disturbance = ee.Image('projects/mapbiomas-workspace/DEGRADACAO/DISTURBIOS/disturbance_frequency/brazil_disturbance_frequency_2');
@@ -73,9 +91,3 @@ Map.addLayer(anthropogenic_freq, {palette: ['white', 'green', 'yellow', 'orange'
 Map.addLayer(deforestation_freq, {palette: ['white', 'green', 'yellow', 'orange', 'red'], min:0, max:5}, 'Number of veg. loss events', false);
 Map.addLayer(fire_freq, {palette: ['white', 'green', 'yellow', 'orange', 'red'], min:0, max:15}, 'Fire Count', false);
 
-
-
-// function to count age since last state change
-var time_since_last_state_change = function(image) {
-  var image_i = mapbiomas_native.select('classification_' + year_i);
-}

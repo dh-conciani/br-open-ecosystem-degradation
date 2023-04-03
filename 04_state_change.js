@@ -6,8 +6,8 @@
 // Check ids here: https://mapbiomas-br-site.s3.amazonaws.com/downloads/_EN__C%C3%B3digos_da_legenda_Cole%C3%A7%C3%A3o_7.pdf
 var native_classes = [3, 4, 5, 11, 12, 13, 29, 32, 49, 50];
 var anthropogenic_classes = [15, 18, 19, 39, 20, 40, 62, 41, 36, 46, 47, 48, 9, 21, 24, 30];
-var no_apply = [27, 33];
-var soil = [25];
+var ignore_classes = [27, 33];
+var soil_classes = [25];
 
 // Set years to be used
 var years_list = [
@@ -18,26 +18,12 @@ var years_list = [
 // Read Mapbiomas Collection 7.1
 var collection = ee.Image('projects/mapbiomas-workspace/public/collection7/mapbiomas_collection70_integration_v2');
 
-// Get mapbiomas native vegetation classes over time-series
-var mapbiomas_native = ee.Image(years_list.map(function(year_i) {
-  // Select native vegetation classes for the year [i]
-    var native_i = collection.select('classification_' + year_i).remap({
-               from: native_classes,
-               to:   native_classes,
-               // And set other classes to zero
-               defaultValue: 0
-            }).rename('classification_' + year_i);
-            
-  return native_i;
-  })
-);
-
-// Remap all native vegetation classes to [1] 
+// Get native vegetation as binaries
 var native_bin = ee.Image(years_list.map(function(year_i) {
     // Select native vegetation classes for the year [i]
-    var native_bin_i = mapbiomas_native.select('classification_' + year_i).remap({
+    var native_bin_i = collection.select('classification_' + year_i).remap({
                from: native_classes,
-               // And binarize them for 0-1
+               // And binarize them (0= Absent, 1= Present)
                to:   ee.List.repeat({value:1, count: ee.List(native_classes).length()}),
                defaultValue: 0
             }).rename('classification_' + year_i);
@@ -46,19 +32,20 @@ var native_bin = ee.Image(years_list.map(function(year_i) {
   })
 );
 
-// Remap all "No apply" classes to [1]
+// Get "no apply" classes as binaries 
 var ignore_bin = ee.Image(years_list.map(function(year_i) {
     // Select native vegetation classes for the year [i]
     var ignore_bin_i = collection.select('classification_' + year_i).remap({
-               from: no_apply,
-               // And binarize them for 0-1
-               to:   ee.List.repeat({value:1, count: ee.List(native_classes).length()}),
+               from: ignore_classes,
+               // And binarize them (0= Absent, 1= Present)
+               to:   ee.List.repeat({value:1, count: ee.List(ignore_classes).length()}),
                defaultValue: 0
             }).rename('classification_' + year_i);
             
   return ignore_bin_i;
   })
 );
+
 
 // Read Brazil boundaries
 var brazil = ee.Image('projects/mapbiomas-workspace/AUXILIAR/biomas-2019-raster');

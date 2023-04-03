@@ -3,34 +3,35 @@
 // dhemerson.costa@ipam.org.br
 
 // Set IDs 'packages'
-// check ids here: https://mapbiomas-br-site.s3.amazonaws.com/downloads/_EN__C%C3%B3digos_da_legenda_Cole%C3%A7%C3%A3o_7.pdf
+// Check ids here: https://mapbiomas-br-site.s3.amazonaws.com/downloads/_EN__C%C3%B3digos_da_legenda_Cole%C3%A7%C3%A3o_7.pdf
 var native_classes = [3, 4, 5, 11, 12, 13, 29, 32, 49, 50];
 var anthropogenic_classes = [15, 18, 19, 39, 20, 40, 62, 41, 36, 46, 47, 48, 9, 21, 24, 30];
-var dont_apply = [27, 33];
+var no_apply = [27, 33];
 var soil = [25];
 
-// set the years to be used in the process
+// Set years to be used
 var years_list = [
   1985, 1986, 1987, 1988, 1989, 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003,
   2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021
   ];
 
-// get mapbiomas native vegetation classes over time-series
+// Read Mapbiomas Collection 7.1
+var collection = ee.Image('projects/mapbiomas-workspace/public/collection7/mapbiomas_collection70_integration_v2');
+
+// Get mapbiomas native vegetation classes over time-series
 var mapbiomas_native = ee.Image(years_list.map(function(year_i) {
-  return ee.Image('projects/mapbiomas-workspace/public/collection7/mapbiomas_collection70_integration_v2')
-            .select('classification_' + year_i)
-            .remap({
+  // Select native vegetation classes for the year [i]
+    var native_i = collection.select('classification_' + year_i).remap({
                from: native_classes,
                to:   native_classes,
+               // And set other classes to zero
                defaultValue: 0
             })
-            .rename('classification_' + year_i)
-            .selfMask()
-            .updateMask(
-              ee.Image('projects/mapbiomas-workspace/public/collection7/mapbiomas_collection70_integration_v2')
-                .select('classification_2021'));
+            .rename('classification_' + year_i);
+  return (native_i);
   })
 );
+
 
 // remap all native vegetation classes to [1] 
 var native_bin = ee.Image(years_list.map(function(year_i) {

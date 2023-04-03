@@ -49,20 +49,8 @@ var native_bin = ee.Image(years_list.map(function(year_i) {
 var native_freq = native_bin.reduce('sum').rename('native_freq');
 Map.addLayer(native_freq,  {palette: ['white', 'green', 'yellow', 'orange', 'red'], min:0, max:10}, 'Years as native vegetation', false);
 
-// read disturbance frequencies
-var disturbance = ee.Image('projects/mapbiomas-workspace/DEGRADACAO/DISTURBIOS/disturbance_frequency/brazil_disturbance_frequency_2');
-
-// isolate each one
-var fire_freq = disturbance.select('fire_freq');
-var deforestation_freq = disturbance.select('deforestation_freq');
-var anthropogenic_freq = disturbance.select('anthropogenic_freq');
-Map.addLayer(anthropogenic_freq, {palette: ['white', 'green', 'yellow', 'orange', 'red'], min:0, max:10}, 'Years as anthropic', false);
-Map.addLayer(deforestation_freq, {palette: ['white', 'green', 'yellow', 'orange', 'red'], min:0, max:5}, 'Number of veg. loss events', false);
-Map.addLayer(fire_freq, {palette: ['white', 'green', 'yellow', 'orange', 'red'], min:0, max:15}, 'Fire Count', false);
-
 // get stable native vegetation
 var stable = mapbiomas_native.select('classification_1985').updateMask(native_freq.eq(37));
-
 
 // read mapbiomas palette
 var vis = {
@@ -71,8 +59,21 @@ var vis = {
     'palette': require('users/mapbiomas/modules:Palettes.js').get('classification6')
 };
 
-// Map.addLayer(mapbiomas_native.select('classification_2021'), vis, 'Mapbiomas 2021', false);
 Map.addLayer(stable, vis, 'Stable native vegetation', false);
+
+// read disturbance frequencies
+var disturbance = ee.Image('projects/mapbiomas-workspace/DEGRADACAO/DISTURBIOS/disturbance_frequency/brazil_disturbance_frequency_2');
+
+// isolate each one
+var fire_freq = disturbance.select('fire_freq');
+var deforestation_freq = disturbance.select('deforestation_freq');
+var anthropogenic_freq = disturbance.select('anthropogenic_freq');
+
+Map.addLayer(anthropogenic_freq, {palette: ['white', 'green', 'yellow', 'orange', 'red'], min:0, max:10}, 'Years as anthropic', false);
+Map.addLayer(deforestation_freq, {palette: ['white', 'green', 'yellow', 'orange', 'red'], min:0, max:5}, 'Number of veg. loss events', false);
+Map.addLayer(fire_freq, {palette: ['white', 'green', 'yellow', 'orange', 'red'], min:0, max:15}, 'Fire Count', false);
+
+
 
 // function to count age since last state change
 var time_since_last_state_change = function(image) {

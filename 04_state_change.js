@@ -54,12 +54,13 @@ var brazil = ee.Image('projects/mapbiomas-workspace/AUXILIAR/biomas-2019-raster'
 var native_freq = native_bin.reduce('sum').unmask(0).updateMask(brazil).rename('native_freq');
 
 // Compute the number of years as native vegetation 
-var native_freq = native_bin.reduce('sum').unmask(0).updateMask(brazil).rename('native_freq');
+var ignore_freq = ignore_bin.reduce('sum').unmask(0).updateMask(brazil).rename('ignore_freq');
 
+// Compute the number of years as native vegetation or ignored
+var native_or_ignore_freq = native_freq.add(ignore_freq);
 
-
-// get stable native vegetation
-var stable = mapbiomas_native.select('classification_1985').updateMask(native_freq.eq(37));
+// get stable native vegetation (and mask stable ignored classes)
+var stable = collection.select('classification_2021').updateMask(native_or_ignore_freq.eq(37)).updateMask(ignore_freq.neq(37));
 
 // secondary vegetation age
 var secondary = ee.Image('projects/mapbiomas-workspace/public/collection7_1/mapbiomas_collection71_secondary_vegetation_age_v1')
@@ -77,6 +78,10 @@ var vis = {
 };
 
 Map.addLayer(native_freq,  {palette: ['white', 'green', 'yellow', 'orange', 'red'], min:0, max:37}, 'Years as native vegetation', false);
+Map.addLayer(ignore_freq,  {palette: ['white', 'green', 'yellow', 'orange', 'red'], min:0, max:37}, 'Years as ignored class', false);
+Map.addLayer(native_or_ignore_freq,  {palette: ['white', 'green', 'yellow', 'orange', 'red'], min:0, max:37}, 'Year as native vegetation or ignored', false);
+
+
 Map.addLayer(stable, vis, 'Stable native vegetation', false);
 Map.addLayer(secondary, {palette: ['red', 'orange', 'yellow', 'green'], min:1, max:15}, 'Secondary vegetation age', false);
 

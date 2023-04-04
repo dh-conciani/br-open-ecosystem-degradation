@@ -7,13 +7,18 @@ var collection = ee.Image('projects/mapbiomas-workspace/public/collection7/mapbi
 
 // Set definitions
 var classes = {
-  input: [3, 4, 11, 12],
+  input: [
+    [3],
+    [4],
+    [11],
+    [12]
+    ],
   native: [3, 4, 5, 11, 12, 13, 29, 32, 49, 50],
   anthropogenic:  [15, 18, 19, 39, 20, 40, 62, 41, 36, 46, 47, 48, 9, 21, 24, 30],
   ignore: [27, 33],
   soil: [25]
   };
-
+  
 // Set period
 var periods = [
   [1985, 2021]
@@ -43,6 +48,30 @@ periods.forEach(function(period_i) {
   Map.addLayer(nClasses,  {palette: ["#ffffff", "#C8C8C8","#AE78B2", "#772D8F", "#4C226A", "#22053A"], min:0, max:5}, period_i + ' Number of classes', false);
   Map.addLayer(nChanges, {palette: ["#C8C8C8", "#FED266", "#FBA713", "#cb701b", "#a95512", "#662000", "#cb181d"], min:0, max:7}, period_i + ' Number of changes', false);
   Map.addLayer(stable, {palette: require('users/mapbiomas/modules:Palettes.js').get('classification6'), min:0, max:49}, period_i + ' Stable', false);
+  
+  // Start trajectories 
+  // For each group class 
+  classes.input.forEach(function(classList) {
+    // Get classes within the group 
+    var classIdsMask = ee.Image(
+      ee.List(bands).iterate(
+                    function (band, allMasks) {
+                        var mask = collection_i.select([band])
+                        // And binarize them over the period  
+                            .remap(classList, ee.List.repeat(1, classList.length), 0);
+
+                        return ee.Image(allMasks).addBands(mask);
+                    },
+                    ee.Image().select()
+                )
+              ).rename(bands);
+    
+    
+    
+    print(classIdsMask);
+    
+  })
+
 });
 
 

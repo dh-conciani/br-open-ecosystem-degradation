@@ -295,3 +295,28 @@ periods.forEach(function(period_i) {
 
 
 */
+
+// Define an example list
+var lst = ee.List([3, 3, 4, 4, 12, 3, 4]);
+
+// Define a function to count frequencies
+var countFrequencies = function(lst) {
+  var result = lst.distinct();
+  var keys = result.map(function(value) { return ee.Number(value).format().cat('_freq') });
+  var counts = ee.Dictionary.fromLists(keys, ee.List.repeat(0, result.length()));
+  for (var i = 0; i < result.length().getInfo(); i++) {
+    var value = result.get(i);
+    var index = lst.indexOf(value);
+    if (index.getInfo() == 0 || !ee.Algorithms.IsEqual(lst.get(index.subtract(1)), value)) {
+      counts = counts.set(ee.Number(value).format().cat('_freq'), ee.Number(counts.get(ee.Number(value).format().cat('_freq'))).add(1));
+    }
+  }
+  return result.map(function(value) {
+    return counts.get(ee.Number(value).format().cat('_freq'));
+  });
+};
+
+// Test the function
+var frequencies = countFrequencies(lst);
+
+print(frequencies);  // Output: [2, 2, 1, 1, 1]

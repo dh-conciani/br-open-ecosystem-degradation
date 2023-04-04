@@ -59,14 +59,19 @@ var ignore_freq = ignore_bin.reduce('sum').unmask(0).updateMask(brazil).rename('
 // Compute the number of years as native vegetation or ignored
 var native_or_ignore_freq = native_freq.add(ignore_freq);
 
-// get stable native vegetation (and mask stable ignored classes)
-var stable = collection.select('classification_2021').updateMask(native_or_ignore_freq.eq(37)).updateMask(ignore_freq.neq(37));
+// 
 
-// secondary vegetation age
-var secondary = ee.Image('projects/mapbiomas-workspace/public/collection7_1/mapbiomas_collection71_secondary_vegetation_age_v1')
-                 .select('secondary_vegetation_age_2021')
-                 .unmask(0)
-                 .updateMask(brazil);
+
+
+
+
+
+
+
+// Get stable native vegetation 
+//var stable_mask = ee.Image(0).where(native_or_ignore_freq.eq(37), 1).updateMask(brazil);
+//var stable = collection.select('classification_2021').updateMask(native_or_ignore_freq.eq(37));
+
 
 
 
@@ -77,12 +82,22 @@ var vis = {
     'palette': require('users/mapbiomas/modules:Palettes.js').get('classification6')
 };
 
-Map.addLayer(native_freq,  {palette: ['white', 'green', 'yellow', 'orange', 'red'], min:0, max:37}, 'Years as native vegetation', false);
-Map.addLayer(ignore_freq,  {palette: ['white', 'green', 'yellow', 'orange', 'red'], min:0, max:37}, 'Years as ignored class', false);
-Map.addLayer(native_or_ignore_freq,  {palette: ['white', 'green', 'yellow', 'orange', 'red'], min:0, max:37}, 'Year as native vegetation or ignored', false);
+Map.addLayer(native_freq,  {palette: ['white', '#46084e', '#e4242e', '#ff6d00', '#ffd600', '#51bd1f'], min:0, max:37}, 'Frequência VN', false);
+Map.addLayer(ignore_freq,  {palette: ['white', '#b3cde0', '#6497b1', '#005b96', '#03396c', '#011f4b'], min:0, max:37}, 'Freq. Água', false);
+Map.addLayer(native_or_ignore_freq,  {palette: ['white', '#46084e', '#e4242e', '#ff6d00', '#ffd600', '#51bd1f'], min:0, max:37}, 'Freq VN + Água', false);
 
 
-Map.addLayer(stable, vis, 'Stable native vegetation', false);
+Map.addLayer(stable_mask, vis, 'Estável como VN+Água (Freq=37)', false);
+
+
+
+/*
+// secondary vegetation age
+var secondary = ee.Image('projects/mapbiomas-workspace/public/collection7_1/mapbiomas_collection71_secondary_vegetation_age_v1')
+                 .select('secondary_vegetation_age_2021')
+                 .unmask(0)
+                 .updateMask(brazil);
+                 
 Map.addLayer(secondary, {palette: ['red', 'orange', 'yellow', 'green'], min:1, max:15}, 'Secondary vegetation age', false);
 
 
@@ -98,4 +113,5 @@ var anthropogenic_freq = disturbance.select('anthropogenic_freq');
 Map.addLayer(anthropogenic_freq, {palette: ['white', 'green', 'yellow', 'orange', 'red'], min:0, max:10}, 'Years as anthropic', false);
 Map.addLayer(deforestation_freq, {palette: ['white', 'green', 'yellow', 'orange', 'red'], min:0, max:5}, 'Number of veg. loss events', false);
 Map.addLayer(fire_freq, {palette: ['white', 'green', 'yellow', 'orange', 'red'], min:0, max:15}, 'Fire Count', false);
+*/
 

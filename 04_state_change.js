@@ -30,13 +30,11 @@ var freq = [];
 for (var i = 0; i < new_trajectory.length; i++) {
   var count = 0; // Initialize count to 0 for each element in filtered_trajectory
   var elem = new_trajectory[i];
-  var lastPos = -1; // Initialize last position to -1 to avoid pushing the first position of the element
   
   // Iterate over the original trajectory to find positions of the current element
   for (var j = 0; j < trajectory.length; j++) {
-    if (trajectory[j] == elem && j > lastPos) { // If element matches and j is greater than last position, increment count and store position
+    if (trajectory[j] == elem) { // If element matches, increment count
       count++;
-      lastPos = j;
     }
   }
   
@@ -44,7 +42,7 @@ for (var i = 0; i < new_trajectory.length; i++) {
   freq.push(count);
 }
 
-print(freq); // [2, 3, 8]
+print(freq); // [2, 3, 8, 2]
 
 
 

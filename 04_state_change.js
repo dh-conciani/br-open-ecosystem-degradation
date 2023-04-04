@@ -23,6 +23,8 @@ for (var i = 1; i < trajectory.length; i++) {
 
 print('filtered trajectory', new_trajectory);
 
+// Add suffixes into each one to compute frequencies
+
 // Initialize an empty array to store the frequency of filtered trajectory
 var freq = [];
 
@@ -43,6 +45,28 @@ for (var i = 0; i < new_trajectory.length; i++) {
 }
 
 print(freq); // [2, 3, 8, 2]
+
+/*
+////////////////////////
+var freqDict = ee.Dictionary(inputList.iterate(function(elem, freqDict) {
+  elem = ee.Number(elem);
+  freqDict = ee.Dictionary(freqDict);
+  var count = freqDict.get(elem);
+  count = count ? ee.Number(count).add(1) : 1;
+  freqDict = freqDict.set(elem, count);
+  return freqDict;
+}, ee.Dictionary({})));
+
+var outputList = inputList.map(function(elem) {
+  elem = ee.Number(elem);
+  var count = ee.Number(ee.Dictionary(freqDict).get(elem));
+  count = count && count.gt(1) ? "_" + count : "";
+  return ee.String(elem).cat(count);
+});
+
+print(outputList)
+///////////////////////
+*/
 
 
 
@@ -295,28 +319,3 @@ periods.forEach(function(period_i) {
 
 
 */
-
-// Define an example list
-var lst = ee.List([3, 3, 4, 4, 12, 3, 4]);
-
-// Define a function to count frequencies
-var countFrequencies = function(lst) {
-  var result = lst.distinct();
-  var keys = result.map(function(value) { return ee.Number(value).format().cat('_freq') });
-  var counts = ee.Dictionary.fromLists(keys, ee.List.repeat(0, result.length()));
-  for (var i = 0; i < result.length().getInfo(); i++) {
-    var value = result.get(i);
-    var index = lst.indexOf(value);
-    if (index.getInfo() == 0 || !ee.Algorithms.IsEqual(lst.get(index.subtract(1)), value)) {
-      counts = counts.set(ee.Number(value).format().cat('_freq'), ee.Number(counts.get(ee.Number(value).format().cat('_freq'))).add(1));
-    }
-  }
-  return result.map(function(value) {
-    return counts.get(ee.Number(value).format().cat('_freq'));
-  });
-};
-
-// Test the function
-var frequencies = countFrequencies(lst);
-
-print(frequencies);  // Output: [2, 2, 1, 1, 1]

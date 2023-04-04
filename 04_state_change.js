@@ -3,16 +3,15 @@
 // dhemerson.costa@ipam.org.br
 
 // Read Mapbiomas Collection 7.1
-var collection = ee.Image('projects/mapbiomas-workspace/public/collection7/mapbiomas_collection70_integration_v2');
+var collection = ee.Image('projects/mapbiomas-workspace/public/collection7/mapbiomas_collection70_integration_v2').toArray();
 
 // Set trajectory
-var trajectory = [3, 3, 4, 4, 3, 12, 12, 12, 12];
+var trajectory = [3, 3, 4, 4, 4, 3, 3, 3, 3, 3, 3, 3, 3, 12, 12];
 
 // Set t=0
 var new_trajectory = [trajectory[0]];
 
-print(trajectory);
-print(new_trajectory);
+print('input trajectory', trajectory);
 
 // Iterate over indices of trajectory array
 for (var i = 1; i < trajectory.length; i++) {
@@ -22,7 +21,30 @@ for (var i = 1; i < trajectory.length; i++) {
   }
 }
 
-print(new_trajectory);
+print('filtered trajectory', new_trajectory);
+
+// Initialize an empty array to store the frequency of filtered trajectory
+var freq = [];
+
+// Iterate over the filtered trajectory
+for (var i = 0; i < new_trajectory.length; i++) {
+  var count = 0; // Initialize count to 0 for each element in filtered_trajectory
+  var elem = new_trajectory[i];
+  var lastPos = -1; // Initialize last position to -1 to avoid pushing the first position of the element
+  
+  // Iterate over the original trajectory to find positions of the current element
+  for (var j = 0; j < trajectory.length; j++) {
+    if (trajectory[j] == elem && j > lastPos) { // If element matches and j is greater than last position, increment count and store position
+      count++;
+      lastPos = j;
+    }
+  }
+  
+  // Store the frequency of current element
+  freq.push(count);
+}
+
+print(freq); // [2, 3, 8]
 
 
 

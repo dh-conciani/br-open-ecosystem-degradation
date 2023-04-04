@@ -2,17 +2,6 @@
 // GT Degradação- MapBiomas
 // dhemerson.costa@ipam.org.br
 
-/**
- * import modules 
- */
-var Legend = require('users/joaovsiqueira1/packages:Legend.js');
-var Palettes = require('users/mapbiomas/modules:Palettes.js');
-var ColorRamp = require('users/joaovsiqueira1/packages:ColorRamp.js');
-/**
- * define parameters 
- */
- 
-
 // Read Mapbiomas Collection 7.1
 var collection = ee.Image('projects/mapbiomas-workspace/public/collection7/mapbiomas_collection70_integration_v2');
 

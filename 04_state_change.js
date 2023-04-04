@@ -5,21 +5,134 @@
 // Read Mapbiomas Collection 7.1
 var collection = ee.Image('projects/mapbiomas-workspace/public/collection7/mapbiomas_collection70_integration_v2');
 
-// Set definitions
-var classes = {
-  input: [3, 4, 11, 12],
-  compare: [3, 4, 11, 12],
-  native: [3, 4, 5, 11, 12, 13, 29, 32, 49, 50],
-  anthropogenic:  [15, 18, 19, 39, 20, 40, 62, 41, 36, 46, 47, 48, 9, 21, 24, 30],
-  ignore: [27, 33],
-  soil: [25]
-  };
+// Set trajectory
+var trajectory = [3, 3, 4, 4, 3, 12, 12, 12, 12];
+
+// Set t=0
+var new_trajectory = [trajectory[0]];
+
+print(trajectory);
+print(new_trajectory);
+
+// Iterate over indices of trajectory array
+for (var i = 1; i < trajectory.length; i++) {
+  // Check if next class is different
+  if (trajectory[i] != trajectory[i - 1]) {
+    new_trajectory = new_trajectory.concat(trajectory[i]);
+  }
+}
+
+print(new_trajectory);
+
+
+
+/*
+// Function to filter only unique values in a given trajectory
+var onlyUnique = function(value, index, array) {
+  return array.indexOf(value) === index;
+};
+
+// Set example
+var x = [4, 4, 4, 3, 3, 3, 4, 4, 12, 12, 12, 4, 4, 4, 4, 4, 4, 4, 4];
+print('input', x);
+
+// filter unique
+var unique = x.filter(onlyUnique);
+
+print('unique', unique)
+
+
+
+
+var res1 = ee.Number.parse(x.join(''));
+
+print('as discrete', res1)
+
+*/
+//var x = collection.toArray();
+
+//Map.addLayer(x);
+//print(x);
+
+
+
+
+/*
+
+
+
+var cartas = ee.FeatureCollection('projects/mapbiomas-workspace/AUXILIAR/cartas')
+print(cartas.limit(2))
+
+
 
 // Set years to be used
 var years_list = [
   1985, 1986, 1987, 1988, 1989, 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003,
   2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021
   ];
+
+// create recipe for changes
+var recipe = ee.Image([]);
+
+// 
+
+
+
+
+
+
+
+
+
+
+
+
+
+// Read MapBiomas Transitions
+var transitions = ee.Image('projects/mapbiomas-workspace/public/collection7_1/mapbiomas_collection71_transitions_v1');
+
+
+
+
+
+
+
+
+
+
+
+
+// Set definitions
+var classes = {
+  //input: [3, 4, 11, 12],
+  input: [4],
+  //native: [3, 4, 5, 11, 12, 13, 29, 32, 49, 50],
+  anthropogenic:  [15, 18, 19, 39, 20, 40, 62, 41, 36, 46, 47, 48, 9, 21, 24, 30],
+  ignore: [27, 33, 5 , 13, 29, 49, 50],
+  soil: [25]
+  };
+
+
+
+/*
+// For each input class
+classes.input.forEach(function(class_i) {
+  // Remap over the collection 
+  var remmaped = ee.Image(years_list.map(function(year_i) {
+    // Get input as unique classes
+    var x = collection.select('classification_' + year_i).remap({
+      from: classes.input, 
+      to: classes.input
+    })
+  })
+  )
+})
+
+
+
+
+
 
 // Get native vegetation as binaries
 var native_bin = ee.Image(years_list.map(function(year_i) {

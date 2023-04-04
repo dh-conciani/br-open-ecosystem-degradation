@@ -7,103 +7,19 @@ var collection = ee.Image('projects/mapbiomas-workspace/public/collection7/mapbi
 
 // Set definitions
 var classes = {
-  input: [
-    [3],    [4],    [11],    [12]
-    ],
-    
-  //native: [3, 4, 5, 11, 12, 13, 29, 32, 49, 50],
-  //anthropogenic:  [15, 18, 19, 39, 20, 40, 62, 41, 36, 46, 47, 48, 9, 21, 24, 30],
+  input: [3, 4, 11, 12],
+  compare: [3, 4, 11, 12],
+  native: [3, 4, 5, 11, 12, 13, 29, 32, 49, 50],
+  anthropogenic:  [15, 18, 19, 39, 20, 40, 62, 41, 36, 46, 47, 48, 9, 21, 24, 30],
   ignore: [27, 33],
   soil: [25]
   };
-  
-// Set period
-var periods = [
-  [1985, 2021]
-  ];
-
-// For each period
-periods.forEach(function(period_i) {
-  // Get bandnames for the period [i] 
-  var bands = Array.apply(null, Array(period_i[1] - period_i[0] + 1)).map(function (_, i) {
-    return 'classification_' + (period_i[0] + i).toString();
-              }
-          );
-  
-  // Filter MapBiomas for the period
-  var collection_i = collection.select(bands);
-  
-  // Get the number of classes
-  var nClasses = collection_i.reduce(ee.Reducer.countDistinctNonNull()).rename('number_of_classes');
-  
-  // Get the number of changes
-  var nChanges = collection_i.reduce(ee.Reducer.countRuns()).subtract(1).rename('number_of_changes');
-  
-  // Get stable 
-  var stable = collection_i.select(0).multiply(nClasses.eq(1));
-  
-  // Inspect
-  Map.addLayer(nClasses,  {palette: ["#ffffff", "#C8C8C8","#AE78B2", "#772D8F", "#4C226A", "#22053A"], min:0, max:5}, period_i + ' Number of classes', false);
-  Map.addLayer(nChanges, {palette: ["#C8C8C8", "#FED266", "#FBA713", "#cb701b", "#a95512", "#662000", "#cb181d"], min:0, max:7}, period_i + ' Number of changes', false);
-  Map.addLayer(stable, {palette: require('users/mapbiomas/modules:Palettes.js').get('classification6'), min:0, max:49}, period_i + ' Stable', false);
-  
-  // Start trajectories 
-  // For each group class 
-  classes.input.forEach(function(classList) {
-    // Get classes within the group 
-    var classIdsMask = ee.Image(
-      ee.List(bands).iterate(
-                    function (band, allMasks) {
-                        var mask = collection_i.select([band])
-                        // And binarize them over the period  
-                            .remap(classList, ee.List.repeat(1, classList.length), 0);
-
-                        return ee.Image(allMasks).addBands(mask);
-                    },
-                    ee.Image().select()
-                )
-              ).rename(bands);
-    
-    
-    
-    print(classIdsMask);
-    
-  })
-
-});
-
-
-
-
-// Set IDs 'packages'
-
-
-/*
 
 // Set years to be used
 var years_list = [
   1985, 1986, 1987, 1988, 1989, 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003,
   2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021
   ];
-
-
-
-// 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 // Get native vegetation as binaries
 var native_bin = ee.Image(years_list.map(function(year_i) {
@@ -203,4 +119,46 @@ var anthropogenic_freq = disturbance.select('anthropogenic_freq');
 Map.addLayer(anthropogenic_freq, {palette: ['white', 'green', 'yellow', 'orange', 'red'], min:0, max:10}, 'Years as anthropic', false);
 Map.addLayer(deforestation_freq, {palette: ['white', 'green', 'yellow', 'orange', 'red'], min:0, max:5}, 'Number of veg. loss events', false);
 Map.addLayer(fire_freq, {palette: ['white', 'green', 'yellow', 'orange', 'red'], min:0, max:15}, 'Fire Count', false);
+*/
+
+
+
+
+
+/*
+// Set period
+var periods = [
+  [1985, 2021]
+  ];
+
+// For each period
+periods.forEach(function(period_i) {
+  // Get bandnames for the period [i] 
+  var bands = Array.apply(null, Array(period_i[1] - period_i[0] + 1)).map(function (_, i) {
+    return 'classification_' + (period_i[0] + i).toString();
+              }
+          );
+  
+  // Filter MapBiomas for the period
+  var collection_i = collection.select(bands);
+  
+  // Get the number of classes
+  var nClasses = collection_i.reduce(ee.Reducer.countDistinctNonNull()).rename('number_of_classes');
+  
+  // Get the number of changes
+  var nChanges = collection_i.reduce(ee.Reducer.countRuns()).subtract(1).rename('number_of_changes');
+  
+  // Get stable 
+  var stable = collection_i.select(0).multiply(nClasses.eq(1));
+  
+  // Inspect
+  Map.addLayer(nClasses,  {palette: ["#ffffff", "#C8C8C8","#AE78B2", "#772D8F", "#4C226A", "#22053A"], min:0, max:5}, period_i + ' Number of classes', false);
+  Map.addLayer(nChanges, {palette: ["#C8C8C8", "#FED266", "#FBA713", "#cb701b", "#a95512", "#662000", "#cb181d"], min:0, max:7}, period_i + ' Number of changes', false);
+  Map.addLayer(stable, {palette: require('users/mapbiomas/modules:Palettes.js').get('classification6'), min:0, max:49}, period_i + ' Stable', false);
+  
+
+
+});
+
+
 */

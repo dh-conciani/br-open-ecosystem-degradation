@@ -8,13 +8,11 @@ var collection = ee.Image('projects/mapbiomas-workspace/public/collection7/mapbi
 // Set definitions
 var classes = {
   input: [
-    [3],
-    [4],
-    [11],
-    [12]
+    [3],    [4],    [11],    [12]
     ],
-  native: [3, 4, 5, 11, 12, 13, 29, 32, 49, 50],
-  anthropogenic:  [15, 18, 19, 39, 20, 40, 62, 41, 36, 46, 47, 48, 9, 21, 24, 30],
+    
+  //native: [3, 4, 5, 11, 12, 13, 29, 32, 49, 50],
+  //anthropogenic:  [15, 18, 19, 39, 20, 40, 62, 41, 36, 46, 47, 48, 9, 21, 24, 30],
   ignore: [27, 33],
   soil: [25]
   };

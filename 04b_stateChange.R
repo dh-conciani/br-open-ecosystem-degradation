@@ -7,13 +7,53 @@ library(stringr)
 ee_Initialize()
 
 ## set native classes
-native_classes = c(3, 4, 11, 12)
+native_classes <- c(3, 4, 11, 12, 33, 27)
 
 ## set ignored classes
-ignore_classes = c(33, 27)
+##ignore_classes <- c(33, 27)
+
+## set years
+years_list <- seq(1985, 2021)
 
 ## get collection
 collection <- ee$Image('projects/mapbiomas-workspace/public/collection7/mapbiomas_collection70_integration_v2')
+
+## remmap native vegetation to 1
+for(i in 1:length(years_list)) {
+  ## read year i
+  collection_y <- collection$select(paste0('classification_', years_list[i]))
+  ## remap
+  collection_y <- collection_y$remap(
+    from= native_classes,
+    to= rep(1, length(native_classes)),
+    defaultValue= 0
+  )
+  
+  ## store
+  if (exists('remmaped_nv') == FALSE) {
+    remmaped_nv <- collection_y$rename(paste0('classification_', years_list[i]))
+  } else {
+    remmaped_nv <- remmaped_nv$addBands(collection_y$rename(paste0('classification_', years_list[i])))
+  }
+  
+}
+
+## get the number of classes
+nClasses <- remmaped_nv$reduce(ee$Reducer$countDistinctNonNull())
+
+## get only stable as NV 
+stable <- remmaped_nv$select(0)$multiply(nClasses$eq(1))
+
+## filter the entire collection only for stable NV
+collection <- collection$updateMask(stable$eq(1))
+
+## check stability in the level-3 and retain only patches of NV that changed of class
+nClasses3 <- collection$reduce(ee$Reducer$countDistinctNonNull())
+
+## updateCollection only with NV that have changed
+collection <- collection$updateMask(nClasses3$neq(1))
+
+Map$addLayer(collection$select(0)$randomVisualizer(), {}, 'Stable NV that changed class')
 
 ## get grid list
 grid <- ee$FeatureCollection('users/dh-conciani/basemaps/br_grid_25_x_25_km')
@@ -36,28 +76,27 @@ for (i in 1:length(grid_list)) {
   ## get locally
   collection_i_arr <- ee_as_sf(collection_i, via= 'drive')
   
-  ## get only pixels that was native vegetation in the last year (2021)
-  trajs_nv_ly <- subset(collection_i_arr, classification_2021 == 3 |
-                                          classification_2021 == 4 |
-                                          classification_2021 == 11 |
-                                          classification_2021 == 12 |
-                                          classification_2021 == 33 |
-                                          classification_2021 == 27)
+  ## remove 'classification' from bandnames
+  #colnames(collection_i_arr) <- sub("^classification_", "", colnames(collection_i_arr))
   
-  
- ## for each pixel
-  for (j in 1:length(unique(trajs_nv_ly$id))) {
-    print(paste0('processing pixel ', j, ' of ', length(unique(trajs_nv_ly$id))))
-    ## get pixel i
-    pixel_ij <- subset(trajs_nv_ly, id == unique(trajs_nv_ly$id)[j])
-          
+  ## for each pixel
+  for (j in 1:length(unique(collection_i_arr$id))) {
+    print(paste0('processing pixel ', j, ' of ', length(unique(collection_i_arr$id))))
+    ## get pixel [i]
+    pixel_ij <- subset(collection_i_arr, id == unique(collection_i_arr$id)[j])
+    
+    ## check trajectories
+    
+    
+    ## run trajectory analisys
+    ## get only classifications
+    #pixel_ij_c <- pixel_ij[, which(colnames(pixel_ij) %in% years_list)]
+    
+    
+    
+    
+    
   }
-  
-  
-  
-  
-  
-  
   
 }
 

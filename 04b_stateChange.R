@@ -64,7 +64,7 @@ for (i in 1:length(grid_ids)) {
   
   ## get locally
   collection_i_arr <- ee_as_sf(collection_i, via= 'drive')
-  
+
   ## For each pixel in the map
   for (j in 1:length(unique(collection_i_arr$id))) {
     print(paste0('processing pixel ', j, ' of ', length(unique(collection_i_arr$id))))

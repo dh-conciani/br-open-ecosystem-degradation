@@ -10,7 +10,7 @@ ee_Initialize()
 native_classes <- c(3, 4, 11, 12, 33, 27)
 
 ## set persistence rule threshold (in years)
-#persistence <- 3
+persistence <- 2
 
 ## set ignored classes
 ##ignore_classes <- c(33, 27)
@@ -98,14 +98,21 @@ for (i in 1:length(grid_ids)) {
       }
     }
     
+    ## Now, pixel_ij contains the 'barcode' of trajectory
     
-    ## extract trajectory classes, preserve ordering and get their respective frequency
-    traj_res <- rle(list_ij)
+    ## Extract trajectory classes, preserve ordering and get their respective frequency
+    traj_res <- as.data.frame(cbind(
+                  value= rle(list_ij)$values,
+                  length= rle(list_ij)$lengths))
     
-    traj_res
+    ## Discard segments with less than 2 years in the trajectory
+    traj_res <- subset(traj_res, length > persistence)
     
-    traj_res$values
-    traj_res$lengths
+    ## If start and final classes are the same, compute as a temporary change
+    if (traj_res$value[1] == traj_res$value[nrow(traj_res)]) {
+      
+    }
+
     
     
   }

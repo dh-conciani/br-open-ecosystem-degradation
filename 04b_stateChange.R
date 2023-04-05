@@ -5,8 +5,17 @@
 library(rgee)
 library(stringr)
 library(sf)
+library(dplyr)
+#library(googleCloudStorageR)
+#library(googledrive)
 
+## Set API key
+#Sys.setenv(GOOGLE_APPLICATION_CREDENTIALS = "C:/SaK_dh.json")
+
+## start APIs
 ee_Initialize()
+#gdrive_auth()
+#gcs_auth()
 
 ## Set output dir
 out_dir <- 'projects/mapbiomas-workspace/DEGRADACAO/TRAJECTORIES/COL71/V1'
@@ -44,10 +53,6 @@ nClasses <- collection$reduce(ee$Reducer$countDistinctNonNull())
 
 ## And mask the collection to get only native vegetation that occurs in 2021 and is unstable over the time-series
 collection <- collection$updateMask(nClasses$neq(1))
-
-## Inspect
-Map$addLayer(nClasses$randomVisualizer(), {}, 'Number of classes') +
-  Map$addLayer(collection2$randomVisualizer(), {}, 'Unstable native vegetation')
 
 ## Trajectory assessment is too complex. For this, we used a regular tile of 25 x 25 km approach 
 grid <- ee$FeatureCollection('users/dh-conciani/basemaps/br_grid_25_x_25_km')
@@ -159,11 +164,16 @@ for (i in 1:length(grid_ids)) {
                                     gsub("Persistent change", 4,
                                          df_sf$Change))))
   
+  ## select only relevant columns
+  df_sf <- df_sf %>% select(id, Change, change_id, geometry)
+  
+  
   ## Export as GEE asset
   print('Exporting result as GEE asset')
   sf_as_ee(
     x= df_sf,
     via = "getInfo_to_asset",
+    #bucket= 'degrad-traj1',
     assetId = paste0(out_dir, '/', grid_ids[i]),
     overwrite = TRUE,
     monitoring = TRUE,
@@ -173,5 +183,4 @@ for (i in 1:length(grid_ids)) {
   
   print('Done! Next ----> ')
   
-  }
-
+}

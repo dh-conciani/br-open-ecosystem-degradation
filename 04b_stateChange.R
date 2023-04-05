@@ -163,8 +163,8 @@ for (i in 1:length(grid_ids)) {
   print('Exporting result as GEE asset')
   sf_as_ee(
     x= df_sf,
-    via = "getInfo",
-    assetId = paste0(output_dir, '/', grid_ids[i]),
+    via = "getInfo_to_asset",
+    assetId = paste0(out_dir, '/', grid_ids[i]),
     overwrite = TRUE,
     monitoring = TRUE,
     proj = "EPSG:4326",
@@ -174,3 +174,4 @@ for (i in 1:length(grid_ids)) {
   print('Done! Next ----> ')
   
   }
+

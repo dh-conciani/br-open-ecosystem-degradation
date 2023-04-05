@@ -65,10 +65,10 @@ for (i in 1:length(grid_ids)) {
   ## get locally
   collection_i_arr <- ee_as_sf(collection_i, via= 'drive')
   
-  ## for each pixel
+  ## For each pixel in the map
   for (j in 1:length(unique(collection_i_arr$id))) {
     print(paste0('processing pixel ', j, ' of ', length(unique(collection_i_arr$id))))
-    ## get pixel [i]
+    ## Get pixel [i]
     pixel_ij <- subset(collection_i_arr, id == unique(collection_i_arr$id)[j])
     
     ## transform cells to a list
@@ -98,27 +98,41 @@ for (i in 1:length(grid_ids)) {
     
     ################# HERE IS PLACED THE RULES #################
     
-    ## RULE 1: TEMPORARY VS. PERSISTENT CHANGES 
+    ## @@ RULE 1: TEMPORARY VS. PERSISTENT CHANGES  @@
     ## INCONCLUSIVE: NO-ONE TRAJECTORY OF NV CLASSES SATISFIES THE PERSISTANCE CRITERIA
     if (nrow(traj_res) == 0) {
       condition <- 'Inconclusive'
+    } else {
+      ## TEMPORARY: IF START CLASS IS EQUALS TO END CLASS (FILTERED BY 2 YEAR STABILITY) THE CHANGE WAS A TEMPORARY CHANGE
+      if (traj_res$value[1] == traj_res$value[nrow(traj_res)]) {
+        condition <- 'Temporary'
+        next
+      } 
+      ## PERSISTENT: IF END CLASS IS DIFFERENT OF THE START CLASS (FILTERED BY 2 YEARS STABILITY) THE CHANGE WAS PERSISTENT CHANGE
+      if (traj_res$value[1] != traj_res$value[nrow(traj_res)]) {
+        condition <- 'Persistent'
+      }
     }
     
+    ## Build pixel result
+    pixel_ij$condition <- condition
+    #pixel_ij <- pixel_ij['condition']
     
-    ## TEMPORARY: IF START CLASS IS EQUALS TO END CLASS (FILTERED BY 2 YEAR STABILITY) THE CHANGE WAS TEMPORARY
-    ## PERSISTENT: IF END CLASS IS DIFFERENT OF THE START CLASS (FILTERED BY 2 YEARS STABILITY) THE CHANGE WAS PERSISTENT
-   
-    ## If start and final classes are the same, compute as a temporary change
-    if (traj_res$value[1] == traj_res$value[nrow(traj_res)]) {
-      condition <- 'Temporary'
+    ## Store into grid data.frame
+    if (exists('grid_df') == FALSE) {
+      grid_df <- pixel_ij
+    } else {
+      grid_df <- rbind(grid_df, pixel_ij)
     }
     
-
-    
-    
+    ## remove temproary files
+    rm(list_ij, condition, pixel_ij)
   }
   
+  ## Re-build the image from the array
+  
+  
+  
+  rm(grid_df)
 }
 
-
-       

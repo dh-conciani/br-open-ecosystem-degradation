@@ -88,102 +88,44 @@ for (i in 1:length(grid_ids)) {
       pixel$classification_2021))
   
   ## Compute Run Length Encoding
-  traj_res <- lapply(trajs, function(pixel) as.data.frame(cbind(
+  traj_rle <- lapply(trajs, function(pixel) as.data.frame(cbind(
     value= rle(pixel)$values,
     length= rle(pixel)$lengths))) 
   
   ## Remove temporal segments with less than persistence threshold
-  traj_res <- lapply(traj_res, function(pixel) subset(pixel, length > persistence))
+  traj_rle <- lapply(traj_rle, function(pixel) subset(pixel, length > persistence))
   
   ## Get only assessment classes (discard anthropogenic and ignored)
-  traj_res <- lapply(traj_res, function(pixel) subset(pixel, value %in% assess_classes))
+  traj_rle <- lapply(traj_rle, function(pixel) subset(pixel, value %in% assess_classes))
   
   
+  ################# HERE IS PLACED THE RULES #################
   
-
-
-  
-  ## For each pixel in the map
-  for (j in 1:length(unique(collection_i_arr$id))) {
-    print(paste0('processing pixel ', j, ' of ', length(unique(collection_i_arr$id))))
-    ## Get pixel [i]
-    pixel_ij <- subset(collection_i_arr, id == unique(collection_i_arr$id)[j])
-    
-    ## transform cells to a list
-    for (k in 1:length(years_list)) {
-      # open list with first year value
-      if (exists('list_ij') == FALSE) {
-        list_ij <- as.data.frame(pixel_ij[paste0('classification_', years_list[k])])[,1]
-        ## insert next year classes
-      } else {
-        list_ij <- c(list_ij, 
-                     as.data.frame(pixel_ij[paste0('classification_', years_list[k])])[,1])
-      }
-    }
-    
-    ## Now, pixel_ij contains the 'barcode' of trajectory
-    ## Extract trajectory classes, preserve ordering and get their respective frequency
-    traj_res <- as.data.frame(cbind(
-                  value= rle(list_ij)$values,
-                  length= rle(list_ij)$lengths))
-    
-    ## Discard temporal segments with less than 2 years in the trajectory
-    traj_res <- subset(traj_res, length > persistence)
-    
-    ## Get only assessment classes (discard anthropogenic and ignored)
-    traj_res <- subset(traj_res, value %in% assess_classes)
-    
-    
-    ################# HERE IS PLACED THE RULES #################
-    
-    ## @@ RULE 1: TEMPORARY VS. PERSISTENT CHANGES  @@
-    ## INCONCLUSIVE: NO-ONE TRAJECTORY OF NV CLASSES SATISFIES THE PERSISTANCE CRITERIA
-    if (nrow(traj_res) == 0) {
-      condition <- 'Inconclusive'
+  ## @@ RULE 1: TEMPORARY VS. PERSISTENT CHANGES  @@
+  ## INCONCLUSIVE: NO-ONE TRAJECTORY OF NV CLASSES SATISFIES THE PERSISTANCE CRITERIA
+  traj_res <- lapply(traj_rle, function(pixel) 
+    if (nrow(pixel) == 0) {
+      return('Inconclusive')
     } else {
-      ## IF START CLASS IS EQUALS TO END CLASS (FILTERED BY 2 YEAR STABILITY) 
-      if (traj_res$value[1] == traj_res$value[nrow(traj_res)])  {
+      ## IF START CLASS IS EQUALS TO END CLASS (FILTERED BY 2 YEAR STABILITY)
+      if (pixel$value[1] == pixel$value[nrow(pixel)])  {
         ## AND THE NUMBER OF NATIVE CLASSES IN THE SERIE WAS DIFFERENT OF ONE
         ## THIS WAS A "TEMPORARY CHANGE"
-        if (length(unique(traj_res$value)) != 1) {
-          condition <- 'Temporary'
-        } 
+        if (length(unique(pixel$value)) != 1) {
+          return('Temporary change')
+        }
         ## IF THE NUMBER OF NATIVE CLASSES IS EQUAL TO ONE OVER THE ENTIRE TIME-SERIES, IT WAS NO CHANGE
-        if (length(unique(traj_res$value)) == 1) {
-          condition <- 'No change'
+        if (length(unique(pixel$value)) == 1) {
+          return('No change')
         }
       }
-        
-    ## PERSISTENT: IF END CLASS IS DIFFERENT OF THE START CLASS (FILTERED BY 2 YEARS STABILITY) THE CHANGE WAS PERSISTENT CHANGE
-    if (traj_res$value[1] != traj_res$value[nrow(traj_res)]) {
-      condition <- 'Persistent'
+      
+      ## PERSISTENT: IF END CLASS IS DIFFERENT OF THE START CLASS (FILTERED BY 2 YEARS STABILITY) THE CHANGE WAS PERSISTENT CHANGE
+      if (pixel$value[1] != pixel$value[nrow(pixel)]) {
+        return('Persistent change')
       }
-    }
+    })
     
-    ######################## HERE ENDS THE RULES ###################################
-    
-    
-
-    
-    ## Build pixel result
-    pixel_ij$condition <- condition
-    pixel_ij <- pixel_ij['condition']
-    
-    ## Store into grid data.frame
-    if (exists('grid_df') == FALSE) {
-      grid_df <- pixel_ij
-    } else {
-      grid_df <- rbind(grid_df, pixel_ij)
-    }
-    
-    ## remove temproary files
-    rm(list_ij, condition, pixel_ij)
-  }
   
-  ## Re-build the image from the array
-  
-  
-  
-  rm(grid_df)
 }
 

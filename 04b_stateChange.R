@@ -103,16 +103,25 @@ for (i in 1:length(grid_ids)) {
     if (nrow(traj_res) == 0) {
       condition <- 'Inconclusive'
     } else {
-      ## TEMPORARY: IF START CLASS IS EQUALS TO END CLASS (FILTERED BY 2 YEAR STABILITY) THE CHANGE WAS A TEMPORARY CHANGE
-      if (traj_res$value[1] == traj_res$value[nrow(traj_res)]) {
-        condition <- 'Temporary'
-        next
-      } 
-      ## PERSISTENT: IF END CLASS IS DIFFERENT OF THE START CLASS (FILTERED BY 2 YEARS STABILITY) THE CHANGE WAS PERSISTENT CHANGE
-      if (traj_res$value[1] != traj_res$value[nrow(traj_res)]) {
-        condition <- 'Persistent'
+      ## IF START CLASS IS EQUALS TO END CLASS (FILTERED BY 2 YEAR STABILITY) 
+      if (traj_res$value[1] == traj_res$value[nrow(traj_res)])  {
+        ## AND THE NUMBER OF NATIVE CLASSES IN THE SERIE WAS DIFFERENT OF ONE
+        ## THIS WAS A "TEMPORARY CHANGE"
+        if (length(unique(traj_res$value)) != 1) {
+          condition <- 'Temporary'
+        } 
+        ## IF THE NUMBER OF NATIVE CLASSES IS EQUAL TO ONE OVER THE ENTIRE TIME-SERIES, IT WAS NO CHANGE
+        if (length(unique(traj_res$value)) == 1) {
+          condition <- 'No change'
+        }
       }
+        
+    ## PERSISTENT: IF END CLASS IS DIFFERENT OF THE START CLASS (FILTERED BY 2 YEARS STABILITY) THE CHANGE WAS PERSISTENT CHANGE
+    if (traj_res$value[1] != traj_res$value[nrow(traj_res)]) {
+      condition <- 'Persistent'
     }
+  } 
+
     
     ## Build pixel result
     pixel_ij$condition <- condition

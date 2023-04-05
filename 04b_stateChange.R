@@ -4,6 +4,8 @@
 ## import libraries
 library(rgee)
 library(stringr)
+library(sf)
+
 ee_Initialize()
 
 ## Set classes to be considered as native vegetation in the last year (native classes + ignored)
@@ -69,10 +71,10 @@ for (i in 1:length(grid_ids)) {
   lst <- apply(collection_i_arr, 1, as.list)
   
   # Remove the first and last entries of each sublist
-  lst <- lapply(lst, function(x) x[2:(length(x)-1)])
+  lst_x <- lapply(lst, function(x) x[2:(length(x)-1)])
   
   ## Get trajectories as lists
-  trajs <- lapply(lst, function(pixel) c(
+  trajs <- lapply(lst_x, function(pixel) c(
       pixel$classification_1985, pixel$classification_1986, pixel$classification_1987, 
       pixel$classification_1988, pixel$classification_1989, pixel$classification_1990, 
       pixel$classification_1991, pixel$classification_1992, pixel$classification_1993,
@@ -126,6 +128,33 @@ for (i in 1:length(grid_ids)) {
       }
     })
     
+  # Combine lists and maintain sublist index
+  combined_list <- Map(function(lst, traj_res) c(lst, traj_res), lst, traj_res)
   
-}
+  # Convert the list to a data.frame
+  df <- as.data.frame(do.call(rbind, combined_list))
+  
+  # Rename last column (result)
+  colnames(df)[length(df)] <- 'Change'
+  
+  # Split the geometry column into longitude and latitude columns
+  df$longitude <- as.numeric(sub(".*\\(([^,]+),.*", "\\1", df$geometry))
+  df$latitude <- as.numeric(sub(".*,\\s*([^\\)]+)\\)", "\\1", df$geometry))
+  
+  # Remove the geometry column
+  df <- df[, !(names(df) %in% c("geometry"))]
+  
+  # Convert to sf object with point geometry
+  df_sf <- st_as_sf(df, coords = c("longitude", "latitude"), crs = 4326)
+  
+  #plot(df_sf$geometry, axes=T)
+  
+  ## Download raster to use as reference to rasterize
+  raster_ref <- ee_as_raster(collection$clip(grid_i)$select(36),
+                             via= 'drive',
+                             maxPixels= 1e13)
+  
+  
+  
+  }
 

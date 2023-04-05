@@ -8,6 +8,9 @@ library(sf)
 
 ee_Initialize()
 
+## Set output dir
+out_dir <- 'projects/mapbiomas-workspace/DEGRADACAO/TRAJECTORIES/COL71/V1'
+  
 ## Set classes to be considered as native vegetation in the last year (native classes + ignored)
 native_classes <- c(3, 4, 11, 12, 33, 27)
 
@@ -149,12 +152,25 @@ for (i in 1:length(grid_ids)) {
   
   #plot(df_sf$geometry, axes=T)
   
-  ## Download raster to use as reference to rasterize
-  raster_ref <- ee_as_raster(collection$clip(grid_i)$select(36),
-                             via= 'drive',
-                             maxPixels= 1e13)
+  ## Create legend
+  df_sf$change_id <- gsub("No change", 1,
+                          gsub("Inconclusive", 2,
+                               gsub("Temporary change", 3,
+                                    gsub("Persistent change", 4,
+                                         df_sf$Change))))
   
+  ## Export as GEE asset
+  print('Exporting result as GEE asset')
+  sf_as_ee(
+    x= df_sf,
+    via = "getInfo",
+    assetId = paste0(output_dir, '/', grid_ids[i]),
+    overwrite = TRUE,
+    monitoring = TRUE,
+    proj = "EPSG:4326",
+    quiet = FALSE,
+  )
   
+  print('Done! Next ----> ')
   
   }
-

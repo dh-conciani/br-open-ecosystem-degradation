@@ -9,6 +9,9 @@ ee_Initialize()
 ## set native classes
 native_classes <- c(3, 4, 11, 12, 33, 27)
 
+## set persistence rule threshold (in years)
+#persistence <- 3
+
 ## set ignored classes
 ##ignore_classes <- c(33, 27)
 
@@ -62,7 +65,7 @@ grid <- ee$FeatureCollection('users/dh-conciani/basemaps/br_grid_25_x_25_km')
 grid_ids <- unique(grid$aggregate_array('id')$getInfo())
 
 ## for each carta
-for (i in 1:length(grid_list)) {
+for (i in 1:length(grid_ids)) {
   print(paste0('processing tile ', i, ' of ', length(grid_ids)))
   ## get carta [i]
   grid_i <- grid$filterMetadata('id', 'equals', grid_ids[i])
@@ -76,27 +79,37 @@ for (i in 1:length(grid_list)) {
   ## get locally
   collection_i_arr <- ee_as_sf(collection_i, via= 'drive')
   
-  ## remove 'classification' from bandnames
-  #colnames(collection_i_arr) <- sub("^classification_", "", colnames(collection_i_arr))
-  
+
   ## for each pixel
   for (j in 1:length(unique(collection_i_arr$id))) {
     print(paste0('processing pixel ', j, ' of ', length(unique(collection_i_arr$id))))
     ## get pixel [i]
     pixel_ij <- subset(collection_i_arr, id == unique(collection_i_arr$id)[j])
     
-    ## check trajectories
+    ## transform cells to a list
+    for (k in 1:length(years_list)) {
+      # open list with first year value
+      if (exists('list_ij') == FALSE) {
+        list_ij <- as.data.frame(pixel_ij[paste0('classification_', years_list[k])])[,1]
+        ## insert next year classes
+      } else {
+        list_ij <- c(list_ij, 
+                     as.data.frame(pixel_ij[paste0('classification_', years_list[k])])[,1])
+      }
+    }
     
     
-    ## run trajectory analisys
-    ## get only classifications
-    #pixel_ij_c <- pixel_ij[, which(colnames(pixel_ij) %in% years_list)]
+    ## extract trajectory classes, preserve ordering and get their respective frequency
+    traj_res <- rle(list_ij)
     
+    traj_res
     
-    
+    traj_res$values
+    traj_res$lengths
     
     
   }
   
 }
+
 

@@ -6,8 +6,11 @@ library(rgee)
 library(stringr)
 ee_Initialize()
 
-## set native classes
+## Set classes to be considered as native vegetation in the last year (native classes + ignored)
 native_classes <- c(3, 4, 11, 12, 33, 27)
+
+## Set classes to be used in the state change analisys
+assess_classes <- c(3, 4, 11, 12)
 
 ## set persistence rule threshold (in years)
 persistence <- 2
@@ -86,21 +89,30 @@ for (i in 1:length(grid_ids)) {
                   value= rle(list_ij)$values,
                   length= rle(list_ij)$lengths))
     
-    ## Discard segments with less than 2 years in the trajectory
+    ## Discard temporal segments with less than 2 years in the trajectory
     traj_res <- subset(traj_res, length > persistence)
     
-    ## HERE IS PLACED THE RULES 
+    ## Get only assessment classes (discard anthropogenic and ignored)
+    traj_res <- subset(traj_res, value %in% assess_classes)
     
-    ## Rule 1: Temporary vs. persistent changes 
-    ## TEMPORARY:
-    ## IF START CLASS IS EQUALS TO END CLASS (FILTERED BY 2 YEAR STABILITY) THE CHANGE WAS TEMPORARY
-    ## PERSISTENT:
-    ## IF END CLASS IS DIFFERENT OF THE START CLASS (FILTERED BY 2 YEARS STABILITY) THE CHANGE WAS PERSISTENT
     
+    ################# HERE IS PLACED THE RULES #################
+    
+    ## RULE 1: TEMPORARY VS. PERSISTENT CHANGES 
+    ## INCONCLUSIVE: NO-ONE TRAJECTORY OF NV CLASSES SATISFIES THE PERSISTANCE CRITERIA
+    if (nrow(traj_res) == 0) {
+      condition <- 'Inconclusive'
+    }
+    
+    
+    ## TEMPORARY: IF START CLASS IS EQUALS TO END CLASS (FILTERED BY 2 YEAR STABILITY) THE CHANGE WAS TEMPORARY
+    ## PERSISTENT: IF END CLASS IS DIFFERENT OF THE START CLASS (FILTERED BY 2 YEARS STABILITY) THE CHANGE WAS PERSISTENT
+   
     ## If start and final classes are the same, compute as a temporary change
     if (traj_res$value[1] == traj_res$value[nrow(traj_res)]) {
-      
+      condition <- 'Temporary'
     }
+    
 
     
     
@@ -109,3 +121,4 @@ for (i in 1:length(grid_ids)) {
 }
 
 
+       

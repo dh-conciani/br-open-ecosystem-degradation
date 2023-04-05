@@ -119,13 +119,17 @@ for (i in 1:length(grid_ids)) {
     ## PERSISTENT: IF END CLASS IS DIFFERENT OF THE START CLASS (FILTERED BY 2 YEARS STABILITY) THE CHANGE WAS PERSISTENT CHANGE
     if (traj_res$value[1] != traj_res$value[nrow(traj_res)]) {
       condition <- 'Persistent'
+      }
     }
-  } 
+    
+    ######################## HERE ENDS THE RULES ###################################
+    
+    
 
     
     ## Build pixel result
     pixel_ij$condition <- condition
-    #pixel_ij <- pixel_ij['condition']
+    pixel_ij <- pixel_ij['condition']
     
     ## Store into grid data.frame
     if (exists('grid_df') == FALSE) {

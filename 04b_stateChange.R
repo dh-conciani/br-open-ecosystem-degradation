@@ -9,6 +9,8 @@ library(dplyr)
 library(googleCloudStorageR)
 library(raster)
 
+## Set API key
+
 ## start APIs
 ee_Initialize(gcs= TRUE)
 
@@ -69,6 +71,7 @@ for (i in 1:length(grid_ids)) {
   
   ## Get locally
   collection_i_arr <- ee_as_sf(collection_i, via= 'drive')
+  print('Getting trajectories')
   
   # Convert the data.frame to a list where each row is an independent sublist
   lst <- apply(collection_i_arr, 1, as.list)
@@ -160,7 +163,7 @@ for (i in 1:length(grid_ids)) {
                                          df_sf$Change))))
   
   ## select only relevant columns
-  df_sf <- df_sf %>% select(id, Change, change_id)
+  df_sf <- df_sf %>% dplyr::select(id, Change, change_id)
   
   # Define the raster extent and resolution
   r <- raster(extent(df_sf), resolution = 0.0002694946 )

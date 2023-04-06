@@ -63,6 +63,11 @@ processed <- ee$ImageCollection(out_dir)$aggregate_array('system:index')$getInfo
 ## Remove already processed
 grid_ids <- grid_ids[-which(grid_ids %in% processed)]
 
+## Consider also grids with "error" (empty, no data)
+if(file.exists('./error.csv') == TRUE) {
+  grid_ids <- grid_ids[-which(grid_ids %in% read.csv('./error.csv')$id)] 
+}
+
 ## Select a part of
 grid_ids <- grid_ids[1:1000]
 
@@ -71,6 +76,17 @@ for (i in 1:length(grid_ids)) {
   print(paste0('processing tile ', i, ' of ', length(grid_ids)))
   ## Get carta [i]
   grid_i <- grid$filterMetadata('id', 'equals', grid_ids[i])
+  
+  ## check if the grid is already processed and, if true, skip iteration
+  if (grid_ids[i] %in% ee$ImageCollection(out_dir)$aggregate_array('system:index')$getInfo() == TRUE) {
+    next
+  }
+  
+  if(file.exists('./error.csv') == TRUE) {
+    if (grid_ids[i] %in% read.csv('./error.csv')$id == TRUE) {
+      next
+    }
+  }
   
   ## Get pixel values
   collection_i <- collection$sample(region= grid_i$geometry(), 
@@ -84,10 +100,27 @@ for (i in 1:length(grid_ids)) {
   
   ## if object does not exits
   if(exists('collection_i_arr') == FALSE) {
-    ## skip
-    next
+    ## store id error
+    if(file.exists('./error.csv') == FALSE) {
+      ## if file error does not exists, create
+      f <- as.data.frame(grid_ids[i])
+      colnames(f)[1] <- 'id'
+      write.csv(f, './error.csv', row.names=FALSE)
+      next
+    } else {
+      ## id exists, bind
+      x <- read.csv('./error.csv')
+      f <- as.data.frame(grid_ids[i])
+      colnames(f)[1] <- 'id'
+      x <- rbind(x, f)
+      write.csv(x, './error.csv', row.names=FALSE)
+      next
+    }
   }
- 
+  
+
+  write.csv(NULL,'./error.csv')
+   
   print('Getting trajectories')
   
   # Convert the data.frame to a list where each row is an independent sublist
@@ -205,4 +238,3 @@ for (i in 1:length(grid_ids)) {
   print('done! next --->')
   rm(grid_i, collection_i, collection_i_arr, combined_list, df, df_sf, lst, lst_x, r, traj_res, traj_rle, trajs)
 }
-

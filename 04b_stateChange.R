@@ -117,10 +117,7 @@ for (i in 1:length(grid_ids)) {
       next
     }
   }
-  
 
-  write.csv(NULL,'./error.csv')
-   
   print('Getting trajectories')
   
   # Convert the data.frame to a list where each row is an independent sublist
@@ -238,3 +235,5 @@ for (i in 1:length(grid_ids)) {
   print('done! next --->')
   rm(grid_i, collection_i, collection_i_arr, combined_list, df, df_sf, lst, lst_x, r, traj_res, traj_rle, trajs)
 }
+
+

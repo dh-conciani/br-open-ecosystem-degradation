@@ -9,14 +9,11 @@ library(dplyr)
 library(googleCloudStorageR)
 library(raster)
 
-## Set API key
-#Sys.setenv(GOOGLE_APPLICATION_CREDENTIALS = "C:/SaK_dh.json")
-
 ## start APIs
 ee_Initialize(gcs= TRUE)
 
 ## Set output dir
-out_dir <- 'projects/mapbiomas-workspace/DEGRADACAO/TRAJECTORIES/COL71/V1'
+out_dir <- 'projects/mapbiomas-workspace/DEGRADACAO/TRAJECTORIES/COL71/V1/'
   
 ## Set classes to be considered as native vegetation in the last year (native classes + ignored)
 native_classes <- c(3, 4, 11, 12, 33, 27)
@@ -172,13 +169,20 @@ for (i in 1:length(grid_ids)) {
   r <- rasterize(df_sf, 
             r,
             field = as.numeric(df_sf$change_id))
+  
+  # Set the projection to EPSG 4326
+  r@crs <- CRS("+init=EPSG:4326")
+  proj4string(r) <- CRS("+proj=longlat +datum=WGS84")
 
   ## Export to GEE
   raster_as_ee(
     x = r,
     overwrite = TRUE,
-    assetId = out_dir,
+    assetId = paste0(out_dir, grid_ids[i]),
     bucket = "degrad-traj1"
   )
+  
+  print('done! next --->')
+  rm(grid_i, collection_i, collection_i_arr, combined_list, df, df_sf, lst, lst_x, r, traj_res, traj_rle, trajs)
 }
 

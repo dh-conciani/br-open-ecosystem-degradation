@@ -6,16 +6,11 @@ library(rgee)
 library(stringr)
 library(sf)
 library(dplyr)
-#library(googleCloudStorageR)
-#library(googledrive)
-
-## Set API key
-#Sys.setenv(GOOGLE_APPLICATION_CREDENTIALS = "C:/SaK_dh.json")
+library(googleCloudStorageR)
 
 ## start APIs
 ee_Initialize()
-#gdrive_auth()
-#gcs_auth()
+gcs_auth('C:/SaK_dh.json')
 
 ## Set output dir
 out_dir <- 'projects/mapbiomas-workspace/DEGRADACAO/TRAJECTORIES/COL71/V1'
@@ -165,22 +160,23 @@ for (i in 1:length(grid_ids)) {
                                          df_sf$Change))))
   
   ## select only relevant columns
-  df_sf <- df_sf %>% select(id, Change, change_id, geometry)
+  df_sf <- df_sf %>% select(id, Change, change_id)
   
+  df_sf$list_col <- unlist(df_sf$geometry)
   
   ## Export as GEE asset
   print('Exporting result as GEE asset')
-  sf_as_ee(
-    x= df_sf,
-    via = "getInfo_to_asset",
-    #bucket= 'degrad-traj1',
-    assetId = paste0(out_dir, '/', grid_ids[i]),
-    overwrite = TRUE,
-    monitoring = TRUE,
-    proj = "EPSG:4326",
-    quiet = FALSE,
-  )
+  toExport <- sf_as_ee(
+                  x= df_sf,
+                  via = "getInfo_to_asset",
+                  #bucket= 'degrad-traj1',
+                  assetId = paste0(out_dir, '/', grid_ids[i]),
+                  overwrite = TRUE,
+                  monitoring = TRUE,
+                  proj = "EPSG:4326",
+                  quiet = FALSE,
+                )
   
-  print('Done! Next ----> ')
-  
+    print('Done! Next ----> ')
+  str(df_sf)
 }

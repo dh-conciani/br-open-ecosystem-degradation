@@ -78,18 +78,16 @@ for (i in 1:length(grid_ids)) {
                                     geometries= TRUE,
                                     tileScale= 16)
   
+  
   ## Get locally
-  collection_i_arr <- tryCatch({
-    # code that might produce an error
-    ee_as_sf(collection_i, via= 'drive')
-  }, error = function(e) {
-    # code to handle the error and skip to next iteration
-    print('!SKIP!')
+  try(collection_i_arr <- ee_as_sf(collection_i, via= 'drive'), silent= TRUE)
+  
+  ## if object does not exits
+  if(exists('collection_i_arr') == FALSE) {
+    ## skip
     next
-  })
-  
-
-  
+  }
+ 
   print('Getting trajectories')
   
   # Convert the data.frame to a list where each row is an independent sublist

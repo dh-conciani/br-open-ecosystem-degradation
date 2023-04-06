@@ -16,7 +16,7 @@ ee_Initialize(gcs= TRUE)
 
 ## Set output dir
 out_dir <- 'projects/mapbiomas-workspace/DEGRADACAO/TRAJECTORIES/COL71/V1'
-  
+
 ## Set classes to be considered as native vegetation in the last year (native classes + ignored)
 native_classes <- c(3, 4, 11, 12, 33, 27)
 
@@ -68,9 +68,6 @@ if(file.exists('./error.csv') == TRUE) {
   grid_ids <- grid_ids[-which(grid_ids %in% read.csv('./error.csv')$id)] 
 }
 
-## Select a part of
-grid_ids <- grid_ids[1:1000]
-
 ## for each carta
 for (i in 1:length(grid_ids)) {
   print(paste0('processing tile ', i, ' of ', length(grid_ids)))
@@ -117,7 +114,7 @@ for (i in 1:length(grid_ids)) {
       next
     }
   }
-
+  
   print('Getting trajectories')
   
   # Convert the data.frame to a list where each row is an independent sublist
@@ -128,19 +125,19 @@ for (i in 1:length(grid_ids)) {
   
   ## Get trajectories as lists
   trajs <- lapply(lst_x, function(pixel) c(
-      pixel$classification_1985, pixel$classification_1986, pixel$classification_1987, 
-      pixel$classification_1988, pixel$classification_1989, pixel$classification_1990, 
-      pixel$classification_1991, pixel$classification_1992, pixel$classification_1993,
-      pixel$classification_1994, pixel$classification_1995, pixel$classification_1996, 
-      pixel$classification_1997, pixel$classification_1998, pixel$classification_1999,
-      pixel$classification_2000, pixel$classification_2001, pixel$classification_2002,
-      pixel$classification_2003, pixel$classification_2004, pixel$classification_2005,
-      pixel$classification_2006, pixel$classification_2007, pixel$classification_2008,
-      pixel$classification_2009, pixel$classification_2010, pixel$classification_2011,
-      pixel$classification_2012, pixel$classification_2013, pixel$classification_2014,
-      pixel$classification_2015, pixel$classification_2016, pixel$classification_2017,
-      pixel$classification_2018, pixel$classification_2019, pixel$classification_2020,
-      pixel$classification_2021))
+    pixel$classification_1985, pixel$classification_1986, pixel$classification_1987, 
+    pixel$classification_1988, pixel$classification_1989, pixel$classification_1990, 
+    pixel$classification_1991, pixel$classification_1992, pixel$classification_1993,
+    pixel$classification_1994, pixel$classification_1995, pixel$classification_1996, 
+    pixel$classification_1997, pixel$classification_1998, pixel$classification_1999,
+    pixel$classification_2000, pixel$classification_2001, pixel$classification_2002,
+    pixel$classification_2003, pixel$classification_2004, pixel$classification_2005,
+    pixel$classification_2006, pixel$classification_2007, pixel$classification_2008,
+    pixel$classification_2009, pixel$classification_2010, pixel$classification_2011,
+    pixel$classification_2012, pixel$classification_2013, pixel$classification_2014,
+    pixel$classification_2015, pixel$classification_2016, pixel$classification_2017,
+    pixel$classification_2018, pixel$classification_2019, pixel$classification_2020,
+    pixel$classification_2021))
   
   ## Compute Run Length Encoding
   traj_rle <- lapply(trajs, function(pixel) as.data.frame(cbind(
@@ -180,7 +177,7 @@ for (i in 1:length(grid_ids)) {
         return('Persistent change')
       }
     })
-    
+  
   # Combine lists and maintain sublist index
   combined_list <- Map(function(lst, traj_res) c(lst, traj_res), lst, traj_res)
   
@@ -214,16 +211,16 @@ for (i in 1:length(grid_ids)) {
   
   # Define the raster extent and resolution
   r <- raster(extent(df_sf), resolution = 0.0002694946 )
-
+  
   ## rasterize
   r <- rasterize(df_sf, 
-            r,
-            field = as.numeric(df_sf$change_id))
+                 r,
+                 field = as.numeric(df_sf$change_id))
   
   # Set the projection to EPSG 4326
   r@crs <- CRS("+init=EPSG:4326")
   proj4string(r) <- CRS("+proj=longlat +datum=WGS84")
-
+  
   ## Export to GEE
   raster_as_ee(
     x = r,
@@ -233,7 +230,8 @@ for (i in 1:length(grid_ids)) {
   )
   
   print('done! next --->')
-  rm(grid_i, collection_i, collection_i_arr, combined_list, df, df_sf, lst, lst_x, r, traj_res, traj_rle, trajs)
+  rm(grid_i, collection_i, collection_i_arr, f, x, lst, lst_x, trajs, traj_rle, traj_res, combined_list, df, df_sf, r)
+  gc()
 }
 
 

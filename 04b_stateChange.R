@@ -7,10 +7,13 @@ library(stringr)
 library(sf)
 library(dplyr)
 library(googleCloudStorageR)
+library(raster)
+
+## Set API key
+#Sys.setenv(GOOGLE_APPLICATION_CREDENTIALS = "C:/SaK_dh.json")
 
 ## start APIs
-ee_Initialize()
-gcs_auth('C:/SaK_dh.json')
+ee_Initialize(gcs= TRUE)
 
 ## Set output dir
 out_dir <- 'projects/mapbiomas-workspace/DEGRADACAO/TRAJECTORIES/COL71/V1'
@@ -162,21 +165,20 @@ for (i in 1:length(grid_ids)) {
   ## select only relevant columns
   df_sf <- df_sf %>% select(id, Change, change_id)
   
-  df_sf$list_col <- unlist(df_sf$geometry)
-  
-  ## Export as GEE asset
-  print('Exporting result as GEE asset')
-  toExport <- sf_as_ee(
-                  x= df_sf,
-                  via = "getInfo_to_asset",
-                  #bucket= 'degrad-traj1',
-                  assetId = paste0(out_dir, '/', grid_ids[i]),
-                  overwrite = TRUE,
-                  monitoring = TRUE,
-                  proj = "EPSG:4326",
-                  quiet = FALSE,
-                )
-  
-    print('Done! Next ----> ')
-  str(df_sf)
+  # Define the raster extent and resolution
+  r <- raster(extent(df_sf), resolution = 0.0002694946 )
+
+  ## rasterize
+  r <- rasterize(df_sf, 
+            r,
+            field = as.numeric(df_sf$change_id))
+
+  ## Export to GEE
+  raster_as_ee(
+    x = r,
+    overwrite = TRUE,
+    assetId = out_dir,
+    bucket = "degrad-traj1"
+  )
 }
+

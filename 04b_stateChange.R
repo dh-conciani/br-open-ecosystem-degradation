@@ -15,7 +15,7 @@ library(raster)
 ee_Initialize(gcs= TRUE)
 
 ## Set output dir
-out_dir <- 'projects/mapbiomas-workspace/DEGRADACAO/TRAJECTORIES/COL71/V1/'
+out_dir <- 'projects/mapbiomas-workspace/DEGRADACAO/TRAJECTORIES/COL71/V1'
   
 ## Set classes to be considered as native vegetation in the last year (native classes + ignored)
 native_classes <- c(3, 4, 11, 12, 33, 27)
@@ -57,6 +57,15 @@ grid <- ee$FeatureCollection('users/dh-conciani/basemaps/br_grid_50_x_50_km')
 ## Get tile label
 grid_ids <- unique(grid$aggregate_array('id')$getInfo())
 
+## Get tiles already processed
+processed <- ee$ImageCollection(out_dir)$aggregate_array('system:index')$getInfo()
+
+## Remove already processed
+grid_ids <- grid_ids[-which(grid_ids %in% processed)]
+
+## Select a part of
+grid_ids <- grid_ids[1:1000]
+
 ## for each carta
 for (i in 1:length(grid_ids)) {
   print(paste0('processing tile ', i, ' of ', length(grid_ids)))
@@ -70,7 +79,17 @@ for (i in 1:length(grid_ids)) {
                                     tileScale= 16)
   
   ## Get locally
-  collection_i_arr <- ee_as_sf(collection_i, via= 'drive')
+  collection_i_arr <- tryCatch({
+    # code that might produce an error
+    ee_as_sf(collection_i, via= 'drive')
+  }, error = function(e) {
+    # code to handle the error and skip to next iteration
+    print('!SKIP!')
+    next
+  })
+  
+
+  
   print('Getting trajectories')
   
   # Convert the data.frame to a list where each row is an independent sublist
@@ -181,7 +200,7 @@ for (i in 1:length(grid_ids)) {
   raster_as_ee(
     x = r,
     overwrite = TRUE,
-    assetId = paste0(out_dir, grid_ids[i]),
+    assetId = paste0(out_dir, '/', grid_ids[i]),
     bucket = "degrad-traj1"
   )
   

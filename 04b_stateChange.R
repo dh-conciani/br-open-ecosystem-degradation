@@ -52,7 +52,7 @@ nClasses <- collection$reduce(ee$Reducer$countDistinctNonNull())
 collection <- collection$updateMask(nClasses$neq(1))
 
 ## Trajectory assessment is too complex. For this, we used a regular tile of 25 x 25 km approach 
-grid <- ee$FeatureCollection('users/dh-conciani/basemaps/br_grid_25_x_25_km')
+grid <- ee$FeatureCollection('users/dh-conciani/basemaps/br_grid_50_x_50_km')
 
 ## Get tile label
 grid_ids <- unique(grid$aggregate_array('id')$getInfo())

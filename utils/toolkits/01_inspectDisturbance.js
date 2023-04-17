@@ -58,12 +58,11 @@ var changes = ee.Image('projects/mapbiomas-workspace/DEGRADACAO/DISTURBIOS/distu
 Map.addLayer(changes.select('number_of_classes'), {palette:['green', 'yellow', 'red'], min:1, max:4}, 'NV Classes', false);
 Map.addLayer(changes.select('tree_cover_change'),  {min: -25, max: 30, palette: ['red', 'white', 'green']}, 'Tree Canopy Cover Change', false);
 
-
-
-
-
-
-
+// get state change
+var stateChange = ee.ImageCollection('projects/mapbiomas-workspace/DEGRADACAO/TRAJECTORIES/COL71/V1')
+    .mosaic();
+    
+Map.addLayer(stateChange.randomVisualizer(), {}, 'State Change');
 
 ////////////////////////////// crair legenda
 var legends = [
@@ -383,12 +382,10 @@ Chart.init();
 //////////////////////////////////////
 // adicionar dado de area queimada
 var fire = ee.Image('projects/mapbiomas-workspace/public/collection7/mapbiomas-fire-collection1-1-annual-burned-coverage-1');
-
 // years to be processed
 var years = [1985, 1986, 1987, 1988, 1989, 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
              1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012,
              2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021];
-
 // binarize
 var fire_bin = ee.Image(years.map(function(year_i) {
   return fire.select('burned_coverage_' + year_i)
@@ -400,8 +397,6 @@ var fire_bin = ee.Image(years.map(function(year_i) {
              .rename('classification_' + year_i)
              .unmask(0);
 }));
-
-
 var Chart = {
     options: {
         'title': 'Fire Inspector',
@@ -494,90 +489,66 @@ var Chart = {
         'series': {
             0: { color: '#21242E' }
         },
-
     },
-
     assets: {
         image: fire_bin,
     },
-
     data: {
         image: null,
         point: null
     },
-
     legend: {
       0: { 'color': 'white', 'name': 'Unburned'},
       1: { 'color': 'red', 'name': 'Burned'}
     },
-
     loadData: function () {
         Chart.data.image = ee.ImageCollection(Chart.assets.image).min();
     },
-
     init: function () {
         Chart.loadData();
         Chart.ui.init();
     },
-
     getSamplePoint: function (image, points) {
-
         var sample = image.sampleRegions({
             'collection': points,
             'scale': 30,
             'geometries': true
         });
-
         return sample;
     },
-
     ui: {
-
         init: function () {
-
             Chart.ui.form.init();
             Chart.ui.activateMapOnClick();
-
         },
-
         activateMapOnClick: function () {
-
             Map.onClick(
                 function (coords) {
                     var point = ee.Geometry.Point(coords.lon, coords.lat);
-
                     var bandNames = Chart.data.image.bandNames();
-
                     var newBandNames = bandNames.map(
                         function (bandName) {
                             var name = ee.String(ee.List(ee.String(bandName).split('_')).get(1));
-
                             return name;
                         }
                     );
                     
                     var image = Chart.data.image.select(bandNames, newBandNames);
-
                     Chart.ui.inspect(image, point);
                 }
             );
         },
-
         refreshGraph: function (sample) {
-
             sample.evaluate(
                 function (featureCollection) {
-
                     if (featureCollection !== null) {
                         // print(featureCollection.features);
-
                         var pixels = featureCollection.features.map(
                             function (features) {
                                 return features.properties;
                             }
                         );
                         print('pixels fire', pixels)
-
                         var bands = Object.getOwnPropertyNames(pixels[1]);
                         //var bands = years
                         
@@ -589,84 +560,62 @@ var Chart = {
                                         return pixel[band];
                                     }
                                 );
-
                                 return [band].concat(value);
                             }
                         );
-
                         // Add point style and tooltip
                         dataTable = dataTable.map(
                             function (point) {
                                 var color = Chart.legend[point[1]].color;
                                 var name = Chart.legend[point[1]].name;
                                 var value = String(point[1]);
-
                                 var style = 'point {size: 4; fill-color: ' + color + '}';
                                 var tooltip = 'year: ' + point[0] + ', class: [' + value + '] ' + name;
-
                                 return point.concat(style).concat(tooltip);
                             }
                         );
-
                         var headers = [
                             'serie',
                             'id',
                             { 'type': 'string', 'role': 'style' },
                             { 'type': 'string', 'role': 'tooltip' }
                         ];
-
                         dataTable = [headers].concat(dataTable);
-
                         Chart.ui.form.chartInspector.setDataTable(dataTable);
-
                     }
                 }
             );
         },
-
         refreshMap: function () {
-
             var pointLayer = Map.layers().filter(
                 function (layer) {
                     return layer.get('name') === 'Point';
                 }
             );
-
             if (pointLayer.length > 0) {
                 Map.remove(pointLayer[0]);
                 Map.addLayer(Chart.data.point, {}, 'Point');
             } else {
                 Map.addLayer(Chart.data.point, {}, 'Point');
             }
-
         },
-
         inspect: function (image, point) {
-
             // aqui pode fazer outras coisas além de atualizar o gráfico
             Chart.data.point = Chart.getSamplePoint(image, ee.FeatureCollection(point));
-
             Chart.ui.refreshMap(Chart.data.point);
             Chart.ui.refreshGraph(Chart.data.point);
-
         },
-
         form: {
-
             init: function () {
-
                 Chart.ui.form.panelChart.add(Chart.ui.form.chartInspector);
                 Chart.ui.form.chartInspector.setOptions(Chart.options);
-
                 Chart.ui.form.chartInspector.onClick(
                     function (xValue, yValue, seriesName) {
                         print(xValue, yValue, seriesName);
                     }
                 );
-
                 Map.add(Chart.ui.form.panelChart);
             },
-
             panelChart: ui.Panel({
                 'layout': ui.Panel.Layout.flow('vertical'),
                 'style': {
@@ -678,7 +627,6 @@ var Chart = {
                     'backgroundColor': '#21242E'
                 },
             }),
-
             chartInspector: ui.Chart([
                 ['Serie', ''],
                 ['', -1000], // número menor que oin mínimo para não aparecer no gráfico na inicialização
@@ -686,6 +634,5 @@ var Chart = {
         }
     }
 };
-
 Chart.init();
 */

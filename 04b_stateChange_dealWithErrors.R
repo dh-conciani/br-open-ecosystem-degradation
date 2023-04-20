@@ -1,8 +1,6 @@
 ## compute state changes
 ## degradation
 
-## dev status: erros avoided, needs optimization (remove unucessary files; refactor into functions)
-
 ## import libraries
 library(rgee)
 library(stringr)
@@ -67,7 +65,7 @@ processed <- ee$ImageCollection(out_dir)$aggregate_array('system:index')$getInfo
 grid_ids <- grid_ids[-which(grid_ids %in% processed)]
 
 ## subset
-grid_ids <- grid_ids[221:440]
+grid_ids <- grid_ids[1:220]
 
 ## Compute coordiante images to be used in the case of subsample of the tiles
 ## Select the longitude and latitude bands, multiply to truncate into integers (meter)
@@ -157,7 +155,7 @@ for (i in 1:length(grid_ids)) {
         
         ## select sub grid[j] and subtract -1 (jscript index starts in zero zzzzzz)
         newGrid_j <- ee$Feature(newGrid$toList(newGrid$size())$get(j-1))
-
+        
         ## Get pixel values
         collection_i <- collection$sample(region= newGrid_j$geometry(), 
                                           scale = 30,

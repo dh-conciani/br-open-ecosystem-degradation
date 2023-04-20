@@ -97,7 +97,7 @@ for (i in 1:length(grid_ids)) {
   
   # Call a function that might throw an error
   result <- try({
-    collection_i_arr <- ee_as_sf(collection_i, via = "drive")
+    collection_i_arr <- ee_as_sf(collection_i, via = "drive", quiet= TRUE)
   }, silent = TRUE)
   
   # Check if there was an error
@@ -108,21 +108,173 @@ for (i in 1:length(grid_ids)) {
 
   print('logical test to error ok')
   
-  #result
-  ## Get locally
-  #try(collection_i_arr <- ee_as_sf(collection_i, via= 'drive'), silent= TRUE)
-  
-  
   ## HERE STARTS THE RULES TO DEAL WITH THE ERRORS
   ## RULE 1: And it is empty (full NA), export a full-NA grid
-    if(grepl("The source could be corrupt or not supported", result)) {
-      # Do something if the text is found
-      print('Downloading tile to export as NA')
+  if(grepl("The source could be corrupt or not supported", result) == TRUE) {
+    # Do something if the text is found
+    print('Downloading tile to export as NA')
+    
+    # Define the raster extent and resolution as the same of the grid
+    r <- raster(extent(ee_as_sf(grid_i, via = 'drive')), resolution = 0.0002694946 )
+    ## Set all pixels to NA
+    r <- setValues(r, NA)
+    
+    # Set the projection to EPSG 4326
+    r@crs <- CRS("+init=EPSG:4326")
+    proj4string(r) <- CRS("+proj=longlat +datum=WGS84")
+    
+    ## Export to GEE
+    raster_as_ee(
+      x = r,
+      overwrite = TRUE,
+      assetId = paste0(out_dir, '/', grid_ids[i]),
+      bucket = "degrad-traj1"
+    )
+    
+    rm(r, result)
+    gc()
+    next
+  } 
+  
+  ## If the value is too large, memory error, re-grid them
+  if(grepl("ee_monitoring was forced to stop before getting results", result) == TRUE) {
+    print('Value is too large! Spliting tile to avoid error')
+    Sys.sleep(3)
+    
+    print('sys sleep ok')
+    print(grid_i)
+    print('grid_i ok')
+    print(lat_lonm)
+    print('latlon ok')
       
-      # Define the raster extent and resolution as the same of the grid
-      r <- raster(extent(ee_as_sf(grid_i, via = 'drive')), resolution = 0.0002694946 )
-      ## Set all pixels to NA
-      r <- setValues(r, NA)
+    ## divide into small parts (25 x 25 km)
+    newGrid <- lat_lonm$reduceToVectors(
+      geometry = grid_i$geometry(),
+      scale = 25000,
+      geometryType = 'polygon')
+    
+    ## For each new grid
+    for (j in 1:newGrid$size()$getInfo()) {
+      print(paste0('Getting trajectories for the splitted grid >>>', letters[j], '<<<'))
+      
+      ## check if the file already exits
+      if (paste0(grid_ids[i], letters[j]) %in% ee$ImageCollection(out_dir)$aggregate_array('system:index')$getInfo() == TRUE) {
+        ## skip to next
+        next
+      }
+      
+      ## select sub grid[j] and subtract -1 (jscript index starts in zero zzzzzz)
+      newGrid_j <- ee$Feature(newGrid$toList(newGrid$size())$get(j-1))
+      
+      ## Get pixel values
+      collection_i <- collection$sample(region= newGrid_j$geometry(), 
+                                        scale = 30,
+                                        geometries= TRUE,
+                                        tileScale= 16)
+      
+      ## read as local file
+      collection_i_arr <- ee_as_sf(collection_i, via = "drive")
+      
+      
+      # Convert the data.frame to a list where each row is an independent sublist
+      lst <- apply(collection_i_arr, 1, as.list)
+      
+      # Remove the first and last entries of each sublist
+      lst_x <- lapply(lst, function(x) x[2:(length(x)-1)])
+      
+      ## Get trajectories as lists
+      trajs <- lapply(lst_x, function(pixel) c(
+        pixel$classification_1985, pixel$classification_1986, pixel$classification_1987, 
+        pixel$classification_1988, pixel$classification_1989, pixel$classification_1990, 
+        pixel$classification_1991, pixel$classification_1992, pixel$classification_1993,
+        pixel$classification_1994, pixel$classification_1995, pixel$classification_1996, 
+        pixel$classification_1997, pixel$classification_1998, pixel$classification_1999,
+        pixel$classification_2000, pixel$classification_2001, pixel$classification_2002,
+        pixel$classification_2003, pixel$classification_2004, pixel$classification_2005,
+        pixel$classification_2006, pixel$classification_2007, pixel$classification_2008,
+        pixel$classification_2009, pixel$classification_2010, pixel$classification_2011,
+        pixel$classification_2012, pixel$classification_2013, pixel$classification_2014,
+        pixel$classification_2015, pixel$classification_2016, pixel$classification_2017,
+        pixel$classification_2018, pixel$classification_2019, pixel$classification_2020,
+        pixel$classification_2021))
+      
+      ## Compute Run Length Encoding
+      traj_rle <- lapply(trajs, function(pixel) as.data.frame(cbind(
+        value= rle(pixel)$values,
+        length= rle(pixel)$lengths))) 
+      
+      ## Remove temporal segments with less than persistence threshold
+      traj_rle <- lapply(traj_rle, function(pixel) subset(pixel, length > persistence))
+      
+      ## Get only assessment classes (discard anthropogenic and ignored)
+      traj_rle <- lapply(traj_rle, function(pixel) subset(pixel, value %in% assess_classes))
+      
+      
+      ################# HERE IS PLACED THE RULES #################
+      
+      ## @@ RULE 1: TEMPORARY VS. PERSISTENT CHANGES  @@
+      ## INCONCLUSIVE: NO-ONE TRAJECTORY OF NV CLASSES SATISFIES THE PERSISTANCE CRITERIA
+      traj_res <- lapply(traj_rle, function(pixel) 
+        if (nrow(pixel) == 0) {
+          return('Inconclusive')
+        } else {
+          ## IF START CLASS IS EQUALS TO END CLASS (FILTERED BY 2 YEAR STABILITY)
+          if (pixel$value[1] == pixel$value[nrow(pixel)])  {
+            ## AND THE NUMBER OF NATIVE CLASSES IN THE SERIE WAS DIFFERENT OF ONE
+            ## THIS WAS A "TEMPORARY CHANGE"
+            if (length(unique(pixel$value)) != 1) {
+              return('Temporary change')
+            }
+            ## IF THE NUMBER OF NATIVE CLASSES IS EQUAL TO ONE OVER THE ENTIRE TIME-SERIES, IT WAS NO CHANGE
+            if (length(unique(pixel$value)) == 1) {
+              return('No change')
+            }
+          }
+          
+          ## PERSISTENT: IF END CLASS IS DIFFERENT OF THE START CLASS (FILTERED BY 2 YEARS STABILITY) THE CHANGE WAS PERSISTENT CHANGE
+          if (pixel$value[1] != pixel$value[nrow(pixel)]) {
+            return('Persistent change')
+          }
+        })
+      
+      # Combine lists and maintain sublist index
+      combined_list <- Map(function(lst, traj_res) c(lst, traj_res), lst, traj_res)
+      
+      # Convert the list to a data.frame
+      df <- as.data.frame(do.call(rbind, combined_list))
+      
+      # Rename last column (result)
+      colnames(df)[length(df)] <- 'Change'
+      
+      # Split the geometry column into longitude and latitude columns
+      df$longitude <- as.numeric(sub(".*\\(([^,]+),.*", "\\1", df$geometry))
+      df$latitude <- as.numeric(sub(".*,\\s*([^\\)]+)\\)", "\\1", df$geometry))
+      
+      # Remove the geometry column
+      df <- df[, !(names(df) %in% c("geometry"))]
+      
+      # Convert to sf object with point geometry
+      df_sf <- st_as_sf(df, coords = c("longitude", "latitude"), crs = 4326)
+      
+      #plot(df_sf$geometry, axes=T)
+      
+      ## Create legend
+      df_sf$change_id <- gsub("No change", 1,
+                              gsub("Inconclusive", 2,
+                                   gsub("Temporary change", 3,
+                                        gsub("Persistent change", 4,
+                                             df_sf$Change))))
+      
+      ## select only relevant columns
+      df_sf <- df_sf %>% dplyr::select(id, Change, change_id)
+      
+      # Define the raster extent and resolution
+      r <- raster(extent(df_sf), resolution = 0.0002694946 )
+      
+      ## rasterize
+      r <- rasterize(df_sf, 
+                     r,
+                     field = as.numeric(df_sf$change_id))
       
       # Set the projection to EPSG 4326
       r@crs <- CRS("+init=EPSG:4326")
@@ -132,267 +284,96 @@ for (i in 1:length(grid_ids)) {
       raster_as_ee(
         x = r,
         overwrite = TRUE,
-        assetId = paste0(out_dir, '/', grid_ids[i]),
+        assetId = paste0(out_dir, '/', grid_ids[i], letters[j]),
         bucket = "degrad-traj1"
       )
       
-      rm(r, result)
-      gc()
-      next
-    } 
+      print('done, next === sub tile ===')
+      
+    } ## end of sub tiles processing
+    print ('tile done!! next')
+    rm(newGrid, newGrid_j, collection_i, collection_i_arr, f, x, lst, lst_x, trajs, traj_rle, traj_res, combined_list, df, df_sf, r)
+    gc()
+    next
+  } ## end of complete tile processing
+  
+  rint('Getting trajectories')
+    # Convert the data.frame to a list where each row is an independent sublist
+  st <- apply(collection_i_arr, 1, as.list)
+    # Remove the first and last entries of each sublist
+  st_x <- lapply(lst, function(x) x[2:(length(x)-1)])
+    ## Get trajectories as lists
+  rajs <- lapply(lst_x, function(pixel) c(
+  pixel$classification_1985, pixel$classification_1986, pixel$classification_1987, 
+  pixel$classification_1988, pixel$classification_1989, pixel$classification_1990, 
+  pixel$classification_1991, pixel$classification_1992, pixel$classification_1993,
+  pixel$classification_1994, pixel$classification_1995, pixel$classification_1996, 
+  pixel$classification_1997, pixel$classification_1998, pixel$classification_1999,
+  pixel$classification_2000, pixel$classification_2001, pixel$classification_2002,
+  pixel$classification_2003, pixel$classification_2004, pixel$classification_2005,
+  pixel$classification_2006, pixel$classification_2007, pixel$classification_2008,
+  pixel$classification_2009, pixel$classification_2010, pixel$classification_2011,
+  pixel$classification_2012, pixel$classification_2013, pixel$classification_2014,
+  pixel$classification_2015, pixel$classification_2016, pixel$classification_2017,
+  pixel$classification_2018, pixel$classification_2019, pixel$classification_2020,
+  pixel$classification_2021))
+    ## Compute Run Length Encoding
+  raj_rle <- lapply(trajs, function(pixel) as.data.frame(cbind(
+  value= rle(pixel)$values,
+  length= rle(pixel)$lengths))) 
+    ## Remove temporal segments with less than persistence threshold
+  raj_rle <- lapply(traj_rle, function(pixel) subset(pixel, length > persistence))
+    ## Get only assessment classes (discard anthropogenic and ignored)
+  raj_rle <- lapply(traj_rle, function(pixel) subset(pixel, value %in% assess_classes))
+  
+  ################ HERE IS PLACED THE RULES #################
+    ## @@ RULE 1: TEMPORARY VS. PERSISTENT CHANGES  @@
+  # INCONCLUSIVE: NO-ONE TRAJECTORY OF NV CLASSES SATISFIES THE PERSISTANCE CRITERIA
+  raj_res <- lapply(traj_rle, function(pixel) 
+  if (nrow(pixel) == 0) {
+    return('Inconclusive')
+  } else {
+    ## IF START CLASS IS EQUALS TO END CLASS (FILTERED BY 2 YEAR STABILITY)
+    if (pixel$value[1] == pixel$value[nrow(pixel)])  {
+      ## AND THE NUMBER OF NATIVE CLASSES IN THE SERIE WAS DIFFERENT OF ONE
+      ## THIS WAS A "TEMPORARY CHANGE"
+      if (length(unique(pixel$value)) != 1) {
+        return('Temporary change')
+      }
+      ## IF THE NUMBER OF NATIVE CLASSES IS EQUAL TO ONE OVER THE ENTIRE TIME-SERIES, IT WAS NO CHANGE
+      if (length(unique(pixel$value)) == 1) {
+        return('No change')
+      }
+    }
     
-    ## If the value is too large, memory error, re-grid them
-    if(grepl("ee_monitoring was forced to stop before getting results", result)) {
-      print('Value is too large! Spliting tile to avoid error')
-      Sys.sleep(3)
-      
-
-      ## divide into small parts (25 x 25 km)
-      newGrid <- lat_lonm$reduceToVectors(
-        geometry = grid_i$geometry(),
-        scale = 25000,
-        geometryType = 'polygon')
-      
-      ## For each new grid
-      for (j in 1:newGrid$size()$getInfo()) {
-        print(paste0('Getting trajectories for the splitted grid >>>', letters[j], '<<<'))
-        
-        ## check if the file already exits
-        if (paste0(grid_ids[i], letters[j]) %in% ee$ImageCollection(out_dir)$aggregate_array('system:index')$getInfo() == TRUE) {
-          ## skip to next
-          next
-        }
-        
-        ## select sub grid[j] and subtract -1 (jscript index starts in zero zzzzzz)
-        newGrid_j <- ee$Feature(newGrid$toList(newGrid$size())$get(j-1))
-        
-        ## Get pixel values
-        collection_i <- collection$sample(region= newGrid_j$geometry(), 
-                                          scale = 30,
-                                          geometries= TRUE,
-                                          tileScale= 16)
-        
-        ## read as local file
-        collection_i_arr <- ee_as_sf(collection_i, via = "drive")
-        
-        
-        # Convert the data.frame to a list where each row is an independent sublist
-        lst <- apply(collection_i_arr, 1, as.list)
-        
-        # Remove the first and last entries of each sublist
-        lst_x <- lapply(lst, function(x) x[2:(length(x)-1)])
-        
-        ## Get trajectories as lists
-        trajs <- lapply(lst_x, function(pixel) c(
-          pixel$classification_1985, pixel$classification_1986, pixel$classification_1987, 
-          pixel$classification_1988, pixel$classification_1989, pixel$classification_1990, 
-          pixel$classification_1991, pixel$classification_1992, pixel$classification_1993,
-          pixel$classification_1994, pixel$classification_1995, pixel$classification_1996, 
-          pixel$classification_1997, pixel$classification_1998, pixel$classification_1999,
-          pixel$classification_2000, pixel$classification_2001, pixel$classification_2002,
-          pixel$classification_2003, pixel$classification_2004, pixel$classification_2005,
-          pixel$classification_2006, pixel$classification_2007, pixel$classification_2008,
-          pixel$classification_2009, pixel$classification_2010, pixel$classification_2011,
-          pixel$classification_2012, pixel$classification_2013, pixel$classification_2014,
-          pixel$classification_2015, pixel$classification_2016, pixel$classification_2017,
-          pixel$classification_2018, pixel$classification_2019, pixel$classification_2020,
-          pixel$classification_2021))
-        
-        ## Compute Run Length Encoding
-        traj_rle <- lapply(trajs, function(pixel) as.data.frame(cbind(
-          value= rle(pixel)$values,
-          length= rle(pixel)$lengths))) 
-        
-        ## Remove temporal segments with less than persistence threshold
-        traj_rle <- lapply(traj_rle, function(pixel) subset(pixel, length > persistence))
-        
-        ## Get only assessment classes (discard anthropogenic and ignored)
-        traj_rle <- lapply(traj_rle, function(pixel) subset(pixel, value %in% assess_classes))
-        
-        
-        ################# HERE IS PLACED THE RULES #################
-        
-        ## @@ RULE 1: TEMPORARY VS. PERSISTENT CHANGES  @@
-        ## INCONCLUSIVE: NO-ONE TRAJECTORY OF NV CLASSES SATISFIES THE PERSISTANCE CRITERIA
-        traj_res <- lapply(traj_rle, function(pixel) 
-          if (nrow(pixel) == 0) {
-            return('Inconclusive')
-          } else {
-            ## IF START CLASS IS EQUALS TO END CLASS (FILTERED BY 2 YEAR STABILITY)
-            if (pixel$value[1] == pixel$value[nrow(pixel)])  {
-              ## AND THE NUMBER OF NATIVE CLASSES IN THE SERIE WAS DIFFERENT OF ONE
-              ## THIS WAS A "TEMPORARY CHANGE"
-              if (length(unique(pixel$value)) != 1) {
-                return('Temporary change')
-              }
-              ## IF THE NUMBER OF NATIVE CLASSES IS EQUAL TO ONE OVER THE ENTIRE TIME-SERIES, IT WAS NO CHANGE
-              if (length(unique(pixel$value)) == 1) {
-                return('No change')
-              }
-            }
-            
-            ## PERSISTENT: IF END CLASS IS DIFFERENT OF THE START CLASS (FILTERED BY 2 YEARS STABILITY) THE CHANGE WAS PERSISTENT CHANGE
-            if (pixel$value[1] != pixel$value[nrow(pixel)]) {
-              return('Persistent change')
-            }
-          })
-        
-        # Combine lists and maintain sublist index
-        combined_list <- Map(function(lst, traj_res) c(lst, traj_res), lst, traj_res)
-        
-        # Convert the list to a data.frame
-        df <- as.data.frame(do.call(rbind, combined_list))
-        
-        # Rename last column (result)
-        colnames(df)[length(df)] <- 'Change'
-        
-        # Split the geometry column into longitude and latitude columns
-        df$longitude <- as.numeric(sub(".*\\(([^,]+),.*", "\\1", df$geometry))
-        df$latitude <- as.numeric(sub(".*,\\s*([^\\)]+)\\)", "\\1", df$geometry))
-        
-        # Remove the geometry column
-        df <- df[, !(names(df) %in% c("geometry"))]
-        
-        # Convert to sf object with point geometry
-        df_sf <- st_as_sf(df, coords = c("longitude", "latitude"), crs = 4326)
-        
-        #plot(df_sf$geometry, axes=T)
-        
-        ## Create legend
-        df_sf$change_id <- gsub("No change", 1,
-                                gsub("Inconclusive", 2,
-                                     gsub("Temporary change", 3,
-                                          gsub("Persistent change", 4,
-                                               df_sf$Change))))
-        
-        ## select only relevant columns
-        df_sf <- df_sf %>% dplyr::select(id, Change, change_id)
-        
-        # Define the raster extent and resolution
-        r <- raster(extent(df_sf), resolution = 0.0002694946 )
-        
-        ## rasterize
-        r <- rasterize(df_sf, 
-                       r,
-                       field = as.numeric(df_sf$change_id))
-        
-        # Set the projection to EPSG 4326
-        r@crs <- CRS("+init=EPSG:4326")
-        proj4string(r) <- CRS("+proj=longlat +datum=WGS84")
-        
-        ## Export to GEE
-        raster_as_ee(
-          x = r,
-          overwrite = TRUE,
-          assetId = paste0(out_dir, '/', grid_ids[i], letters[j]),
-          bucket = "degrad-traj1"
-        )
-        
-        print('done, next === sub tile ===')
-        
-      } ## end of sub tiles processing
-      print ('tile done!! next')
-      rm(newGrid, newGrid_j, collection_i, collection_i_arr, f, x, lst, lst_x, trajs, traj_rle, traj_res, combined_list, df, df_sf, r)
-      gc()
-      next
-    } ## end of complete tile processing
-  
-  
-  print('Getting trajectories')
-  
-  # Convert the data.frame to a list where each row is an independent sublist
-  lst <- apply(collection_i_arr, 1, as.list)
-  
-  # Remove the first and last entries of each sublist
-  lst_x <- lapply(lst, function(x) x[2:(length(x)-1)])
-  
-  ## Get trajectories as lists
-  trajs <- lapply(lst_x, function(pixel) c(
-    pixel$classification_1985, pixel$classification_1986, pixel$classification_1987, 
-    pixel$classification_1988, pixel$classification_1989, pixel$classification_1990, 
-    pixel$classification_1991, pixel$classification_1992, pixel$classification_1993,
-    pixel$classification_1994, pixel$classification_1995, pixel$classification_1996, 
-    pixel$classification_1997, pixel$classification_1998, pixel$classification_1999,
-    pixel$classification_2000, pixel$classification_2001, pixel$classification_2002,
-    pixel$classification_2003, pixel$classification_2004, pixel$classification_2005,
-    pixel$classification_2006, pixel$classification_2007, pixel$classification_2008,
-    pixel$classification_2009, pixel$classification_2010, pixel$classification_2011,
-    pixel$classification_2012, pixel$classification_2013, pixel$classification_2014,
-    pixel$classification_2015, pixel$classification_2016, pixel$classification_2017,
-    pixel$classification_2018, pixel$classification_2019, pixel$classification_2020,
-    pixel$classification_2021))
-  
-  ## Compute Run Length Encoding
-  traj_rle <- lapply(trajs, function(pixel) as.data.frame(cbind(
-    value= rle(pixel)$values,
-    length= rle(pixel)$lengths))) 
-  
-  ## Remove temporal segments with less than persistence threshold
-  traj_rle <- lapply(traj_rle, function(pixel) subset(pixel, length > persistence))
-  
-  ## Get only assessment classes (discard anthropogenic and ignored)
-  traj_rle <- lapply(traj_rle, function(pixel) subset(pixel, value %in% assess_classes))
-  
-  
-  ################# HERE IS PLACED THE RULES #################
-  
-  ## @@ RULE 1: TEMPORARY VS. PERSISTENT CHANGES  @@
-  ## INCONCLUSIVE: NO-ONE TRAJECTORY OF NV CLASSES SATISFIES THE PERSISTANCE CRITERIA
-  traj_res <- lapply(traj_rle, function(pixel) 
-    if (nrow(pixel) == 0) {
-      return('Inconclusive')
-    } else {
-      ## IF START CLASS IS EQUALS TO END CLASS (FILTERED BY 2 YEAR STABILITY)
-      if (pixel$value[1] == pixel$value[nrow(pixel)])  {
-        ## AND THE NUMBER OF NATIVE CLASSES IN THE SERIE WAS DIFFERENT OF ONE
-        ## THIS WAS A "TEMPORARY CHANGE"
-        if (length(unique(pixel$value)) != 1) {
-          return('Temporary change')
-        }
-        ## IF THE NUMBER OF NATIVE CLASSES IS EQUAL TO ONE OVER THE ENTIRE TIME-SERIES, IT WAS NO CHANGE
-        if (length(unique(pixel$value)) == 1) {
-          return('No change')
-        }
-      }
-      
-      ## PERSISTENT: IF END CLASS IS DIFFERENT OF THE START CLASS (FILTERED BY 2 YEARS STABILITY) THE CHANGE WAS PERSISTENT CHANGE
-      if (pixel$value[1] != pixel$value[nrow(pixel)]) {
-        return('Persistent change')
-      }
-    })
-  
-  # Combine lists and maintain sublist index
-  combined_list <- Map(function(lst, traj_res) c(lst, traj_res), lst, traj_res)
-  
-  # Convert the list to a data.frame
-  df <- as.data.frame(do.call(rbind, combined_list))
-  
-  # Rename last column (result)
-  colnames(df)[length(df)] <- 'Change'
-  
-  # Split the geometry column into longitude and latitude columns
-  df$longitude <- as.numeric(sub(".*\\(([^,]+),.*", "\\1", df$geometry))
-  df$latitude <- as.numeric(sub(".*,\\s*([^\\)]+)\\)", "\\1", df$geometry))
-  
-  # Remove the geometry column
-  df <- df[, !(names(df) %in% c("geometry"))]
-  
-  # Convert to sf object with point geometry
-  df_sf <- st_as_sf(df, coords = c("longitude", "latitude"), crs = 4326)
-  
-  #plot(df_sf$geometry, axes=T)
-  
-  ## Create legend
-  df_sf$change_id <- gsub("No change", 1,
-                          gsub("Inconclusive", 2,
-                               gsub("Temporary change", 3,
-                                    gsub("Persistent change", 4,
-                                         df_sf$Change))))
-  
-  ## select only relevant columns
-  df_sf <- df_sf %>% dplyr::select(id, Change, change_id)
-  
-  # Define the raster extent and resolution
+    ## PERSISTENT: IF END CLASS IS DIFFERENT OF THE START CLASS (FILTERED BY 2 YEARS STABILITY) THE CHANGE WAS PERSISTENT CHANGE
+    if (pixel$value[1] != pixel$value[nrow(pixel)]) {
+      return('Persistent change')
+    }
+  })
+    # Combine lists and maintain sublist index
+  ombined_list <- Map(function(lst, traj_res) c(lst, traj_res), lst, traj_res)
+    # Convert the list to a data.frame
+  f <- as.data.frame(do.call(rbind, combined_list))
+    # Rename last column (result)
+  olnames(df)[length(df)] <- 'Change'
+    # Split the geometry column into longitude and latitude columns
+  f$longitude <- as.numeric(sub(".*\\(([^,]+),.*", "\\1", df$geometry))
+  f$latitude <- as.numeric(sub(".*,\\s*([^\\)]+)\\)", "\\1", df$geometry))
+    # Remove the geometry column
+  f <- df[, !(names(df) %in% c("geometry"))]
+    # Convert to sf object with point geometry
+  f_sf <- st_as_sf(df, coords = c("longitude", "latitude"), crs = 4326)
+    #plot(df_sf$geometry, axes=T)
+    ## Create legend
+  f_sf$change_id <- gsub("No change", 1,
+                        gsub("Inconclusive", 2,
+                             gsub("Temporary change", 3,
+                                  gsub("Persistent change", 4,
+                                       df_sf$Change))))
+    ## select only relevant columns
+  f_sf <- df_sf %>% dplyr::select(id, Change, change_id)
+    # Define the raster extent and resolution
   r <- raster(extent(df_sf), resolution = 0.0002694946 )
   
   ## rasterize

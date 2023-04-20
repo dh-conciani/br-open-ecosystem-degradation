@@ -293,8 +293,8 @@ for (i in 1:length(grid_ids)) {
       print ('tile done!! next')
       rm(newGrid, newGrid_j, collection_i, collection_i_arr, f, x, lst, lst_x, trajs, traj_rle, traj_res, combined_list, df, df_sf, r)
       gc()
-      next
     } ## end of complete tile processing
+    next
   }
   
   

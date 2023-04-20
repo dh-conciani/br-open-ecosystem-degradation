@@ -143,6 +143,8 @@ for (i in 1:length(grid_ids)) {
     ## If the value is too large, memory error, re-grid them
     if(grepl("ee_monitoring was forced to stop before getting results", result)) {
       print('Value is too large! Spliting tile to avoid error')
+      
+      
 
       ## divide into small parts (25 x 25 km)
       newGrid <- lat_lonm$reduceToVectors(

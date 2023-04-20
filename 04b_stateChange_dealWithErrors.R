@@ -65,7 +65,7 @@ processed <- ee$ImageCollection(out_dir)$aggregate_array('system:index')$getInfo
 grid_ids <- grid_ids[-which(grid_ids %in% processed)]
 
 ## subset
-grid_ids <- grid_ids[1:220]
+grid_ids <- grid_ids[221:440]
 
 ## Compute coordiante images to be used in the case of subsample of the tiles
 ## Select the longitude and latitude bands, multiply to truncate into integers (meter)
@@ -138,7 +138,7 @@ for (i in 1:length(grid_ids)) {
     } 
     
     ## If the value is too large, memory error, re-grid them
-    if(grepl("The source could be corrupt or not supported", result)) {
+    if(grepl("ee_monitoring was forced to stop before getting results", result)) {
       print('Value is too large! Spliting tile to avoid error')
       
       ## divide into small parts (25 x 25 km)
@@ -155,7 +155,7 @@ for (i in 1:length(grid_ids)) {
         
         ## select sub grid[j] and subtract -1 (jscript index starts in zero zzzzzz)
         newGrid_j <- ee$Feature(newGrid$toList(newGrid$size())$get(j-1))
-        
+
         ## Get pixel values
         collection_i <- collection$sample(region= newGrid_j$geometry(), 
                                           scale = 30,
@@ -287,7 +287,6 @@ for (i in 1:length(grid_ids)) {
       next
     } ## end of complete tile processing
   }
-  
   
   
   print('Getting trajectories')

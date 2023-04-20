@@ -45,3 +45,5 @@ Export.image.toAsset({
 Map.addLayer(stable.randomVisualizer(), {}, 'stable');
 Map.addLayer(unstable_trajs.randomVisualizer(), {}, 'unstable trajs');
 Map.addLayer(binded.randomVisualizer(), {}, 'binded')
+
+Map.addLayer(ee.Image('projects/mapbiomas-workspace/DEGRADACAO/TRAJECTORIES/COL71/native_trajs_v1').randomVisualizer(), {}, 'exported')

@@ -274,21 +274,19 @@ for (i in 1:length(grid_ids)) {
         raster_as_ee(
           x = r,
           overwrite = TRUE,
-          assetId = paste0(out_dir, '/', grid_ids[i]),
+          assetId = paste0(out_dir, '/', grid_ids[i], letters[j]),
           bucket = "degrad-traj1"
         )
         
+        print('done, next === sub tile ===')
         
-        
-      }
-      
-      
-    }
-
+      } ## end of sub tiles processing
+      print ('tile done!! next')
+      rm(newGrid, newGrid_j, grid_i, collection_i, collection_i_arr, f, x, lst, lst_x, trajs, traj_rle, traj_res, combined_list, df, df_sf, r)
+      gc()
+      next
+    } ## end of complete tile processing
   }
-  
- 
-  
   
   
   

@@ -143,7 +143,7 @@ for (i in 1:length(grid_ids)) {
     ## If the value is too large, memory error, re-grid them
     if(grepl("ee_monitoring was forced to stop before getting results", result)) {
       print('Value is too large! Spliting tile to avoid error')
-      
+
       ## divide into small parts (25 x 25 km)
       newGrid <- lat_lonm$reduceToVectors(
         geometry = grid_i$geometry(),
@@ -153,7 +153,7 @@ for (i in 1:length(grid_ids)) {
       
 
       ## For each new grid
-      for (j in 1:length(newGrid$size()$getInfo())) {
+      for (j in 1:newGrid$size()$getInfo()) {
         print(paste0('Getting trajectories for the splitted grid >>>', letters[j], '<<<'))
         
         ## select sub grid[j] and subtract -1 (jscript index starts in zero zzzzzz)
@@ -285,7 +285,7 @@ for (i in 1:length(grid_ids)) {
         
       } ## end of sub tiles processing
       print ('tile done!! next')
-      rm(newGrid, newGrid_j, grid_i, collection_i, collection_i_arr, f, x, lst, lst_x, trajs, traj_rle, traj_res, combined_list, df, df_sf, r)
+      rm(newGrid, newGrid_j, collection_i, collection_i_arr, f, x, lst, lst_x, trajs, traj_rle, traj_res, combined_list, df, df_sf, r)
       gc()
       next
     } ## end of complete tile processing

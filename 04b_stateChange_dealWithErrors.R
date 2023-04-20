@@ -148,13 +148,17 @@ for (i in 1:length(grid_ids)) {
       newGrid <- lat_lonm$reduceToVectors(
         geometry = grid_i$geometry(),
         scale = 25000,
-        geometryType = 'polygon'
-      )
+        geometryType = 'polygon')
       
-
       ## For each new grid
       for (j in 1:newGrid$size()$getInfo()) {
         print(paste0('Getting trajectories for the splitted grid >>>', letters[j], '<<<'))
+        
+        ## check if the file already exits
+        if (paste0(grid_ids[i], letters[j]) %in% ee$ImageCollection(out_dir)$aggregate_array('system:index')$getInfo() == TRUE) {
+          ## skip to next
+          next
+        }
         
         ## select sub grid[j] and subtract -1 (jscript index starts in zero zzzzzz)
         newGrid_j <- ee$Feature(newGrid$toList(newGrid$size())$get(j-1))

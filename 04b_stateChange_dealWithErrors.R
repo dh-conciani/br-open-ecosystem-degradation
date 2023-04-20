@@ -292,37 +292,37 @@ for (i in 1:length(grid_ids)) {
   
   print('Getting trajectories')
     # Convert the data.frame to a list where each row is an independent sublist
-  st <- apply(collection_i_arr, 1, as.list)
+  lst <- apply(collection_i_arr, 1, as.list)
     # Remove the first and last entries of each sublist
-  st_x <- lapply(lst, function(x) x[2:(length(x)-1)])
+  lst_x <- lapply(lst, function(x) x[2:(length(x)-1)])
     ## Get trajectories as lists
-  rajs <- lapply(lst_x, function(pixel) c(
-  pixel$classification_1985, pixel$classification_1986, pixel$classification_1987, 
-  pixel$classification_1988, pixel$classification_1989, pixel$classification_1990, 
-  pixel$classification_1991, pixel$classification_1992, pixel$classification_1993,
-  pixel$classification_1994, pixel$classification_1995, pixel$classification_1996, 
-  pixel$classification_1997, pixel$classification_1998, pixel$classification_1999,
-  pixel$classification_2000, pixel$classification_2001, pixel$classification_2002,
-  pixel$classification_2003, pixel$classification_2004, pixel$classification_2005,
-  pixel$classification_2006, pixel$classification_2007, pixel$classification_2008,
-  pixel$classification_2009, pixel$classification_2010, pixel$classification_2011,
-  pixel$classification_2012, pixel$classification_2013, pixel$classification_2014,
-  pixel$classification_2015, pixel$classification_2016, pixel$classification_2017,
-  pixel$classification_2018, pixel$classification_2019, pixel$classification_2020,
-  pixel$classification_2021))
+  trajs <- lapply(lst_x, function(pixel) c(
+    pixel$classification_1985, pixel$classification_1986, pixel$classification_1987, 
+    pixel$classification_1988, pixel$classification_1989, pixel$classification_1990, 
+    pixel$classification_1991, pixel$classification_1992, pixel$classification_1993,
+    pixel$classification_1994, pixel$classification_1995, pixel$classification_1996, 
+    pixel$classification_1997, pixel$classification_1998, pixel$classification_1999,
+    pixel$classification_2000, pixel$classification_2001, pixel$classification_2002,
+    pixel$classification_2003, pixel$classification_2004, pixel$classification_2005,
+    pixel$classification_2006, pixel$classification_2007, pixel$classification_2008,
+    pixel$classification_2009, pixel$classification_2010, pixel$classification_2011,
+    pixel$classification_2012, pixel$classification_2013, pixel$classification_2014,
+    pixel$classification_2015, pixel$classification_2016, pixel$classification_2017,
+    pixel$classification_2018, pixel$classification_2019, pixel$classification_2020,
+    pixel$classification_2021))
     ## Compute Run Length Encoding
-  raj_rle <- lapply(trajs, function(pixel) as.data.frame(cbind(
-  value= rle(pixel)$values,
-  length= rle(pixel)$lengths))) 
+  traj_rle <- lapply(trajs, function(pixel) as.data.frame(cbind(
+    value= rle(pixel)$values,
+    length= rle(pixel)$lengths))) 
     ## Remove temporal segments with less than persistence threshold
-  raj_rle <- lapply(traj_rle, function(pixel) subset(pixel, length > persistence))
+  traj_rle <- lapply(traj_rle, function(pixel) subset(pixel, length > persistence))
     ## Get only assessment classes (discard anthropogenic and ignored)
-  raj_rle <- lapply(traj_rle, function(pixel) subset(pixel, value %in% assess_classes))
+  traj_rle <- lapply(traj_rle, function(pixel) subset(pixel, value %in% assess_classes))
   
   ################ HERE IS PLACED THE RULES #################
     ## @@ RULE 1: TEMPORARY VS. PERSISTENT CHANGES  @@
   # INCONCLUSIVE: NO-ONE TRAJECTORY OF NV CLASSES SATISFIES THE PERSISTANCE CRITERIA
-  raj_res <- lapply(traj_rle, function(pixel) 
+  traj_res <- lapply(traj_rle, function(pixel) 
   if (nrow(pixel) == 0) {
     return('Inconclusive')
   } else {
@@ -345,11 +345,11 @@ for (i in 1:length(grid_ids)) {
     }
   })
     # Combine lists and maintain sublist index
-  ombined_list <- Map(function(lst, traj_res) c(lst, traj_res), lst, traj_res)
+  combined_list <- Map(function(lst, traj_res) c(lst, traj_res), lst, traj_res)
     # Convert the list to a data.frame
   f <- as.data.frame(do.call(rbind, combined_list))
     # Rename last column (result)
-  olnames(df)[length(df)] <- 'Change'
+  colnames(df)[length(df)] <- 'Change'
     # Split the geometry column into longitude and latitude columns
   f$longitude <- as.numeric(sub(".*\\(([^,]+),.*", "\\1", df$geometry))
   f$latitude <- as.numeric(sub(".*,\\s*([^\\)]+)\\)", "\\1", df$geometry))

@@ -42,8 +42,8 @@ Export.image.toAsset({
     maxPixels: 1e13
 });
 
-Map.addLayer(stable.randomVisualizer(), {}, 'stable');
-Map.addLayer(unstable_trajs.randomVisualizer(), {}, 'unstable trajs');
-Map.addLayer(binded.randomVisualizer(), {}, 'binded')
+Map.addLayer(stable.randomVisualizer(), {}, 'stable', false);
+Map.addLayer(unstable_trajs.randomVisualizer(), {}, 'unstable trajs', false);
+Map.addLayer(binded.randomVisualizer(), {}, 'binded', false)
 
 Map.addLayer(ee.Image('projects/mapbiomas-workspace/DEGRADACAO/TRAJECTORIES/COL71/native_trajs_v1').randomVisualizer(), {}, 'exported')

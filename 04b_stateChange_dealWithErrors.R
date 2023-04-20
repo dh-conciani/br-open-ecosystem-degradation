@@ -65,7 +65,7 @@ processed <- ee$ImageCollection(out_dir)$aggregate_array('system:index')$getInfo
 grid_ids <- grid_ids[-which(grid_ids %in% processed)]
 
 ## subset
-grid_ids <- grid_ids[1:200]
+grid_ids <- grid_ids[2:200]
 
 ## Compute coordiante images to be used in the case of subsample of the tiles
 ## Select the longitude and latitude bands, multiply to truncate into integers (meter)

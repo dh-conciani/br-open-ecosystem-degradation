@@ -68,6 +68,9 @@ if(file.exists('./error.csv') == TRUE) {
   grid_ids <- grid_ids[-which(grid_ids %in% read.csv('./error.csv')$id)] 
 }
 
+## Select a part of
+#grid_ids <- grid_ids[26:53]
+
 ## for each carta
 for (i in 1:length(grid_ids)) {
   print(paste0('processing tile ', i, ' of ', length(grid_ids)))
@@ -228,6 +231,7 @@ for (i in 1:length(grid_ids)) {
     assetId = paste0(out_dir, '/', grid_ids[i]),
     bucket = "degrad-traj1"
   )
+  
   
   print('done! next --->')
   rm(grid_i, collection_i, collection_i_arr, f, x, lst, lst_x, trajs, traj_rle, traj_res, combined_list, df, df_sf, r)

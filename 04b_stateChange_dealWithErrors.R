@@ -10,7 +10,6 @@ library(sf)
 library(dplyr)
 library(googleCloudStorageR)
 library(raster)
-options(scipen=999)
 
 ## Set API key
 

@@ -65,7 +65,7 @@ processed <- ee$ImageCollection(out_dir)$aggregate_array('system:index')$getInfo
 grid_ids <- grid_ids[-which(grid_ids %in% processed)]
 
 ## subset
-grid_ids <- grid_ids[2:200]
+grid_ids <- grid_ids[1:200]
 
 ## Compute coordiante images to be used in the case of subsample of the tiles
 ## Select the longitude and latitude bands, multiply to truncate into integers (meter)
@@ -104,7 +104,6 @@ for (i in 1:length(grid_ids)) {
   if (inherits(result, "try-error")) {
     # Extract the error message from the result object
     result <- as.character(result)
-    print(error_message)
   }
 
   print('logical test to error ok')
@@ -115,10 +114,7 @@ for (i in 1:length(grid_ids)) {
   
   
   ## HERE STARTS THE RULES TO DEAL WITH THE ERRORS
-  ## If sampled object does not exits 
-  if(exists('collection_i_arr') == FALSE) {
-    
-    ## RULE 1: And it is empty (full NA), export a full-NA grid
+  ## RULE 1: And it is empty (full NA), export a full-NA grid
     if(grepl("The source could be corrupt or not supported", result)) {
       # Do something if the text is found
       print('Downloading tile to export as NA')
@@ -298,9 +294,8 @@ for (i in 1:length(grid_ids)) {
       print ('tile done!! next')
       rm(newGrid, newGrid_j, collection_i, collection_i_arr, f, x, lst, lst_x, trajs, traj_rle, traj_res, combined_list, df, df_sf, r)
       gc()
+      next
     } ## end of complete tile processing
-    next
-  }
   
   
   print('Getting trajectories')

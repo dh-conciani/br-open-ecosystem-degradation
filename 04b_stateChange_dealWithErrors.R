@@ -65,13 +65,14 @@ processed <- ee$ImageCollection(out_dir)$aggregate_array('system:index')$getInfo
 grid_ids <- grid_ids[-which(grid_ids %in% processed)]
 
 ## subset
-grid_ids <- grid_ids[221:440]
+grid_ids <- grid_ids[1:200]
 
 ## Compute coordiante images to be used in the case of subsample of the tiles
 ## Select the longitude and latitude bands, multiply to truncate into integers (meter)
 lonLat <- ee$Image$pixelLonLat()
 lonGrid <- lonLat$select('longitude')$multiply(10000000)$toInt()
 latGrid <- lonLat$select('latitude')$multiply(10000000)$toInt()
+lat_lonm <- lonGrid$multiply(latGrid)
 
 ## for each carta
 for (i in 1:length(grid_ids)) {
@@ -89,6 +90,7 @@ for (i in 1:length(grid_ids)) {
                                     scale = 30,
                                     geometries= TRUE,
                                     tileScale= 16)
+  print('sampling call ok')
   
   #try(ee_as_sf(collection_i, via= 'drive'), silent= TRUE)
   
@@ -100,6 +102,7 @@ for (i in 1:length(grid_ids)) {
     error_message <- conditionMessage(e)
     return(error_message)
   })
+  print('logical test to error ok')
   
   #result
   ## Get locally
@@ -132,7 +135,7 @@ for (i in 1:length(grid_ids)) {
         bucket = "degrad-traj1"
       )
       
-      rm(r)
+      rm(r, result)
       gc()
       next
     } 
@@ -142,20 +145,20 @@ for (i in 1:length(grid_ids)) {
       print('Value is too large! Spliting tile to avoid error')
       
       ## divide into small parts (25 x 25 km)
-      newGrid <- lonGrid$multiply(latGrid)$reduceToVectors(
+      newGrid <- lat_lonm$reduceToVectors(
         geometry = grid_i$geometry(),
         scale = 25000,
         geometryType = 'polygon'
       )
       
+
       ## For each new grid
       for (j in 1:length(newGrid$size()$getInfo())) {
-        
         print(paste0('Getting trajectories for the splitted grid >>>', letters[j], '<<<'))
         
         ## select sub grid[j] and subtract -1 (jscript index starts in zero zzzzzz)
         newGrid_j <- ee$Feature(newGrid$toList(newGrid$size())$get(j-1))
-
+        
         ## Get pixel values
         collection_i <- collection$sample(region= newGrid_j$geometry(), 
                                           scale = 30,

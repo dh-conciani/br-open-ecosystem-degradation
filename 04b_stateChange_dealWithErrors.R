@@ -1,6 +1,8 @@
 ## compute state changes
 ## degradation
 
+#### implementar skip em IDs com letra (a, b, c, d)
+
 ## import libraries
 library(rgee)
 library(stringr)

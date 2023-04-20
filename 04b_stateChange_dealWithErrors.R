@@ -346,26 +346,26 @@ for (i in 1:length(grid_ids)) {
   })
     # Combine lists and maintain sublist index
   combined_list <- Map(function(lst, traj_res) c(lst, traj_res), lst, traj_res)
-    # Convert the list to a data.frame
-  f <- as.data.frame(do.call(rbind, combined_list))
-    # Rename last column (result)
+  # Convert the list to a data.frame
+  df <- as.data.frame(do.call(rbind, combined_list))
+  # Rename last column (result)
   colnames(df)[length(df)] <- 'Change'
-    # Split the geometry column into longitude and latitude columns
-  f$longitude <- as.numeric(sub(".*\\(([^,]+),.*", "\\1", df$geometry))
-  f$latitude <- as.numeric(sub(".*,\\s*([^\\)]+)\\)", "\\1", df$geometry))
+  # Split the geometry column into longitude and latitude columns
+  df$longitude <- as.numeric(sub(".*\\(([^,]+),.*", "\\1", df$geometry))
+  df$latitude <- as.numeric(sub(".*,\\s*([^\\)]+)\\)", "\\1", df$geometry))
     # Remove the geometry column
-  f <- df[, !(names(df) %in% c("geometry"))]
+  df <- df[, !(names(df) %in% c("geometry"))]
     # Convert to sf object with point geometry
-  f_sf <- st_as_sf(df, coords = c("longitude", "latitude"), crs = 4326)
+  df_sf <- st_as_sf(df, coords = c("longitude", "latitude"), crs = 4326)
     #plot(df_sf$geometry, axes=T)
     ## Create legend
-  f_sf$change_id <- gsub("No change", 1,
+  df_sf$change_id <- gsub("No change", 1,
                         gsub("Inconclusive", 2,
                              gsub("Temporary change", 3,
                                   gsub("Persistent change", 4,
                                        df_sf$Change))))
     ## select only relevant columns
-  f_sf <- df_sf %>% dplyr::select(id, Change, change_id)
+  df_sf <- df_sf %>% dplyr::select(id, Change, change_id)
     # Define the raster extent and resolution
   r <- raster(extent(df_sf), resolution = 0.0002694946 )
   

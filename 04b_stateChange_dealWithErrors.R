@@ -61,12 +61,14 @@ grid_ids <- unique(grid$aggregate_array('id')$getInfo())
 
 ## Get tiles already processed
 processed <- ee$ImageCollection(out_dir)$aggregate_array('system:index')$getInfo()
+processed_with_letters <- unique(gsub("[[:alpha:]]", "", grep("\\d+[a-zA-Z]", processed, value = TRUE, perl= TRUE)))
 
 ## Remove already processed
 grid_ids <- grid_ids[-which(grid_ids %in% processed)]
+grid_ids <- grid_ids[-which(grid_ids %in% processed_with_letters)]
 
 ## subset
-grid_ids <- grid_ids[1:200]
+grid_ids <- grid_ids[1:150]
 
 ## Compute coordiante images to be used in the case of subsample of the tiles
 ## Select the longitude and latitude bands, multiply to truncate into integers (meter)

@@ -90,12 +90,9 @@ for (i in 1:length(grid_ids)) {
                                     scale = 30,
                                     geometries= TRUE,
                                     tileScale= 16)
-  print('sampling call ok')
-  
-  #try(ee_as_sf(collection_i, via= 'drive'), silent= TRUE)
-  Sys.sleep(3)
-  
+
   # Call a function that might throw an error
+  print('Downloading sampled results')
   result <- try({
     collection_i_arr <- ee_as_sf(collection_i, via = "drive", quiet= TRUE)
   }, silent = TRUE)
@@ -105,9 +102,8 @@ for (i in 1:length(grid_ids)) {
     # Extract the error message from the result object
     result <- as.character(result)
   }
+  print('Download OK!')
 
-  print('logical test to error ok')
-  
   ## HERE STARTS THE RULES TO DEAL WITH THE ERRORS
   ## RULE 1: And it is empty (full NA), export a full-NA grid
   if(grepl("The source could be corrupt or not supported", result) == TRUE) {
@@ -138,15 +134,8 @@ for (i in 1:length(grid_ids)) {
   
   ## If the value is too large, memory error, re-grid them
   if(grepl("ee_monitoring was forced to stop before getting results", result) == TRUE) {
-    print('Value is too large! Spliting tile to avoid error')
-    Sys.sleep(3)
-    
-    print('sys sleep ok')
-    print(grid_i)
-    print('grid_i ok')
-    print(lat_lonm)
-    print('latlon ok')
-      
+    print('Value is too large! SPLITING IN FOUR SUB-TILES')
+
     ## divide into small parts (25 x 25 km)
     newGrid <- lat_lonm$reduceToVectors(
       geometry = grid_i$geometry(),

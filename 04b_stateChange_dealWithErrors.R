@@ -1,6 +1,8 @@
 ## compute state changes
 ## degradation
 
+## dev status: erros avoided, needs optimization (remove unucessary files; refactor into functions)
+
 ## import libraries
 library(rgee)
 library(stringr)

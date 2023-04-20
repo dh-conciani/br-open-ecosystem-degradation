@@ -96,13 +96,17 @@ for (i in 1:length(grid_ids)) {
   Sys.sleep(3)
   
   # Call a function that might throw an error
-  result <- tryCatch({
+  result <- try({
     collection_i_arr <- ee_as_sf(collection_i, via = "drive")
-  }, error = function(e) {
-    # Store the error message in a variable
-    error_message <- conditionMessage(e)
-    return(error_message)
-  })
+  }, silent = TRUE)
+  
+  # Check if there was an error
+  if (inherits(result, "try-error")) {
+    # Extract the error message from the result object
+    result <- as.character(result)
+    print(error_message)
+  }
+
   print('logical test to error ok')
   
   #result

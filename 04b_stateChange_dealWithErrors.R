@@ -61,14 +61,22 @@ grid_ids <- unique(grid$aggregate_array('id')$getInfo())
 
 ## Get tiles already processed
 processed <- ee$ImageCollection(out_dir)$aggregate_array('system:index')$getInfo()
-processed_with_letters <- unique(gsub("[[:alpha:]]", "", grep("\\d+[a-zA-Z]", processed, value = TRUE, perl= TRUE)))
+
+## Get tiles with letters that have been entirely sub-processed
+processed_with_letters <- row.names(
+  subset(as.data.frame(cbind(table(
+    gsub("[[:alpha:]]", "", grep("\\d+[a-zA-Z]", processed, value = TRUE, perl= TRUE)
+         )))), V1 == 4))
+
+
+
 
 ## Remove already processed
 grid_ids <- grid_ids[-which(grid_ids %in% processed)]
 grid_ids <- grid_ids[-which(grid_ids %in% processed_with_letters)]
 
 ## subset
-grid_ids <- grid_ids[1:150]
+grid_ids <- grid_ids[1:35]
 
 ## Compute coordiante images to be used in the case of subsample of the tiles
 ## Select the longitude and latitude bands, multiply to truncate into integers (meter)
@@ -376,8 +384,9 @@ for (i in 1:length(grid_ids)) {
   if (inherits(resultRaster, "try-error")) {
     # Extract the error message from the result object
     resultRaster <- as.character(resultRaster)
+    print('raster error')
   }
-  
+
   ## If the rasterize function have same min and max extent (occurs in tiles with rare pixels)
   if(grepl("min and max y are the same", resultRaster) == TRUE) {
     ## add a simbolic value do diferentiate y axis

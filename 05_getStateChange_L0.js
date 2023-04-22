@@ -34,9 +34,9 @@ var binded = unstable_trajs.blend(stable);
 // export 
 Export.image.toAsset({
 		image: binded,
-    description: 'native_trajs_v1',
-    assetId: 'projects/mapbiomas-workspace/DEGRADACAO/TRAJECTORIES/COL71/native_trajs_v1',
-    pyramidingPolicy: 'min',
+    description: 'native_trajs_v2',
+    assetId: 'projects/mapbiomas-workspace/DEGRADACAO/TRAJECTORIES/COL71/native_trajs_v2',
+    pyramidingPolicy: 'mode',
     region: mapbiomas_collection.geometry(),
     scale: 30,
     maxPixels: 1e13

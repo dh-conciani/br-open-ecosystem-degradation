@@ -14,6 +14,7 @@ library(googleCloudStorageR)
 library(raster)
 
 ## Set API key
+## see gcp documentation .json
 
 ## start APIs
 ee_Initialize(gcs= TRUE)
@@ -70,15 +71,9 @@ processed_with_letters <- row.names(
     gsub("[[:alpha:]]", "", grep("\\d+[a-zA-Z]", processed, value = TRUE, perl= TRUE)
          )))), V1 == 4))
 
-
-
-
 ## Remove already processed
 grid_ids <- grid_ids[-which(grid_ids %in% processed)]
 grid_ids <- grid_ids[-which(grid_ids %in% processed_with_letters)]
-
-## subset
-grid_ids <- grid_ids[1:35]
 
 ## Compute coordiante images to be used in the case of subsample of the tiles
 ## Select the longitude and latitude bands, multiply to truncate into integers (meter)

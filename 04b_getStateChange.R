@@ -1,7 +1,9 @@
 ## compute state changes
 ## degradation
 
-#### implementar limpeza de arquivos intermediarios
+## next steps
+### 1. implementar limpeza de arquivos intermediarios
+### 2. empacotar funções genericas
 
 ## import libraries
 library(rgee)

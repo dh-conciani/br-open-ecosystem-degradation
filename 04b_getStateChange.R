@@ -1,7 +1,7 @@
 ## compute state changes
 ## degradation
 
-#### implementar skip em IDs com letra (a, b, c, d)
+#### implementar limpeza de arquivos intermediarios
 
 ## import libraries
 library(rgee)

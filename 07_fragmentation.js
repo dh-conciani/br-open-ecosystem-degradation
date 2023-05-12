@@ -53,8 +53,6 @@ var biomes_dict = {
 var collection = ee.Image('projects/mapbiomas-workspace/public/collection7_1/mapbiomas_collection71_integration_v1')
   .select('classification_2021');
 
-
-
 // for each biome, compute fragmentation by using specific criteria
 biomes_name.forEach(function(biome_i) {
   // apply water-native rule
@@ -64,7 +62,7 @@ biomes_name.forEach(function(biome_i) {
       .remap({from: [3, 4, 5, 11, 12, 49, 50, 33],
               to:   [1, 1, 1,  1,  1,  1,  1, 1],
               defaultValue: 21
-    });
+    }).updateMask(biomes.eq(biomes_dict[biome_i]));
   }
   
   if (ignore_water_rule[biome_i] === false) {
@@ -73,12 +71,25 @@ biomes_name.forEach(function(biome_i) {
       .remap({from: [3, 4, 5, 11, 12, 49, 50],
               to:   [1, 1, 1,  1,  1,  1,  1],
               defaultValue: 21
-    });
+    }).updateMask(biomes.eq(biomes_dict[biome_i]));
   }
   
+  // mask collection to retain raw classes
+  var collection_i = collection.updateMask(native_mask.neq(21));
+
+
+  // -- * get edge effect
+  // retain anthropogenic classes to be used as reference for the edge 
+  var anthropogenic = native_mask.updateMask(native_mask.eq(21));
+
+  // compute edge 
+  var edge = anthropogenic.distance(ee.Kernel.euclidean(edge_rules[biome_i], 'meters'), false);
+  edge = edge.mask(edge.lt(edge_rules[biome_i])).mask(collection).selfMask().updateMask(biomes.eq(biomes_dict[biome_i]));
+  Map.addLayer(edge);
   
-  
-  
+  // remove edge 'wrongly' caused by water
+  edge = edge.updateMask(collection.neq(33));
+  // * --
   
   
 })
@@ -87,20 +98,9 @@ biomes_name.forEach(function(biome_i) {
 
 
 
-// mask collection to retain raw classes
-collection = collection.updateMask(native_mask.neq(21));
 
-// -- * get edge effect
-// retain anthropogenic classes to be used as reference for the edge 
-var anthropogenic = native_mask.updateMask(native_mask.eq(21));
 
-// compute edge 
-var edge = anthropogenic.distance(ee.Kernel.euclidean(edge_size, 'meters'), false);
-edge = edge.mask(edge.lt(edge_size)).mask(collection).selfMask();
 
-// remove edge 'wrongly' caused by water
-edge = edge.updateMask(collection.neq(33));
-// * --
 
 // -- * get patch size
 // dissolve all native veg. classes into each one

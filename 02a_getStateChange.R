@@ -1,4 +1,4 @@
-## compute state changes
+## compute state changes (temporary and persistent)
 ## degradation
 
 ## next steps

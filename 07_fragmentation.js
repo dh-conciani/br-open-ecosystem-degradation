@@ -22,6 +22,16 @@ var patch_size_rules = {
   'pantanal': 5
 };
 
+// definir criterio de degradação por idade da vegetação secundaria (em anos)
+var secondary_rules = {
+  'amazonia': 37,
+  'caatinga': 37,
+  'cerrado': 37,
+  'mata_atlantica': 37,
+  'pampa': 37,
+  'pantanal': 37
+};
+
 // o bioma vai ignorar que a interface agua-vegetação nativa pode causar efeito de borda? 
 var ignore_water_rule = {
   'amazonia': true,

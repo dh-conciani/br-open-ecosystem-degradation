@@ -32,14 +32,14 @@ var ignore_water_rule = {
   'pantanal': true
 };
 
-print(patch_size_rules)
 // * -- end of definitions
 
-// read biome 
+// read biomes
 var biomes = ee.Image('projects/mapbiomas-workspace/AUXILIAR/biomas-2019-raster');
-Map.addLayer(biomes.randomVisualizer(),{}, 'Biomas');
+//Map.addLayer(biomes.randomVisualizer(),{}, 'Biomas');
 
 // build biomes dictionary
+var biomes_name = ['amazonia', 'caatinga', 'cerrado', 'mata_atlantica', 'pampa', 'pantanal'];
 var biomes_dict = {
   'amazonia': 1,
   'caatinga': 5,
@@ -53,12 +53,39 @@ var biomes_dict = {
 var collection = ee.Image('projects/mapbiomas-workspace/public/collection7_1/mapbiomas_collection71_integration_v1')
   .select('classification_2021');
 
-// build native vegetation mask (with a rule to ignore edges from water-native)
-var native_mask = collection
-  .remap({from: [3, 4, 5, 11, 12, 49, 50, 33],
-          to:   [1, 1, 1,  1,  1,  1,  1, 1],
-          defaultValue: 21
-  });
+
+
+// for each biome, compute fragmentation by using specific criteria
+biomes_name.forEach(function(biome_i) {
+  // apply water-native rule
+  if (ignore_water_rule[biome_i] === true) {
+    print(biome_i + ' IGNORED water edges');
+    var native_mask = collection
+      .remap({from: [3, 4, 5, 11, 12, 49, 50, 33],
+              to:   [1, 1, 1,  1,  1,  1,  1, 1],
+              defaultValue: 21
+    });
+  }
+  
+  if (ignore_water_rule[biome_i] === false) {
+    print(biome_i + ' APPLIED water edges');
+    var native_mask = collection
+      .remap({from: [3, 4, 5, 11, 12, 49, 50],
+              to:   [1, 1, 1,  1,  1,  1,  1],
+              defaultValue: 21
+    });
+  }
+  
+  
+  
+  
+  
+  
+})
+
+/*
+
+
 
 // mask collection to retain raw classes
 collection = collection.updateMask(native_mask.neq(21));
@@ -101,3 +128,4 @@ Map.addLayer(collection, vis, 'Vegetação Nativa');
 Map.addLayer(patch_size, {palette: ["db0000","faff00","099300"], min:1, max:500}, 'Tamanho do Fragmento');
 Map.addLayer(edge, {palette: ['#FF0000', '#F65E5E', '#FDACAC'], min:1, max:edge_size}, 'Efeito de borda - ' + edge_size + 'm');
 
+*/

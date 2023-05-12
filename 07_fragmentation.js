@@ -93,7 +93,8 @@ biomes_name.forEach(function(biome_i) {
   var anthropogenic = native_mask.updateMask(native_mask.eq(21));
 
   // compute edge 
-  var edge = anthropogenic.distance(ee.Kernel.euclidean(edge_rules[biome_i], 'meters'), false);
+  print(biome_i + ' used ' + edge_rules[biome_i] + 'm as edge rule');
+  var edge = anthropogenic.distance(ee.Kernel.euclidean(edge_rules[biome_i] + 10, 'meters'), false);
   edge = edge.mask(edge.lt(edge_rules[biome_i])).mask(collection).selfMask().updateMask(biomes.eq(biomes_dict[biome_i]));
   //Map.addLayer(edge);
   
@@ -112,9 +113,19 @@ biomes_name.forEach(function(biome_i) {
   });
   
   // get patch sizes
-  var patch_size = native_l0.updateMask(native_l0.neq(33)).connectedPixelCount(1024, true);
+  // convert ha to number of pixels
+  var size_criteria = parseInt((patch_size_rules[biome_i] * 10000) / 900);
+  // compute patche sizes
+  var patch_size = native_l0.updateMask(native_l0.neq(33))
+    .connectedPixelCount(size_criteria + 5, true);
+  
+  // get only patches smaller than the criteria
+  var size_degradation = patch_size.lte(size_criteria).selfMask()
+
+
+
   // * -- 
-  Map.addLayer(patch_size);
+  //Map.addLayer(patch_size);
 
   
   

@@ -2,7 +2,7 @@
 // gt degradaçao - mapbiomas
 
 // -- * definitions
-// set distance (in meters) to be used as edge degradation  
+// definir distancia (em metrosd) de degradação por efeito de borda
 var edge_rules = {
   'amazonia': 90,
   'caatinga': 90,
@@ -12,7 +12,7 @@ var edge_rules = {
   'pantanal': 90
 };
 
-// set patche size (in hectares) to be used as size degradation 
+// definir degradação por tamanho do fragmento (em hectares)
 var patch_size_rules = {
   'amazonia': 5,
   'caatinga': 5,
@@ -22,7 +22,7 @@ var patch_size_rules = {
   'pantanal': 5
 };
 
-// ignore water-native as edge?
+// o bioma vai ignorar que a interface agua-vegetação nativa pode causar efeito de borda? 
 var ignore_water_rule = {
   'amazonia': true,
   'caatinga': true,
@@ -85,11 +85,27 @@ biomes_name.forEach(function(biome_i) {
   // compute edge 
   var edge = anthropogenic.distance(ee.Kernel.euclidean(edge_rules[biome_i], 'meters'), false);
   edge = edge.mask(edge.lt(edge_rules[biome_i])).mask(collection).selfMask().updateMask(biomes.eq(biomes_dict[biome_i]));
-  Map.addLayer(edge);
+  //Map.addLayer(edge);
   
-  // remove edge 'wrongly' caused by water
-  edge = edge.updateMask(collection.neq(33));
+   // apply water-native rule
+  if (ignore_water_rule[biome_i] === true) {
+    // remove edge 'wrongly' caused by water
+    edge = edge.updateMask(collection_i.neq(33));
   // * --
+  }
+  
+  // -- * get patche size 
+  // dissolve all native veg. classes into each one
+  var native_l0 = collection_i.remap({
+    from: [3, 4, 5, 11, 12, 49, 50, 33],
+    to:   [1, 1, 1,  1,  1,  1,  1, 33]
+  });
+  
+  // get patch sizes
+  var patch_size = native_l0.updateMask(native_l0.neq(33)).connectedPixelCount(1024, true);
+  // * -- 
+  Map.addLayer(patch_size);
+
   
   
 })
@@ -102,16 +118,8 @@ biomes_name.forEach(function(biome_i) {
 
 
 
-// -- * get patch size
-// dissolve all native veg. classes into each one
-var native_l0 = collection.remap({
-  from: [3, 4, 5, 11, 12, 49, 50, 33],
-  to:   [1, 1, 1,  1,  1,  1,  1, 33]
-});
 
-// get patch sizes
-var patch_size = native_l0.updateMask(native_l0.neq(33)).connectedPixelCount(1024, true);
-// * -- 
+
 
 
 

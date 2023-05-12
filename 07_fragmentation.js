@@ -63,14 +63,19 @@ var biomes_dict = {
 var collection = ee.Image('projects/mapbiomas-workspace/public/collection7_1/mapbiomas_collection71_integration_v1')
   .select('classification_2021');
 
+// create recipes
+var edge_degrad = ee.Image(0);
+var size_degrad = ee.Image(0);
+var secondary_degrad = ee.Image(0);
+
 // for each biome, compute fragmentation by using specific criteria
 biomes_name.forEach(function(biome_i) {
   // apply water-native rule
   if (ignore_water_rule[biome_i] === true) {
     print(biome_i + ' IGNORED water edges');
     var native_mask = collection
-      .remap({from: [3, 4, 5, 11, 12, 49, 50, 33],
-              to:   [1, 1, 1,  1,  1,  1,  1, 1],
+      .remap({from: [3, 4, 5, 11, 12, 29, 49, 50, 33],
+              to:   [1, 1, 1,  1,  1,  1,  1,  1, 1],
               defaultValue: 21
     }).updateMask(biomes.eq(biomes_dict[biome_i]));
   }
@@ -78,8 +83,8 @@ biomes_name.forEach(function(biome_i) {
   if (ignore_water_rule[biome_i] === false) {
     print(biome_i + ' APPLIED water edges');
     var native_mask = collection
-      .remap({from: [3, 4, 5, 11, 12, 49, 50],
-              to:   [1, 1, 1,  1,  1,  1,  1],
+      .remap({from: [3, 4, 5, 11, 12, 29, 49, 50],
+              to:   [1, 1, 1,  1,  1,  1,  1,  1],
               defaultValue: 21
     }).updateMask(biomes.eq(biomes_dict[biome_i]));
   }
@@ -115,21 +120,46 @@ biomes_name.forEach(function(biome_i) {
   // get patch sizes
   // convert ha to number of pixels
   var size_criteria = parseInt((patch_size_rules[biome_i] * 10000) / 900);
+  print(biome_i + ' used ' + size_criteria + 'px as size rule');
   // compute patche sizes
   var patch_size = native_l0.updateMask(native_l0.neq(33))
     .connectedPixelCount(size_criteria + 5, true);
   
   // get only patches smaller than the criteria
-  var size_degradation = patch_size.lte(size_criteria).selfMask()
-
-
-
-  // * -- 
-  //Map.addLayer(patch_size);
-
+  var size_degradation = patch_size.lte(size_criteria).selfMask();
   
-  
-})
+  // -- * get degradation by secondary vegetation age
+  print(biome_i + ' used ' + secondary_rules[biome_i] +  ' years as secondary veg. rule');
+  var secondary =  ee.Image('projects/mapbiomas-workspace/public/collection7_1/mapbiomas_collection71_secondary_vegetation_age_v1')
+    .updateMask(biomes.eq(biomes_dict[biome_i]))
+    .select('secondary_vegetation_age_2021')
+    .updateMask(collection_i.neq(33))
+    .selfMask();
+    secondary= secondary.updateMask(secondary.lt(secondary_rules[biome_i]));
+    
+  // * --
+    
+  // blend into recipes
+  edge_degrad = edge_degrad.blend(edge).selfMask();
+  size_degrad = size_degrad.blend(size_degradation).selfMask();
+  secondary_degrad = secondary_degrad.blend(secondary).selfMask();
+});
+
+// 'flatten' images
+print(edge_degrad)
+
+
+// get mapbiomas pallete
+var vis = {
+          'min': 0,
+          'max': 62,
+          'palette': require('users/mapbiomas/modules:Palettes.js').get('classification7'),
+          'format': 'png'
+      };
+
+// plot
+Map.addLayer(collection, vis, 'Mapbiomas 2021');
+Map.addLayer(edge_degrad, {'palette': ('red')}, 'Degradação por borda')
 
 /*
 
@@ -144,16 +174,7 @@ biomes_name.forEach(function(biome_i) {
 
 
 
-// get mapbiomas pallete
-var vis = {
-          'min': 0,
-          'max': 62,
-          'palette': require('users/mapbiomas/modules:Palettes.js').get('classification7'),
-          'format': 'png'
-      };
 
-// plot
-Map.addLayer(collection, vis, 'Vegetação Nativa');
 Map.addLayer(patch_size, {palette: ["db0000","faff00","099300"], min:1, max:500}, 'Tamanho do Fragmento');
 Map.addLayer(edge, {palette: ['#FF0000', '#F65E5E', '#FDACAC'], min:1, max:edge_size}, 'Efeito de borda - ' + edge_size + 'm');
 

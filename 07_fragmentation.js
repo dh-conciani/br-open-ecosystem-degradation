@@ -154,8 +154,14 @@ var vis = {
           'format': 'png'
       };
 
+// remap collection to provide view
+var view_collection = collection.remap({
+  from: [3, 4, 5, 49, 11, 12, 32, 29, 50, 13, 15, 19, 39, 20, 40, 62, 41, 36, 46, 47, 48, 9, 21, 23, 24, 30, 25, 33, 31],
+  to: [  1, 10, 1,  1, 10, 10, 10, 10, 10, 10, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14,14, 22, 22, 22, 22, 26, 26]
+});
+
 // plot
-Map.addLayer(collection, vis, 'Mapbiomas 2021', false);
+Map.addLayer(view_collection, vis, 'Mapbiomas 2021', false);
 Map.addLayer(edge_degrad, {'palette': ('red')}, 'Degradação por borda');
 Map.addLayer(size_degrad, {'palette': ('orange')}, 'Degradação por tamanho');
 Map.addLayer(secondary_degrad, {'palette': ('yellow')}, 'Degradado por idade');

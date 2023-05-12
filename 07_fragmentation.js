@@ -32,13 +32,22 @@ var ignore_water_rule = {
   'pantanal': true
 };
 
+print(patch_size_rules)
 // * -- end of definitions
 
 // read biome 
 var biomes = ee.Image('projects/mapbiomas-workspace/AUXILIAR/biomas-2019-raster');
+Map.addLayer(biomes.randomVisualizer(),{}, 'Biomas');
 
 // build biomes dictionary
-
+var biomes_dict = {
+  'amazonia': 1,
+  'caatinga': 5,
+  'cerrado': 4,
+  'mata_atlantica': 2,
+  'pampa': 6,
+  'pantanal': 3
+};
 
 // read collection
 var collection = ee.Image('projects/mapbiomas-workspace/public/collection7_1/mapbiomas_collection71_integration_v1')

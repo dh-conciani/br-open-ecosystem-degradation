@@ -13,10 +13,10 @@ var native_classes = {
 };
 
 // definir classes que serão ignoradas (as quais não podem produzir efeito de borda sobre classes de vegetação nativa)
-var ignored_classes = {
+var ignore_classes = {
   'amazonia':       [29, 49, 50, 33],
   'caatinga':       [29, 49, 50, 33],
-  'cerrado':        [29, 49, 50, 33],
+  'cerrado':        [29, 33],
   'mata_atlantica': [29, 49, 50, 33],
   'pampa':          [29, 49, 50, 33],
   'pantanal':       [29, 49, 50, 33]
@@ -83,15 +83,10 @@ biomes_name.forEach(function(biome_i) {
   
   // get native vegetation map
   var native_mask = collection
-    .remap({from: [],
-            to: [],
+    .remap({from: native_classes[biome_i].concat(ignore_classes[biome_i]),
+            to: native_classes[biome_i].concat(ignore_classes[biome_i]),
             defaultValue: 21
     }).updateMask(biomes.eq(biomes_dict[biome_i]));
-    
-    
-    
-    
-
   
   // mask collection to retain raw classes
   var collection_i = collection.updateMask(native_mask.neq(21));
@@ -104,15 +99,13 @@ biomes_name.forEach(function(biome_i) {
   // compute edge 
   var edge = anthropogenic.distance(ee.Kernel.euclidean(edge_rules[biome_i] + 10, 'meters'), false);
   edge = edge.mask(edge.lt(edge_rules[biome_i])).mask(collection).selfMask().updateMask(biomes.eq(biomes_dict[biome_i]));
-  //Map.addLayer(edge);
+
+  // remove edges over ignored classes
+  ignore_classes[biome_i].forEach(function(class_i) {
+    edge = edge.updateMask(collection_i.neq(class_i));
+  });
   
-   // apply water-native rule
-  if (ignore_water_rule[biome_i] === true) {
-    // remove edge 'wrongly' caused by water
-    edge = edge.updateMask(collection_i.neq(33));
-  // * --
-  }
-  
+
   // -- * get patche size 
   // dissolve all native veg. classes into each one
   var native_l0 = collection_i.remap({
@@ -140,7 +133,7 @@ biomes_name.forEach(function(biome_i) {
   
   // * --
   print(biome_i + ' rules:',
-    'ignore water as edge: ' + ignore_water_rule[biome_i],
+    //'ignore water as edge: ' + ignore_water_rule[biome_i],
     'edge distance: ' + edge_rules[biome_i] + ' meters',
     'patche size: ' + size_criteria + ' px',
     'secondary age: less than ' + secondary_rules[biome_i] + ' years'

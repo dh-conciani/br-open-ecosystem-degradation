@@ -2,7 +2,7 @@
 // gt degradaçao - mapbiomas
 
 // -- * definitions
-// definir classes a serem consideradas como vegetação nativa (nas quais o efeito de borda e tamanho serão estimados)
+// definir classes a serem consideradas como vegetação nativa (nas quais o efeito de borda e tamanho do fragmento serão estimados)
 var native_classes = {
   'amazonia':       [3, 4, 5, 11, 12],
   'caatinga':       [3, 4, 5, 11, 12],
@@ -12,7 +12,7 @@ var native_classes = {
   'pantanal':       [3, 4, 5, 11, 12]
 };
 
-// definir classes que serão ignoradas (as quais não podem produzir efeito de borda sobre classes de vegetação nativa)
+// definir classes que serão ignoradas (ex: as quais não podem produzir efeitos de borda sobre as classes de veg. nativa)
 var ignore_classes = {
   'amazonia':       [29, 49, 50, 33],
   'caatinga':       [29, 49, 50, 33],
@@ -110,17 +110,14 @@ biomes_name.forEach(function(biome_i) {
   // dissolve all native veg. classes into each one
   var native_l0 = collection_i.remap({
     from: native_classes[biome_i],
-    //from: [3, 4, 5, 11, 12, 49, 50, 33],
-    to: 
-    //to:   [1, 1, 1,  1,  1,  1,  1, 33]
+    to: ee.List.repeat(1, ee.List(native_classes[biome_i]).length())
   });
   
   // get patch sizes
   // convert ha to number of pixels
   var size_criteria = parseInt((patch_size_rules[biome_i] * 10000) / 900);
   // compute patche sizes
-  var patch_size = native_l0.updateMask(native_l0.neq(33))
-    .connectedPixelCount(size_criteria + 5, true);
+  var patch_size = native_l0.connectedPixelCount(size_criteria + 5, true);
   
   // get only patches smaller than the criteria
   var size_degradation = patch_size.lte(size_criteria).selfMask();
@@ -129,13 +126,14 @@ biomes_name.forEach(function(biome_i) {
   var secondary =  ee.Image('projects/mapbiomas-workspace/public/collection7_1/mapbiomas_collection71_secondary_vegetation_age_v1')
     .updateMask(biomes.eq(biomes_dict[biome_i]))
     .select('secondary_vegetation_age_2021')
-    .updateMask(collection_i.neq(33))
+    .updateMask(native_l0.eq(1))
     .selfMask();
     secondary= secondary.updateMask(secondary.lt(secondary_rules[biome_i]));
   
   // * --
   print(biome_i + ' rules:',
-    //'ignore water as edge: ' + ignore_water_rule[biome_i],
+    'native classes: ' + native_classes[biome_i], 
+    'ignored classes: ' + ignore_classes[biome_i],
     'edge distance: ' + edge_rules[biome_i] + ' meters',
     'patche size: ' + size_criteria + ' px',
     'secondary age: less than ' + secondary_rules[biome_i] + ' years'

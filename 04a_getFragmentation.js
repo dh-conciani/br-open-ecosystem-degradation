@@ -1,8 +1,29 @@
 // ecosystem fragmentation 
+// considera as classes de vegetaçãop nativa 
 // gt degradaçao - mapbiomas
 
 // -- * definitions
-// definir distancia (em metrosd) de degradação por efeito de borda
+// definir classes a serem consideradas como vegetação nativa (nas quais o efeito de borda e tamanho serão estimados)
+var native_classes = {
+  'amazonia': [3, 4, 5, 11, 12],
+  'caatinga': [3, 4, 5, 11, 12],
+  'cerrado': [3, 4, 5, 11, 12],
+  'mata_atlantica': [3, 4, 5, 11, 12],
+  'pampa': [3, 4, 5, 11, 12],
+  'pantanal':[3, 4, 5, 11, 12]
+};
+
+// definir classes que serão ignoradas (as quais não podem produzir efeito de borda sobre classes de vegetação nativa)
+var ignored_classes = {
+  'amazonia': [29, 49, 50, 33],
+  'caatinga': [29, 49, 50, 33],
+  'cerrado': [29, 49, 50, 33],
+  'mata_atlantica': [29, 49, 50, 33],
+  'pampa': [29, 49, 50, 33],
+  'pantanal': [29, 49, 50, 33]
+};
+
+// definir distancia (em metros) de degradação por efeito de borda
 var edge_rules = {
   'amazonia': 90,
   'caatinga': 90,
@@ -32,7 +53,7 @@ var secondary_rules = {
   'pantanal': 37
 };
 
-// o bioma vai ignorar que a interface agua-vegetação nativa pode causar efeito de borda? 
+// 3, 4, 5, 11, 12, 49, 50
 var ignore_water_rule = {
   'amazonia': true,
   'caatinga': true,

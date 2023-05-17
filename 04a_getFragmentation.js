@@ -61,12 +61,12 @@ var biomes = ee.Image('projects/mapbiomas-workspace/AUXILIAR/biomas-2019-raster'
 // build biomes dictionary
 var biomes_name = ['amazonia', 'caatinga', 'cerrado', 'mata_atlantica', 'pampa', 'pantanal'];
 var biomes_dict = {
-  'amazonia': 1,
-  'caatinga': 5,
-  'cerrado': 4,
+  'amazonia':       1,
+  'caatinga':       5,
+  'cerrado':        4,
   'mata_atlantica': 2,
-  'pampa': 6,
-  'pantanal': 3
+  'pampa':          6,
+  'pantanal':       3
 };
 
 // read collection
@@ -80,22 +80,18 @@ var secondary_degrad = ee.Image(0);
 
 // for each biome, compute fragmentation by using specific criteria
 biomes_name.forEach(function(biome_i) {
-  // apply water-native rule
-  if (ignore_water_rule[biome_i] === true) {
-    var native_mask = collection
-      .remap({from: [3, 4, 5, 11, 12, 29, 49, 50, 33],
-              to:   [1, 1, 1,  1,  1,  1,  1,  1, 1],
-              defaultValue: 21
-    }).updateMask(biomes.eq(biomes_dict[biome_i]));
-  }
   
-  if (ignore_water_rule[biome_i] === false) {
-    var native_mask = collection
-      .remap({from: [3, 4, 5, 11, 12, 29, 49, 50],
-              to:   [1, 1, 1,  1,  1,  1,  1,  1],
-              defaultValue: 21
+  // get native vegetation map
+  var native_mask = collection
+    .remap({from: [],
+            to: [],
+            defaultValue: 21
     }).updateMask(biomes.eq(biomes_dict[biome_i]));
-  }
+    
+    
+    
+    
+
   
   // mask collection to retain raw classes
   var collection_i = collection.updateMask(native_mask.neq(21));

@@ -91,7 +91,6 @@ biomes_name.forEach(function(biome_i) {
   // mask collection to retain raw classes
   var collection_i = collection.updateMask(native_mask.neq(21));
 
-
   // -- * get edge effect
   // retain anthropogenic classes to be used as reference for the edge 
   var anthropogenic = native_mask.updateMask(native_mask.eq(21));

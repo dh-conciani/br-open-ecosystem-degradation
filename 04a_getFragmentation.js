@@ -109,8 +109,10 @@ biomes_name.forEach(function(biome_i) {
   // -- * get patche size 
   // dissolve all native veg. classes into each one
   var native_l0 = collection_i.remap({
-    from: [3, 4, 5, 11, 12, 49, 50, 33],
-    to:   [1, 1, 1,  1,  1,  1,  1, 33]
+    from: native_classes[biome_i],
+    //from: [3, 4, 5, 11, 12, 49, 50, 33],
+    to: 
+    //to:   [1, 1, 1,  1,  1,  1,  1, 33]
   });
   
   // get patch sizes

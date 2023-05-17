@@ -1,5 +1,4 @@
 // ecosystem fragmentation 
-// considera as classes de vegetaçãop nativa 
 // gt degradaçao - mapbiomas
 
 // -- * definitions

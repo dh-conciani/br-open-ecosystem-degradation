@@ -92,25 +92,37 @@ periods.forEach(function(period_i) {
 
 });
 
-// compute periods changes in mean fire count
-// Initialize an empty image
+// Subtract to get changes 
+// Get the band names
+var bandNames = periods_mean.bandNames();
+
+// Initialize an empty image to store the subtracted bands
 var subtracted = ee.Image();
 
-// Iterate over the bands and subtract them from each other
-periods_mean.bandNames().iterate(function(bandName, prev) {
-  var currentBand = periods_mean.select(bandName);
+// Iterate over the bands and subtract them from the previous band
+for (var i = 1; i < bandNames.length().getInfo(); i++) {
+  var currentBandName = ee.String(bandNames.get(i));
+  var previousBandName = ee.String(bandNames.get(i - 1));
   
-  if (prev !== null) {
-    var subtractedBand = prev.subtract(currentBand);
-    return prev.addBands(subtractedBand);
-  } else {
-    return currentBand;
-  }
-}, subtracted);
+  var currentBand = periods_mean.select(currentBandName);
+  var previousBand = periods_mean.select(previousBandName);
+  
+  var subtractedBand = currentBand.subtract(previousBand);
+  
+  subtracted = subtracted.addBands(subtractedBand);
+}
 
-// Print the subtracted image
-print('Subtracted Image:', subtracted);
+// discard first band (no previous time)
+var changes = subtracted.select(bandNames.slice(1));
+print('changes between periods', changes);
 
+// remove last period changes to compute variation 
+
+
+
+
+
+Map.addLayer(changes.select(1).randomVisualizer());
 
 //Map.addLayer(collection_last.randomVisualizer());
 //Map.addLayer(fire.select('burned_coverage_2022').randomVisualizer());

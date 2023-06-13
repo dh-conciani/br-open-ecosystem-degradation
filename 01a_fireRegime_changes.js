@@ -116,10 +116,11 @@ for (var i = 1; i < bandNames.length().getInfo(); i++) {
 var changes = subtracted.select(bandNames.slice(1));
 print('changes between periods', changes);
 
-// remove last period changes to compute variation 
+// Select all bands except the last one
+var bandNames = changes.bandNames();
+var changes_wLast = changes.select(bandNames.slice(0, bandNames.length().subtract(1)));
 
-
-
+print(changes_wLast);
 
 
 Map.addLayer(changes.select(1).randomVisualizer());

@@ -4,8 +4,10 @@
 
 // set periods
 var periods = [
-  [1985, 2000], 
-  [2001, 2022]
+  [1985, 1995], 
+  [1996, 2005],
+  [2006, 2015],
+  [2016, 2022]
   ];
 
 // set native classes
@@ -39,13 +41,12 @@ ee.List.sequence({'start': 1985, 'end': 2022}).getInfo().forEach(function(year_i
       'to': [0],
       'defaultValue': 1 
     }).rename('fire_bin_' + year_i)
-      .selfMask();
+      .unmask(0)
+      .updateMask(collection_last); // select only native vegetation in the last year
       
     // store
     fire_bin = fire_bin.addBands(x);
 });
-
-
 
 // compute period frequency 
 periods.forEach(function(period_i) {
@@ -60,11 +61,16 @@ periods.forEach(function(period_i) {
     period_image = period_image.addBands(x);
   });
   
+  // return 
   print(period_image);
+  
+  // get period metrics  
+  var period_sum = period_image.reduce(ee.Reducer.sum()); // compute sum
+  Map.addLayer(period_sum, {palette:['green', 'yellow', 'red'], min:0, max:8}, period_i[0] + '_' + period_i[1]);
   
 })
 
 
-Map.addLayer(collection_last.randomVisualizer());
+//Map.addLayer(collection_last.randomVisualizer());
 //Map.addLayer(fire.select('burned_coverage_2022').randomVisualizer());
 //Map.addLayer(fire_bin.select('fire_bin_2022').randomVisualizer());

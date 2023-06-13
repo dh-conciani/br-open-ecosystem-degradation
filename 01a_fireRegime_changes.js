@@ -125,7 +125,7 @@ var changes = subtracted.select(bandNames.slice(1));
 var net = changes.reduce(ee.Reducer.sum());
 
 //var stdDev = changes_wLast.reduce(ee.Reducer.stdDev());
-Map.addLayer(net, {palette: ['blue', 'white', 'red'], min: -1, max:1}, 'net sum');
+Map.addLayer(net, {palette: ['blue', 'white', 'red'], min: -0.8, max: 0.8}, 'Fire frequency change');
 
 //Map.addLayer(changes.select(1).randomVisualizer());
 

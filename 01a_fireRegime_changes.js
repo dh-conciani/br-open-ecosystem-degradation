@@ -4,10 +4,12 @@
 
 // set periods
 var periods = [
-  [1985, 1995], 
-  [1996, 2005],
-  [2006, 2015],
-  [2016, 2022]
+  [1985, 1991], 
+  [1992, 1998],
+  [1999, 2006],
+  [2007, 2013],
+  [2014, 2018],
+  [2019, 2022]
   ];
 
 // set native classes
@@ -48,7 +50,12 @@ ee.List.sequence({'start': 1985, 'end': 2022}).getInfo().forEach(function(year_i
     fire_bin = fire_bin.addBands(x);
 });
 
-// compute period frequency 
+// compute period metrics
+// set recipe
+//var periods_sum = ee.Image([]);
+var periods_mean = ee.Image([]);
+//var periods_return = ee.Image([]);
+
 periods.forEach(function(period_i) {
   // get period images
   var period_image = ee.Image([]); // empty recipe
@@ -62,7 +69,7 @@ periods.forEach(function(period_i) {
   });
   
   // return 
-  print(period_image);
+  //print(period_image);
 
   // get period metrics  
   // sum (fire count)
@@ -76,13 +83,33 @@ periods.forEach(function(period_i) {
     .updateMask(period_sum)
     .divide(period_sum);
   
+  // store
+  periods_mean = periods_mean.addBands(period_mean.rename(period_i[0] + '_' + period_i[1]));
   
-  
-  Map.addLayer(period_sum, {palette:['green', 'yellow', 'red'], min:0, max:8}, 'SUM [' + period_i[0] + '-' + period_i[1] + ']', false);
-  Map.addLayer(period_mean, {palette:['blue', 'pink', 'purple'], min:0, max:0.9}, 'MEAN [' + period_i[0] + '-' + period_i[1] + ']', false);
-  Map.addLayer(period_return, {palette:['red', 'yellow', 'green'], min:0, max:8}, 'RETURN [' + period_i[0] + '-' + period_i[1] + ']', false);
+  //Map.addLayer(period_sum, {palette:['green', 'yellow', 'red'], min:0, max:8}, 'SUM [' + period_i[0] + '-' + period_i[1] + ']', false);
+  Map.addLayer(period_mean, {palette:['green', 'yellow', 'red'], min:0, max:0.9}, 'MEAN [' + period_i[0] + '-' + period_i[1] + ']', false);
+  //Map.addLayer(period_return, {palette:['red', 'yellow', 'green'], min:0, max:8}, 'RETURN [' + period_i[0] + '-' + period_i[1] + ']', false);
 
 });
+
+// compute periods changes in mean fire count
+// Initialize an empty image
+var subtracted = ee.Image();
+
+// Iterate over the bands and subtract them from each other
+periods_mean.bandNames().iterate(function(bandName, prev) {
+  var currentBand = periods_mean.select(bandName);
+  
+  if (prev !== null) {
+    var subtractedBand = prev.subtract(currentBand);
+    return prev.addBands(subtractedBand);
+  } else {
+    return currentBand;
+  }
+}, subtracted);
+
+// Print the subtracted image
+print('Subtracted Image:', subtracted);
 
 
 //Map.addLayer(collection_last.randomVisualizer());

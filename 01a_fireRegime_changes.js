@@ -66,7 +66,7 @@ periods.forEach(function(period_i) {
   
   // get period metrics  
   var period_sum = period_image.reduce(ee.Reducer.sum()); // compute sum
-  Map.addLayer(period_sum, {palette:['green', 'yellow', 'red'], min:0, max:8}, period_i[0] + '_' + period_i[1]);
+  Map.addLayer(period_sum, {palette:['green', 'yellow', 'red'], min:0, max:8}, 'SUM [' + period_i[0] + '-' + period_i[1] + ']');
   
 })
 

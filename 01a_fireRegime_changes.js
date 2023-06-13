@@ -87,7 +87,7 @@ periods.forEach(function(period_i) {
   periods_mean = periods_mean.addBands(period_mean.rename(period_i[0] + '_' + period_i[1]));
   
   //Map.addLayer(period_sum, {palette:['green', 'yellow', 'red'], min:0, max:8}, 'SUM [' + period_i[0] + '-' + period_i[1] + ']', false);
-  Map.addLayer(period_mean, {palette:['green', 'yellow', 'red'], min:0, max:0.9}, 'MEAN [' + period_i[0] + '-' + period_i[1] + ']', false);
+  //Map.addLayer(period_mean, {palette:['green', 'yellow', 'red'], min:0, max:0.9}, 'MEAN [' + period_i[0] + '-' + period_i[1] + ']', false);
   //Map.addLayer(period_return, {palette:['red', 'yellow', 'green'], min:0, max:8}, 'RETURN [' + period_i[0] + '-' + period_i[1] + ']', false);
 
 });
@@ -114,16 +114,20 @@ for (var i = 1; i < bandNames.length().getInfo(); i++) {
 
 // discard first band (no previous time)
 var changes = subtracted.select(bandNames.slice(1));
-print('changes between periods', changes);
+//print('changes between periods', changes);
 
 // Select all bands except the last one
-var bandNames = changes.bandNames();
-var changes_wLast = changes.select(bandNames.slice(0, bandNames.length().subtract(1)));
+//var bandNames = changes.bandNames();
+//var changes_wLast = changes.select(bandNames.slice(0, bandNames.length().subtract(1)));
 
-print(changes_wLast);
+// Compute the net over historical series 
+//var net = changes_wLast.reduce(ee.Reducer.sum());
+var net = changes.reduce(ee.Reducer.sum());
 
+//var stdDev = changes_wLast.reduce(ee.Reducer.stdDev());
+Map.addLayer(net, {palette: ['blue', 'white', 'red'], min: -1, max:1}, 'net sum');
 
-Map.addLayer(changes.select(1).randomVisualizer());
+//Map.addLayer(changes.select(1).randomVisualizer());
 
 //Map.addLayer(collection_last.randomVisualizer());
 //Map.addLayer(fire.select('burned_coverage_2022').randomVisualizer());

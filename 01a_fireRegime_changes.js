@@ -1,4 +1,3 @@
-
 // compute fire regime changes
 // gt degradação 
 // dhemerson.costa@ipam.org.br
@@ -8,14 +7,9 @@ var periods = [
   [1985, 2000], 
   [2001, 2022]
   ];
-  
-//periods.forEach(function(i) {
-//  print(i)
-//})
 
 // set native classes
 var native_classes = [3, 4, 11, 12];
-
 
 ///////////////////////////
 // read luluc collection 
@@ -34,7 +28,8 @@ var collection_last = collection.select('classification_2021')
 var fire = ee.Image('projects/mapbiomas-workspace/public/collection7_1/mapbiomas-fire-collection2-annual-burned-coverage-1');
 
 // binarize fire-data for each year
-var fire_bin = ee.Image([]);
+var fire_bin = ee.Image([]); // empty recipe 
+
 ee.List.sequence({'start': 1985, 'end': 2022}).getInfo().forEach(function(year_i) {
   // get year i
   var x = fire.select('burned_coverage_' + year_i)
@@ -51,8 +46,25 @@ ee.List.sequence({'start': 1985, 'end': 2022}).getInfo().forEach(function(year_i
 });
 
 
-print (fire_bin)
+
+// compute period frequency 
+periods.forEach(function(period_i) {
+  // get period images
+  var period_image = ee.Image([]); // empty recipe
+  
+  ee.List.sequence({'start': period_i[0], 'end': period_i[1]}).getInfo()
+    .forEach(function(year_ij) {
+    var x = fire_bin.select('fire_bin_' + year_ij);
+    
+    // store
+    period_image = period_image.addBands(x);
+  });
+  
+  print(period_image);
+  
+})
+
 
 Map.addLayer(collection_last.randomVisualizer());
-Map.addLayer(fire.select('burned_coverage_2022').randomVisualizer());
-Map.addLayer(fire_bin.select('fire_bin_2022').randomVisualizer());
+//Map.addLayer(fire.select('burned_coverage_2022').randomVisualizer());
+//Map.addLayer(fire_bin.select('fire_bin_2022').randomVisualizer());

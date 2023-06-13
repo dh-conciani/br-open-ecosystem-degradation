@@ -78,11 +78,11 @@ periods.forEach(function(period_i) {
   
   
   
-  Map.addLayer(period_sum, {palette:['green', 'yellow', 'red'], min:0, max:8}, 'SUM [' + period_i[0] + '-' + period_i[1] + ']');
-  Map.addLayer(period_mean, {palette:['green', 'yellow', 'red'], min:0, max:8}, 'MEAN [' + period_i[0] + '-' + period_i[1] + ']');
-  Map.addLayer(period_return, {palette:['green', 'yellow', 'red'], min:0, max:8}, 'RETURN [' + period_i[0] + '-' + period_i[1] + ']');
+  Map.addLayer(period_sum, {palette:['green', 'yellow', 'red'], min:0, max:8}, 'SUM [' + period_i[0] + '-' + period_i[1] + ']', false);
+  Map.addLayer(period_mean, {palette:['blue', 'pink', 'purple'], min:0, max:0.9}, 'MEAN [' + period_i[0] + '-' + period_i[1] + ']', false);
+  Map.addLayer(period_return, {palette:['red', 'yellow', 'green'], min:0, max:8}, 'RETURN [' + period_i[0] + '-' + period_i[1] + ']', false);
 
-})
+});
 
 
 //Map.addLayer(collection_last.randomVisualizer());

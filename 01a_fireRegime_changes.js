@@ -15,6 +15,9 @@ var periods = [
 // set native classes
 var native_classes = [3, 4, 11, 12];
 
+// set criteria
+var criteria = 2;
+
 ///////////////////////////
 // read luluc collection 
 var collection = ee.Image('projects/mapbiomas-workspace/public/collection7/mapbiomas_collection70_integration_v2');
@@ -140,7 +143,8 @@ var difference = changeLast.subtract(expectedChange);
 
 //var stdDev = changes_wLast.reduce(ee.Reducer.stdDev());
 //Map.addLayer(totalChange, {palette: ['blue', 'white', 'red'], min: -0.8, max: 0.8}, 'Historical change ([Σ {xi - xj}])');
-Map.addLayer(difference, {palette: ['blue', 'white', 'red'], min: -0.3, max: 0.3}, 'Difference (Observed - Expected)');
+Map.addLayer(changes, {}, 'Periods', false);
+Map.addLayer(difference, {palette: ['blue', 'white', 'red'], min: -0.5, max: 0.5}, 'Difference (Observed - Expected)');
 Map.addLayer(changeLast, {palette: ['blue', 'white', 'red'], min: -0.3, max: 0.3}, 'Observed change', false);
 Map.addLayer(expectedChange, {palette: ['blue', 'white', 'red'], min: -0.3, max: 0.3}, 'Expected change', false);
 Map.addLayer(historicalChange_sd, {palette: ['white', 'yellow', 'red'], min: 0, max: 0.3}, 'Historical net-change deviation (sd[Σ {xi - xj}])', false);

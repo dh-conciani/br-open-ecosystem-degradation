@@ -129,6 +129,10 @@ var historicalChange_total = changes_wLast.reduce(ee.Reducer.sum());
 // get expected change (sd with net-change signal)
 var expectedChange = historicalChange_sd.where(historicalChange_total.lt(0), historicalChange_sd.multiply(-1))
                                         .where(historicalChange_total.gte(0), historicalChange_sd.multiply(1));
+                                        
+
+// get change for the last period 
+
 
 
 //var stdDev = changes_wLast.reduce(ee.Reducer.stdDev());

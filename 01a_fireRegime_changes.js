@@ -71,7 +71,7 @@ periods.forEach(function(period_i) {
   // return 
   //print(period_image);
 
-  // get period metrics  
+  // get metrics for each period
   // sum (fire count)
   var period_sum = period_image.reduce(ee.Reducer.sum());                
   
@@ -114,18 +114,22 @@ for (var i = 1; i < bandNames.length().getInfo(); i++) {
 
 // discard first band (no previous time)
 var changes = subtracted.select(bandNames.slice(1));
-//print('changes between periods', changes);
 
 // Select all bands except the last one
-//var bandNames = changes.bandNames();
-//var changes_wLast = changes.select(bandNames.slice(0, bandNames.length().subtract(1)));
+var bandNames = changes.bandNames();
+var changes_wLast = changes.select(bandNames.slice(0, bandNames.length().subtract(1)));
 
 // Compute the net over historical series 
-//var net = changes_wLast.reduce(ee.Reducer.sum());
-var net = changes.reduce(ee.Reducer.sum());
+var historicalChange_sd = changes_wLast.reduce(ee.Reducer.stdDev());
+var historicalChange_total = changes_wLast.reduce(ee.Reducer.sum());
+
+// Compute entire time series metrics 
+//var totalChange = changes.reduce(ee.Reducer.sum());
 
 //var stdDev = changes_wLast.reduce(ee.Reducer.stdDev());
-Map.addLayer(net, {palette: ['blue', 'white', 'red'], min: -0.8, max: 0.8}, 'Fire frequency change');
+//Map.addLayer(totalChange, {palette: ['blue', 'white', 'red'], min: -0.8, max: 0.8}, 'Historical change ([Σ {xi - xj}])');
+Map.addLayer(historicalChange_sd, {palette: ['white', 'yellow', 'red'], min: 0, max: 0.3}, 'Historical net-change deviation (sd[Σ {xi - xj}])');
+Map.addLayer(historicalChange_total, {palette: ['blue', 'white', 'red'], min: -0.8, max: 0.8}, 'Historical net-change (Σ [xi - xj])');
 
 //Map.addLayer(changes.select(1).randomVisualizer());
 

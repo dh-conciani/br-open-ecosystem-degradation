@@ -126,13 +126,13 @@ var historicalChange_total = changes_wLast.reduce(ee.Reducer.sum());
 // Compute entire time series metrics 
 //var totalChange = changes.reduce(ee.Reducer.sum());
 
+// get expected change (sd with net-change signal)
+var expectedChange = historicalChange_sd.where(historicalChange_total.lt(0), historicalChange_sd.multiply(-1))
+                                        .where(historicalChange_total.gte(0), historicalChange_sd.multiply(1));
+
+
 //var stdDev = changes_wLast.reduce(ee.Reducer.stdDev());
 //Map.addLayer(totalChange, {palette: ['blue', 'white', 'red'], min: -0.8, max: 0.8}, 'Historical change ([Σ {xi - xj}])');
+Map.addLayer(expectedChange, {palette: ['blue', 'white', 'red'], min: -0.3, max: 0.3}, 'Expected Change');
 Map.addLayer(historicalChange_sd, {palette: ['white', 'yellow', 'red'], min: 0, max: 0.3}, 'Historical net-change deviation (sd[Σ {xi - xj}])');
 Map.addLayer(historicalChange_total, {palette: ['blue', 'white', 'red'], min: -0.8, max: 0.8}, 'Historical net-change (Σ [xi - xj])');
-
-//Map.addLayer(changes.select(1).randomVisualizer());
-
-//Map.addLayer(collection_last.randomVisualizer());
-//Map.addLayer(fire.select('burned_coverage_2022').randomVisualizer());
-//Map.addLayer(fire_bin.select('fire_bin_2022').randomVisualizer());

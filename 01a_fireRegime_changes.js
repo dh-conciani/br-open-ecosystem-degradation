@@ -132,7 +132,10 @@ var expectedChange = historicalChange_sd.where(historicalChange_total.lt(0), his
                                         
 
 // get change for the last period 
+var bandCount = changes.bandNames().length();
+var changeLast = changes.select(bandCount.subtract(1)).subtract(changes.select(bandCount.subtract(2)));
 
+print(changeLast)
 
 
 //var stdDev = changes_wLast.reduce(ee.Reducer.stdDev());

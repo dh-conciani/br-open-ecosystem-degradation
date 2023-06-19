@@ -135,10 +135,13 @@ var expectedChange = historicalChange_sd.where(historicalChange_total.lt(0), his
 var bandCount = changes.bandNames().length();
 var changeLast = changes.select(bandCount.subtract(1)).subtract(changes.select(bandCount.subtract(2)));
 
+// comute difference (observed - expected)
+var difference = changeLast.subtract(expectedChange);
 
 //var stdDev = changes_wLast.reduce(ee.Reducer.stdDev());
 //Map.addLayer(totalChange, {palette: ['blue', 'white', 'red'], min: -0.8, max: 0.8}, 'Historical change ([Σ {xi - xj}])');
-Map.addLayer(changeLast, {palette: ['blue', 'white', 'red'], min: -0.3, max: 0.3}, 'Observed change');
-Map.addLayer(expectedChange, {palette: ['blue', 'white', 'red'], min: -0.3, max: 0.3}, 'Expected change');
-Map.addLayer(historicalChange_sd, {palette: ['white', 'yellow', 'red'], min: 0, max: 0.3}, 'Historical net-change deviation (sd[Σ {xi - xj}])');
-Map.addLayer(historicalChange_total, {palette: ['blue', 'white', 'red'], min: -0.8, max: 0.8}, 'Historical net-change (Σ [xi - xj])');
+Map.addLayer(difference, {palette: ['blue', 'white', 'red'], min: -0.3, max: 0.3}, 'Difference (Observed - Expected)');
+Map.addLayer(changeLast, {palette: ['blue', 'white', 'red'], min: -0.3, max: 0.3}, 'Observed change', false);
+Map.addLayer(expectedChange, {palette: ['blue', 'white', 'red'], min: -0.3, max: 0.3}, 'Expected change', false);
+Map.addLayer(historicalChange_sd, {palette: ['white', 'yellow', 'red'], min: 0, max: 0.3}, 'Historical net-change deviation (sd[Σ {xi - xj}])', false);
+Map.addLayer(historicalChange_total, {palette: ['blue', 'white', 'red'], min: -0.8, max: 0.8}, 'Historical net-change (Σ [xi - xj])', false);

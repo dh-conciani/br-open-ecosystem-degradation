@@ -147,8 +147,6 @@ var difference2 = difference.where(expectedChange.lt(0).and(changeLast.eq(0)), 0
 // retain only critical changes
 
 
-
-
 //var stdDev = changes_wLast.reduce(ee.Reducer.stdDev());
 //Map.addLayer(totalChange, {palette: ['blue', 'white', 'red'], min: -0.8, max: 0.8}, 'Historical change ([Σ {xi - xj}])');
 Map.addLayer(changes, {}, 'Periods', false);

@@ -23,7 +23,7 @@ out_dir <- 'projects/mapbiomas-workspace/DEGRADACAO/TRAJECTORIES/COL71/V1'
 native_classes <- c(3, 4, 11, 12, 33, 27)
 
 ## Set classes to be used in the state change analisys
-assess_classes <- c(3, 4, 11, 12)
+assess_classes <- c(3, 4, 12)
 
 ## set persistence rule threshold (in years)
 persistence <- 2
@@ -31,8 +31,12 @@ persistence <- 2
 ## set years
 years_list <- seq(1985, 2021)
 
-## get collection
-collection <- ee$Image('projects/mapbiomas-workspace/public/collection7/mapbiomas_collection70_integration_v2')
+## get biomes raster
+biomes <- ee$Image('projects/mapbiomas-workspace/AUXILIAR/biomas-2019-raster')
+
+## get collection 
+collection <- ee$Image('projects/mapbiomas-workspace/public/collection7/mapbiomas_collection70_integration_v2')$
+  updateMask(biomes$eq(3)) ## clip only to pantanal
 
 ## get last year classification
 collection_last <- collection$select('classification_2021')$
@@ -55,6 +59,10 @@ collection <- collection$updateMask(nClasses$neq(1))
 
 ## Trajectory assessment is too complex. For this, we used a regular tile of 25 x 25 km approach 
 grid <- ee$FeatureCollection('users/dh-conciani/basemaps/br_grid_50_x_50_km')
+
+
+
+
 
 ## Get tile label
 grid_ids <- unique(grid$aggregate_array('id')$getInfo())

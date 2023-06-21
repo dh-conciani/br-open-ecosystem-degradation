@@ -157,3 +157,11 @@ Map.addLayer(changeLast, {palette: ['blue', 'white', 'red'], min: -0.3, max: 0.3
 Map.addLayer(difference, {palette: ['blue', 'white', 'red'], min: -0.5, max: 0.5}, 'Difference (Observed - Expected)', false);
 Map.addLayer(difference2, {palette: ['blue', 'white', 'red'], min: -0.5, max: 0.5}, 'Difference with exceptions (Observed - Expected)');
 
+Export.image.toAsset({
+		image: difference2,
+    description: 'fire_regime_changes_v1',
+    assetId: 'projects/mapbiomas-workspace/DEGRADACAO/FOGO/fire_regime_changes_v1',
+    region: geometry,
+    scale: 30,
+    maxPixels: 1e13,
+});

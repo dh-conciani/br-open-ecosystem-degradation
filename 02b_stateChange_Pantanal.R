@@ -21,6 +21,7 @@ out_dir <- 'projects/mapbiomas-workspace/DEGRADACAO/TRAJECTORIES/COL71/V1_PANTAN
 
 ## Set classes to be considered as native vegetation in the last year (native classes + ignored)
 native_classes <- c(3, 4, 11, 12, 33, 27)
+native_classes_adjusted <- c(3, 4, 12, 12, 33, 27)
 
 ## Set classes to be used in the state change analisys
 assess_classes <- c(3, 4, 12)
@@ -50,6 +51,25 @@ collection_last <- collection$select('classification_2021')$
 
 ## clip the entire collection for the native vegetation of the last year
 collection <- collection$updateMask(collection_last)
+
+## remap to consider grassland and wetland as a unique class (id 12)
+years_to_remap <- sub(".*_", "", collection$bandNames()$getInfo())
+collection_x <- ee$Image() ## build an empty recipe 
+for (i in 1:length(years_to_remap)) {
+  ## get collection for the year i
+  x <- collection$select(paste0('classification_', years_to_remap[i]))
+  ## remap
+  x <- x$remap(
+    from= native_classes,
+    to= native_classes_adjusted
+  )$rename(paste0('classification_', years_to_remap[i]))
+  
+  ## bind
+  collection_x <- collection_x$addBands(x)
+} 
+
+## remove 'null' band
+collection <- collection_x$select(collection_x$bandNames()$slice(1)); rm(collection_x, x)
 
 ## To simplify the local API processing, remove the 100% stable native vegetation
 ## For this, compute the number of classes in the time-series 
@@ -83,8 +103,6 @@ if(length(processed) > 0) {
 if(length(processed_with_letters) > 0) {
   grid_ids <- grid_ids[-which(grid_ids %in% processed_with_letters)]
 }
-
-
 
 ## Compute coordiante images to be used in the case of subsample of the tiles
 ## Select the longitude and latitude bands, multiply to truncate into integers (meter)

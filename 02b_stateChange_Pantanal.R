@@ -458,3 +458,4 @@ for (i in 1:length(grid_ids)) {
   rm(grid_i, collection_i, collection_i_arr, f, x, lst, lst_x, trajs, traj_rle, traj_res, combined_list, df, df_sf, r)
   gc()
 }
+#

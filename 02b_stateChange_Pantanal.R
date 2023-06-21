@@ -17,7 +17,7 @@ library(raster)
 ee_Initialize(gcs= TRUE)
 
 ## Set output dir
-out_dir <- 'projects/mapbiomas-workspace/DEGRADACAO/TRAJECTORIES/COL71/V1'
+out_dir <- 'projects/mapbiomas-workspace/DEGRADACAO/TRAJECTORIES/COL71/V1_PANTANAL'
 
 ## Set classes to be considered as native vegetation in the last year (native classes + ignored)
 native_classes <- c(3, 4, 11, 12, 33, 27)
@@ -31,12 +31,13 @@ persistence <- 2
 ## set years
 years_list <- seq(1985, 2021)
 
-## get biomes raster
-biomes <- ee$Image('projects/mapbiomas-workspace/AUXILIAR/biomas-2019-raster')
+## get biomes featureCollection 
+biomes <- ee$FeatureCollection('projects/mapbiomas-workspace/AUXILIAR/biomas-2019')$
+  filterMetadata('Bioma', 'equals', 'Pantanal') ## select Pantanal 
 
 ## get collection 
 collection <- ee$Image('projects/mapbiomas-workspace/public/collection7/mapbiomas_collection70_integration_v2')$
-  updateMask(biomes$eq(3)) ## clip only to pantanal
+  clip(biomes) ## clip only to pantanal
 
 ## get last year classification
 collection_last <- collection$select('classification_2021')$
@@ -58,11 +59,8 @@ nClasses <- collection$reduce(ee$Reducer$countDistinctNonNull())
 collection <- collection$updateMask(nClasses$neq(1))
 
 ## Trajectory assessment is too complex. For this, we used a regular tile of 25 x 25 km approach 
-grid <- ee$FeatureCollection('users/dh-conciani/basemaps/br_grid_50_x_50_km')
-
-
-
-
+grid <- ee$FeatureCollection('users/dh-conciani/basemaps/br_grid_50_x_50_km')$
+  filterBounds(biomes)
 
 ## Get tile label
 grid_ids <- unique(grid$aggregate_array('id')$getInfo())
@@ -78,8 +76,15 @@ processed_with_letters <- row.names(
 
 
 ## Remove already processed
-grid_ids <- grid_ids[-which(grid_ids %in% processed)]
-grid_ids <- grid_ids[-which(grid_ids %in% processed_with_letters)]
+if(length(processed) > 0) {
+  grid_ids <- grid_ids[-which(grid_ids %in% processed)]
+}
+
+if(length(processed_with_letters) > 0) {
+  grid_ids <- grid_ids[-which(grid_ids %in% processed_with_letters)]
+}
+
+
 
 ## Compute coordiante images to be used in the case of subsample of the tiles
 ## Select the longitude and latitude bands, multiply to truncate into integers (meter)

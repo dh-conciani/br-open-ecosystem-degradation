@@ -26,7 +26,7 @@ var ignore_classes = {
 var edge_rules = {
   'amazonia':       90,
   'caatinga':       90,
-  'cerrado':        90,
+  'cerrado':        60,
   'mata_atlantica': 90,
   'pampa':          90,
   'pantanal':       90

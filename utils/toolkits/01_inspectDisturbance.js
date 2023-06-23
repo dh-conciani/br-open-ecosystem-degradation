@@ -68,20 +68,25 @@ var stateChange = ee.Image('projects/mapbiomas-workspace/DEGRADACAO/TRAJECTORIES
 // Fire regime changes
 var fire_changes = ee.Image('projects/mapbiomas-workspace/DEGRADACAO/FOGO/fire_regime_changes_v1');
 
+Map.addLayer(fire_changes, {palette: ['blue', 'white', 'red'], min: -0.5, max: 0.5}, 'Mudança no regime de fogo');
+
 Map.addLayer(stateChange, {palette:[
-  '#2D7E1D', '#75F70A', '#606060', '#FFF700', '#F41BE7'], min:1, max:5}, 'State Change');
-
-Map.addLayer(fire_changes, {palette: ['blue', 'white', 'red'], min: -0.5, max: 0.5}, 'Fire regime change');
-
+  '#2D7E1D', '#75F70A', '#606060', '#FFF700', '#F41BE7'], min:1, max:5}, 'Mudança de estado da vegetação nativa');
 
 ////////////////////////////// criar legenda
 var legends = [
-  ['NV State Change (MB)', [], 'white'],
-  ['Stable', 1, '#2D7E1D'],
-  ['No change', 1, '#75F70A'],
-  ['Inconclusive', 1, '#606060'],
-  ['Temporary change', 1, '#FFF700'],
-  ['Persistent change', 1, '#F41BE7']
+  ['Mudança de estado da vegetação nativa', [], 'white'],
+  ['Estável nos 37 anos', 1, '#2D7E1D'],
+  ['Instável, mas sem mudança de classe', 1, '#75F70A'],
+  ['Inconclusivo', 1, '#606060'],
+  ['Mudança temporária de classe nativa', 1, '#FFF700'],
+  ['Mudança persistente de classe nativa', 1, '#F41BE7'],
+  ['', [], 'white'],
+  ['', [], 'white'],
+  ['Mudança no regime de fogo', [], 'white'],
+  ['Diminuição na frequência', [], 'blue'],
+  ['Sem mudança', [], 'white'],
+  ['Aumento na frequência', [], 'red']
 
 ];
 

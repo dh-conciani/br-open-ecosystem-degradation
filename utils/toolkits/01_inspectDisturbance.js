@@ -37,19 +37,19 @@ var disturbance_freq = disturbance.select('sum_of_disturbance');
 
 
 // plot data
-Map.addLayer(disturbance_freq, {palette: ['white', 'green', 'yellow', 'orange', 'red'], min:0, max:20}, 'Sum', false);
-Map.addLayer(anthropogenic_freq, {palette: ['white', 'green', 'yellow', 'orange', 'red'], min:0, max:10}, 'Years as anthropic', false);
-Map.addLayer(deforestation_freq, {palette: ['white', 'green', 'yellow', 'orange', 'red'], min:0, max:5}, 'Number of veg. loss events', false);
-Map.addLayer(fire_freq, {palette: ['white', 'green', 'yellow', 'orange', 'red'], min:0, max:15}, 'Fire Count', false);
+//Map.addLayer(disturbance_freq, {palette: ['white', 'green', 'yellow', 'orange', 'red'], min:0, max:20}, 'Sum', false);
+//Map.addLayer(anthropogenic_freq, {palette: ['white', 'green', 'yellow', 'orange', 'red'], min:0, max:10}, 'Years as anthropic', false);
+//Map.addLayer(deforestation_freq, {palette: ['white', 'green', 'yellow', 'orange', 'red'], min:0, max:5}, 'Number of veg. loss events', false);
+//Map.addLayer(fire_freq, {palette: ['white', 'green', 'yellow', 'orange', 'red'], min:0, max:15}, 'Fire Count', false);
 
 // ler dados
 var disturbance_interaction = ee.Image('projects/mapbiomas-workspace/DEGRADACAO/DISTURBIOS/disturbance_frequency/brazil_disturbance_frequency_agreement_2');
 
 
-Map.addLayer(disturbance_interaction, {
-  palette: ['#C0C0C0', '#606060', '#20F0E2', '#FFEC33', '#EF9A2C', '#529CA8', '#00F318', 'red'], 
-  min: 1, max: 8
-  }, 'Disturbance', false);
+//Map.addLayer(disturbance_interaction, {
+//  palette: ['#C0C0C0', '#606060', '#20F0E2', '#FFEC33', '#EF9A2C', '#529CA8', '#00F318', 'red'], 
+//  min: 1, max: 8
+//  }, 'Disturbance', false);
 
 // rfead ecosystem changes
 var changes = ee.Image('projects/mapbiomas-workspace/DEGRADACAO/DISTURBIOS/disturbance_frequency/ecosystem_changes_2');
@@ -59,27 +59,23 @@ var changes = ee.Image('projects/mapbiomas-workspace/DEGRADACAO/DISTURBIOS/distu
 //Map.addLayer(changes.select('tree_cover_change'),  {min: -25, max: 30, palette: ['red', 'white', 'green']}, 'Tree Canopy Cover Change', false);
 
 // get state change
-var stateChange = ee.Image('projects/mapbiomas-workspace/DEGRADACAO/TRAJECTORIES/COL71/native_trajs_v2')
+var stateChange = ee.Image('projects/mapbiomas-workspace/DEGRADACAO/TRAJECTORIES/COL71/NV_CHANGE_V3')
   .remap({
     from:[1, 2, 3, 4, 5],
     to:[2, 3, 4, 5, 1]
   });
     
+// Fire regime changes
+var fire_changes = ee.Image('projects/mapbiomas-workspace/DEGRADACAO/FOGO/fire_regime_changes_v1');
+
 Map.addLayer(stateChange, {palette:[
   '#2D7E1D', '#75F70A', '#606060', '#FFF700', '#F41BE7'], min:1, max:5}, 'State Change');
 
+Map.addLayer(fire_changes, {palette: ['blue', 'white', 'red'], min: -0.5, max: 0.5}, 'Fire regime change');
+
+
 ////////////////////////////// criar legenda
 var legends = [
-  ['Disturbancies', [], 'white'],
-  ['No disturbance', 1, '#C0C0C0'],
-  ['Fire',  2, '#606060'],
-  ['Veg. loss', 3, '#20F0E2'],
-  ['Anthropogenic use',   4, '#FFEC33'],
-  ['Fire + Anthropogenic use',   5, '#EF9A2C'],
-  ['Fire + Veg. loss', 6, '#529CA8'],
-  ['Veg. loss + Anthropogenic use', 7, '#00F318'],
-  ['Fire + Veg. loss + Anthropogenic use', 8, 'red'],
-  ['', [], 'white'],
   ['NV State Change (MB)', [], 'white'],
   ['Stable', 1, '#2D7E1D'],
   ['No change', 1, '#75F70A'],
@@ -87,11 +83,6 @@ var legends = [
   ['Temporary change', 1, '#FFF700'],
   ['Persistent change', 1, '#F41BE7']
 
-
-
-
-
-  
 ];
 
 
@@ -336,7 +327,7 @@ var Chart = {
                             'id',
                             { 'type': 'string', 'role': 'style' },
                             { 'type': 'string', 'role': 'tooltip' }
-                        ];
+                       ];
                         dataTable = [headers].concat(dataTable);
                         Chart.ui.form.chartInspector.setDataTable(dataTable);
                     }
@@ -392,6 +383,5 @@ var Chart = {
     }
 };
 Chart.init();
-
 
 

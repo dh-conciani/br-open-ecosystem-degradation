@@ -16,6 +16,9 @@ ee_Initialize(drive= TRUE, gcs= TRUE)
 ## set output directory
 out_dir <- 'projects/mapbiomas-workspace/DEGRADACAO/TRAJECTORIES/COL71/QUALIFY_CHANGES_V1'
 
+## Set persistance rule (greater than)
+persistence <- 2
+
 ## Set classes to be considered in the trajectory analisys
 native_classes <- c(3, 4, 11, 12)
 native_classes_adjusted <- c(3, 4, 12, 12)
@@ -168,8 +171,48 @@ for (i in 1:length(grid_ids)) {
     value= rle(pixel)$values,
     length= rle(pixel)$lengths))) 
   
-  ## qualify trajectories
-  ## SEGMENT 1: WOODY ENCHROACHMENT
+  ## Remove temporal segments with less than persistence threshold
+  traj_rle <- lapply(traj_rle, function(pixel) subset(pixel, length > persistence))
+  
+  ################ HERE IS PLACED THE RULES #################
+  ## QUALIFY TRAJECTORIES
+  traj_res <- lapply(traj_rle, function(pixel) 
+    ######################## DEAL WITH PERMANENT CHANGE
+    ## SEGMENT 1: WOODY ENCHROACHMENT
+    ## RULE A: IF START CLASS IS 4 (SAVANNA) AND FINAL CLASS IS 3 (FOREST) IT WAS A WOODY ENCHORACHMENT
+    if (pixel$value[1] == 4 & pixel$value[length(pixel$value)] == 3) {
+      return('Savanna to Forest')
+    } else {
+      ## RULE B: IF START CLASS IS 12 (GRASSLAND) AND FINAL CLASS IS 3 (FOREST) IT WAS A WOODY ENCHORACHMENT
+      if (pixel$value[1] == 12 & pixel$value[length(pixel$value)] == 3) {
+        return('Grassland to Forest')
+      }
+      ## RULE C: IF START CLASS IS 12 (GRASSLAND) AND FINAL CLASS IS 4 (SAVANNA) IT WAS A WOODY ENCHORACHMENT
+      if (pixel$value[1] == 12 & pixel$value[length(pixel$value)] == 4) {
+        return('Grassland to Savanna')
+      }
+      
+      # SEGMENT 2: WOODY THINNING
+      ## RULE D: IF START CLASS IS 3 (FOREST) AND FINAL CLASS IS 4 (SAVANNA) IT WAS A WOODY THINNING
+      if (pixel$value[1] == 3 & pixel$value[length(pixel$value)] == 4) {
+        return('Forest to Savanna')
+      }
+      ## RULE E: IF START CLASS IS 3 (FOREST) AND FINAL CLASS IS 12 (GRASSLAND) IT WAS A WOODY THINNING
+      if (pixel$value[1] == 3 & pixel$value[length(pixel$value)] == 12) {
+        return('Forest to Grassland')
+      }
+      ## RULE F: IF START CLASS IS 4 (SAVANNA) AND FINAL CLASS IS 12 (GRASSLAND) IT WAS A WOODY THINNING
+      if (pixel$value[1] == 4 & pixel$value[length(pixel$value)] == 12) {
+        return('Savanna to Grassland')
+      }
+      
+      ## PLACE RULES FOR TEMPORARY CHANGES
+      
+      
+        
+    })
+  
+  
   
 }
 

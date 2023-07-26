@@ -2,6 +2,8 @@
 ## dhemerson.costa@ipam.org.br
 ## gt degradação mapbiomas
 
+########## next work - labels of temproary changes
+
 ## read libraries
 library(rgee)
 library(stringr)
@@ -183,29 +185,29 @@ for (i in 1:length(grid_ids)) {
     ## SEGMENT 1: WOODY ENCHROACHMENT
     ## RULE A: IF START CLASS IS 4 (SAVANNA) AND FINAL CLASS IS 3 (FOREST) IT WAS A WOODY ENCHORACHMENT
     if (pixel$value[1] == 4 & pixel$value[length(pixel$value)] == 3) {
-      return('Savanna -> Forest (Persistent Enchroachment)')
+      return(paste0('Savanna -> Forest;Persistent Enchroachment;', pixel$length[length(pixel$length)]))
     } else {
       ## RULE B: IF START CLASS IS 12 (GRASSLAND) AND FINAL CLASS IS 3 (FOREST) IT WAS A WOODY ENCHORACHMENT
       if (pixel$value[1] == 12 & pixel$value[length(pixel$value)] == 3) {
-        return('Grassland -> Forest (Persistent Enchroachment)')
+        return(paste0('Grassland -> Forest;Persistent Enchroachment;', pixel$length[length(pixel$length)]))
       }
       ## RULE C: IF START CLASS IS 12 (GRASSLAND) AND FINAL CLASS IS 4 (SAVANNA) IT WAS A WOODY ENCHORACHMENT
       if (pixel$value[1] == 12 & pixel$value[length(pixel$value)] == 4) {
-        return('Grassland -> Savanna (Persistent Enchroachment)')
+        return(paste0('Grassland -> Savanna;Persistent Enchroachment;', pixel$length[length(pixel$length)]))
       }
       
       # SEGMENT 2: WOODY THINNING
       ## RULE D: IF START CLASS IS 3 (FOREST) AND FINAL CLASS IS 4 (SAVANNA) IT WAS A WOODY THINNING
       if (pixel$value[1] == 3 & pixel$value[length(pixel$value)] == 4) {
-        return('Forest -> Savanna (Persistent Thinning)')
+        return(paste0('Forest -> Savanna;Persistent Thinning;', pixel$length[length(pixel$length)]))
       }
       ## RULE E: IF START CLASS IS 3 (FOREST) AND FINAL CLASS IS 12 (GRASSLAND) IT WAS A WOODY THINNING
       if (pixel$value[1] == 3 & pixel$value[length(pixel$value)] == 12) {
-        return('Forest -> Grassland (Persistent Thinning)')
+        return(paste0('Forest -> Grassland;Persistent Thinning;',  pixel$length[length(pixel$length)]))
       }
       ## RULE F: IF START CLASS IS 4 (SAVANNA) AND FINAL CLASS IS 12 (GRASSLAND) IT WAS A WOODY THINNING
       if (pixel$value[1] == 4 & pixel$value[length(pixel$value)] == 12) {
-        return('Savanna -> Grassland (Persistent Thinning)')
+        return(paste0('Savanna -> Grassland;Persistent Thinning;',  pixel$length[length(pixel$length)]))
       }
       
       ## PLACE RULES FOR TEMPORARY CHANGES

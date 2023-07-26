@@ -18,13 +18,13 @@ ee_Initialize(drive= TRUE,
 native_classes <- c(3, 4, 11, 12)
 native_classes_adjusted <- c(3, 4, 12, 12)
 
+## Set classes to be used in the state change analisys
+assess_classes <- c(3, 4, 12) ## 11 (wetland will be remmaped to grassland)
+
 ## read entry layer (state change in the level-0)
 state_change <- ee$Image('projects/mapbiomas-workspace/DEGRADACAO/TRAJECTORIES/COL71/NV_CHANGE_V3')$
   remap(from= c(1, 2, 3, 4, 5),
         to=   c(2, 3, 4, 5, 1))
-
-## Set classes to be used in the state change analisys
-assess_classes <- c(3, 4, 12) ## 11 (wetland will be remmaped to grassland)
 
 ## set years
 years_list <- seq(1985, 2021)
@@ -52,14 +52,13 @@ for (i in 1:length(years_to_remap)) {
 ## remove 'null' band
 collection <- collection_x$select(collection_x$bandNames()$slice(1)); rm(collection_x, x)
 
-print(collection$bandNames()$getInfo())
-Map$addLayer(collection$select(23))
-
-
+## Mask collections to get only pixels that have temporary or permanent change
+collection <- collection$updateMask(state_change$gte(4)) ## consider values 4 (temporary) and 5 (permanent)
 
 
 Map$addLayer(state_change, list(palette=c('#2D7E1D', '#75F70A', '#606060', '#FFF700', '#F41BE7'),
-                                min=1, max=5), 'NV state change')
+                                min=1, max=5), 'NV state change') +
+  Map$addLayer(collection$select('classification_2021'))
 
 
 

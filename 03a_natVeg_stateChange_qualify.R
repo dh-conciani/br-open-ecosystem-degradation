@@ -10,9 +10,11 @@ library(dplyr)
 library(googleCloudStorageR)
 library(raster)
 
-## authenticate
-ee_Initialize(drive= TRUE,
-              gcs= TRUE)
+## Start APIs
+ee_Initialize(drive= TRUE, gcs= TRUE)
+
+## set output directory
+out_dir <- 'projects/mapbiomas-workspace/DEGRADACAO/TRAJECTORIES/COL71/QUALIFY_CHANGES_V1'
 
 ## Set classes to be considered in the trajectory analisys
 native_classes <- c(3, 4, 11, 12)
@@ -28,6 +30,9 @@ state_change <- ee$Image('projects/mapbiomas-workspace/DEGRADACAO/TRAJECTORIES/C
 
 ## set years
 years_list <- seq(1985, 2021)
+
+## get biomes featureCollection 
+biomes <- ee$FeatureCollection('projects/mapbiomas-workspace/AUXILIAR/biomas-2019')
 
 ## get collection
 collection <- ee$Image('projects/mapbiomas-workspace/public/collection7/mapbiomas_collection70_integration_v2')
@@ -54,6 +59,32 @@ collection <- collection_x$select(collection_x$bandNames()$slice(1)); rm(collect
 
 ## Mask collections to get only pixels that have temporary or permanent change
 collection <- collection$updateMask(state_change$gte(4)) ## consider values 4 (temporary) and 5 (permanent)
+
+## Trajectory assessment is too complex. For this, we used a regular tile of 50 x 50 km approach 
+grid <- ee$FeatureCollection('users/dh-conciani/basemaps/br_grid_50_x_50_km')
+
+## Get tile label
+grid_ids <- unique(grid$aggregate_array('id')$getInfo())
+
+## Get tiles already processed
+processed <- ee$ImageCollection(out_dir)$aggregate_array('system:index')$getInfo()
+
+## Get tiles with letters that have been entirely sub-processed
+processed_with_letters <- row.names(
+  subset(as.data.frame(cbind(table(
+    gsub("[[:alpha:]]", "", grep("\\d+[a-zA-Z]", processed, value = TRUE, perl= TRUE)
+    )))), V1 == 4))
+
+## Remove already processed
+if(length(processed) > 0) {
+  grid_ids <- grid_ids[-which(grid_ids %in% processed)]
+}
+
+if(length(processed_with_letters) > 0) {
+  grid_ids <- grid_ids[-which(grid_ids %in% processed_with_letters)]
+}
+
+
 
 
 Map$addLayer(state_change, list(palette=c('#2D7E1D', '#75F70A', '#606060', '#FFF700', '#F41BE7'),

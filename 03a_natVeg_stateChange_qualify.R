@@ -175,8 +175,6 @@ for (i in 1:length(grid_ids)) {
   traj_rle <- lapply(traj_rle, function(pixel) subset(pixel, length > persistence))
   
   ## Remove stable pixels 
-  traj_rle <- lapply(traj_rle, function(pixel) subset(pixel, length < 37))
-  
   
   ################ HERE IS PLACED THE RULES #################
   ## QUALIFY TRAJECTORIES
@@ -185,59 +183,107 @@ for (i in 1:length(grid_ids)) {
     ## SEGMENT 1: WOODY ENCHROACHMENT
     ## RULE A: IF START CLASS IS 4 (SAVANNA) AND FINAL CLASS IS 3 (FOREST) IT WAS A WOODY ENCHORACHMENT
     if (pixel$value[1] == 4 & pixel$value[length(pixel$value)] == 3) {
-      return('Savanna to Forest')
+      return('Savanna -> Forest (Persistent Enchroachment)')
     } else {
       ## RULE B: IF START CLASS IS 12 (GRASSLAND) AND FINAL CLASS IS 3 (FOREST) IT WAS A WOODY ENCHORACHMENT
       if (pixel$value[1] == 12 & pixel$value[length(pixel$value)] == 3) {
-        return('Grassland to Forest')
+        return('Grassland -> Forest (Persistent Enchroachment)')
       }
       ## RULE C: IF START CLASS IS 12 (GRASSLAND) AND FINAL CLASS IS 4 (SAVANNA) IT WAS A WOODY ENCHORACHMENT
       if (pixel$value[1] == 12 & pixel$value[length(pixel$value)] == 4) {
-        return('Grassland to Savanna')
+        return('Grassland -> Savanna (Persistent Enchroachment)')
       }
       
       # SEGMENT 2: WOODY THINNING
       ## RULE D: IF START CLASS IS 3 (FOREST) AND FINAL CLASS IS 4 (SAVANNA) IT WAS A WOODY THINNING
       if (pixel$value[1] == 3 & pixel$value[length(pixel$value)] == 4) {
-        return('Forest to Savanna')
+        return('Forest -> Savanna (Persistent Thinning)')
       }
       ## RULE E: IF START CLASS IS 3 (FOREST) AND FINAL CLASS IS 12 (GRASSLAND) IT WAS A WOODY THINNING
       if (pixel$value[1] == 3 & pixel$value[length(pixel$value)] == 12) {
-        return('Forest to Grassland')
+        return('Forest -> Grassland (Persistent Thinning)')
       }
       ## RULE F: IF START CLASS IS 4 (SAVANNA) AND FINAL CLASS IS 12 (GRASSLAND) IT WAS A WOODY THINNING
       if (pixel$value[1] == 4 & pixel$value[length(pixel$value)] == 12) {
-        return('Savanna to Grassland')
+        return('Savanna -> Grassland (Persistent Thinning)')
       }
       
       ## PLACE RULES FOR TEMPORARY CHANGES
       if (pixel$value[1] == pixel$value[length(pixel$value)]) {
         ## IF START/FINAL CLASS IS 3 (FOREST) 
         if(pixel$value[length(pixel$value)] == 3) {
+          ## If stable pixel exits, insert label
+          if(nrow(pixel) == 1) {
+            return('Stable')
+          }
           ## REMOVE INITIAL/FINAL CLASS FROM THE ARRAY
           x <- pixel[pixel$value != 3,]
-          if(length(x) == 0) {
-            return('NULL')
+          if(nrow(x) == 0) {
+            return('Inconclusive')
           }
-          ## RULE G: AND INTERMEDIARY CLASS IS 4 (SAVANNA), IT WAS A WOODY THINNING
+          ## RULE G: AND INTERMEDIARY CLASS IS 4 (SAVANNA), IT WAS A TEMPORARY THINNING
           if (x$value[length(x$value)] == 4) {
-            return('Savanna to Forest')
+            return('Forest -> Savanna -> Forest (Temporary Thinning)')
           }
-          ## RULE H: AND INTERMEDIARY CLASS IS 12 (GRASSLAND), IT WAS A WOODY THINNING
+          ## RULE H: AND INTERMEDIARY CLASS IS 12 (GRASSLAND), IT WAS A TEMPORARY WOODY THINNING
           if (x$value[length(x$value)] == 12) {
-            return('Grassland to Forest')
+            return('Forest -> Grassland -> Forest (Temporary Thinning)')
           }
-         
         }
+        
+        ## IF START/FINAL CLASS IS 4 (SAVANNA) 
+        if(pixel$value[length(pixel$value)] == 4) {
+          ## If stable pixel exits, insert label
+          if(nrow(pixel) == 1) {
+            return('Stable')
+          }
+          ## REMOVE INITIAL/FINAL CLASS FROM THE ARRAY
+          x <- pixel[pixel$value != 4,]
+          if(nrow(x) == 0) {
+            return('Inconclusive')
+          }
+          ## RULE I: AND INTERMEDIARY CLASS IS 3 (FOREST), IT WAS A TEMPORARY ENCHROACHMENT
+          if (x$value[length(x$value)] == 3) {
+            return('Savanna -> Forest -> Savanna (Temporary Enchroachment)')
+          }
+          ## RULE J: AND INTERMEDIARY CLASS IS 12 (GRASSLAND), IT WAS A TEMPORARY WOODY THINNING
+          if (x$value[length(x$value)] == 12) {
+            return('Savanna -> Grassland -> Savanna (Temporary Thinning)')
+          }
+        }
+        
+        ## IF START/FINAL CLASS IS 12 (GRASSLAND) 
+        if(pixel$value[length(pixel$value)] == 12) {
+          ## If stable pixel exits, insert label
+          if(nrow(pixel) == 1) {
+            return('Stable')
+          }
+          ## REMOVE INITIAL/FINAL CLASS FROM THE ARRAY
+          x <- pixel[pixel$value != 12,]
+          if(nrow(x) == 0) {
+            return('Inconclusive')
+          }
+          ## RULE K: AND INTERMEDIARY CLASS IS 3 (FOREST), IT WAS A TEMPORARY ENCHROACHMENT
+          if (x$value[length(x$value)] == 3) {
+            return('Grassland -> Forest -> Grassland')
+          }
+          ## RULE L: AND INTERMEDIARY CLASS IS 4 (SAVANNA), IT WAS A TEMPORARY WOODY ENCHRACHMENT
+          if (x$value[length(x$value)] == 4) {
+            return('Grassland -> Savanna -> Grassland')
+          }
+
+        }
+        
         
       }
       
-        
+      
     })
   
   
   
-}
+
+  }
 
 Map$addLayer(state_change, list(palette=c('#2D7E1D', '#75F70A', '#606060', '#FFF700', '#F41BE7'),
                                 min=1, max=5), 'NV state change') +

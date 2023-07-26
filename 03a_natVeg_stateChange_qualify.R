@@ -271,14 +271,14 @@ for (i in 1:length(grid_ids)) {
           if (x$value[length(x$value)] == 4) {
             return('Grassland -> Savanna -> Grassland')
           }
-
         }
-        
-        
       }
-      
-      
     })
+  
+  # Combine lists and maintain sublist index
+  combined_list <- Map(function(lst, traj_res) c(lst, traj_res), lst, traj_res)
+  
+  
   
   
   

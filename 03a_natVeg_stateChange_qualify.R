@@ -42,15 +42,18 @@ for (i in 1:length(years_to_remap)) {
   x <- x$remap(
     from= native_classes,
     to= native_classes_adjusted,
-    defaultValue= 0
-  )$rename(paste0('classification_', years_to_remap[i]))
+    defaultValue= c(0)
+  )$rename(paste0('classification_', years_to_remap[i]))$selfMask()
   
   ## bind
   collection_x <- collection_x$addBands(x)
 } 
 
-print(collection_x$bandNames()$getInfo())
-Map$addLayer(collection_x)
+## remove 'null' band
+collection <- collection_x$select(collection_x$bandNames()$slice(1)); rm(collection_x, x)
+
+print(collection$bandNames()$getInfo())
+Map$addLayer(collection$select(23))
 
 
 

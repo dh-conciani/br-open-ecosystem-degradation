@@ -282,10 +282,10 @@ for (i in 1:length(grid_ids)) {
   
   
   
-  
-  
-
   }
+
+
+
 
 Map$addLayer(state_change, list(palette=c('#2D7E1D', '#75F70A', '#606060', '#FFF700', '#F41BE7'),
                                 min=1, max=5), 'NV state change') +

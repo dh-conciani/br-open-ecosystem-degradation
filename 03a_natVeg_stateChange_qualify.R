@@ -174,6 +174,10 @@ for (i in 1:length(grid_ids)) {
   ## Remove temporal segments with less than persistence threshold
   traj_rle <- lapply(traj_rle, function(pixel) subset(pixel, length > persistence))
   
+  ## Remove stable pixels 
+  traj_rle <- lapply(traj_rle, function(pixel) subset(pixel, length < 37))
+  
+  
   ################ HERE IS PLACED THE RULES #################
   ## QUALIFY TRAJECTORIES
   traj_res <- lapply(traj_rle, function(pixel) 
@@ -207,7 +211,26 @@ for (i in 1:length(grid_ids)) {
       }
       
       ## PLACE RULES FOR TEMPORARY CHANGES
-      
+      if (pixel$value[1] == pixel$value[length(pixel$value)]) {
+        ## IF START/FINAL CLASS IS 3 (FOREST) 
+        if(pixel$value[length(pixel$value)] == 3) {
+          ## REMOVE INITIAL/FINAL CLASS FROM THE ARRAY
+          x <- pixel[pixel$value != 3,]
+          if(length(x) == 0) {
+            return('NULL')
+          }
+          ## RULE G: AND INTERMEDIARY CLASS IS 4 (SAVANNA), IT WAS A WOODY THINNING
+          if (x$value[length(x$value)] == 4) {
+            return('Savanna to Forest')
+          }
+          ## RULE H: AND INTERMEDIARY CLASS IS 12 (GRASSLAND), IT WAS A WOODY THINNING
+          if (x$value[length(x$value)] == 12) {
+            return('Grassland to Forest')
+          }
+         
+        }
+        
+      }
       
         
     })

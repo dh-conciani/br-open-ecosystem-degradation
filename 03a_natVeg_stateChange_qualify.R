@@ -220,16 +220,17 @@ for (i in 1:length(grid_ids)) {
           }
           ## REMOVE INITIAL/FINAL CLASS FROM THE ARRAY
           x <- pixel[pixel$value != 3,]
+          ## if does not exist intermediary class, flag as inconclusive
           if(nrow(x) == 0) {
             return('Inconclusive')
           }
           ## RULE G: AND INTERMEDIARY CLASS IS 4 (SAVANNA), IT WAS A TEMPORARY THINNING
           if (x$value[length(x$value)] == 4) {
-            return('Forest -> Savanna -> Forest (Temporary Thinning)')
+            return(paste0('Forest -> Savanna -> Forest;Temporary Thinning;', pixel$length[length(pixel$length)]))
           }
           ## RULE H: AND INTERMEDIARY CLASS IS 12 (GRASSLAND), IT WAS A TEMPORARY WOODY THINNING
           if (x$value[length(x$value)] == 12) {
-            return('Forest -> Grassland -> Forest (Temporary Thinning)')
+            return(paste0('Forest -> Grassland -> Forest;Temporary Thinning;',  pixel$length[length(pixel$length)]))
           }
         }
         
@@ -246,11 +247,11 @@ for (i in 1:length(grid_ids)) {
           }
           ## RULE I: AND INTERMEDIARY CLASS IS 3 (FOREST), IT WAS A TEMPORARY ENCHROACHMENT
           if (x$value[length(x$value)] == 3) {
-            return('Savanna -> Forest -> Savanna (Temporary Enchroachment)')
+            return(paste0('Savanna -> Forest -> Savanna;Temporary Enchroachment;', pixel$length[length(pixel$length)]))
           }
           ## RULE J: AND INTERMEDIARY CLASS IS 12 (GRASSLAND), IT WAS A TEMPORARY WOODY THINNING
           if (x$value[length(x$value)] == 12) {
-            return('Savanna -> Grassland -> Savanna (Temporary Thinning)')
+            return(paste0('Savanna -> Grassland -> Savanna;Temporary Thinning;', pixel$length[length(pixel$length)]))
           }
         }
         
@@ -267,11 +268,11 @@ for (i in 1:length(grid_ids)) {
           }
           ## RULE K: AND INTERMEDIARY CLASS IS 3 (FOREST), IT WAS A TEMPORARY ENCHROACHMENT
           if (x$value[length(x$value)] == 3) {
-            return('Grassland -> Forest -> Grassland')
+            return(paste0('Grassland -> Forest -> Grassland;Temporary Enchroachment;', pixel$length[length(pixel$length)]))
           }
           ## RULE L: AND INTERMEDIARY CLASS IS 4 (SAVANNA), IT WAS A TEMPORARY WOODY ENCHRACHMENT
           if (x$value[length(x$value)] == 4) {
-            return('Grassland -> Savanna -> Grassland')
+            return(paste0('Grassland -> Savanna -> Grassland;Temporary Enchroachment;', pixel$length[length(pixel$length)]))
           }
         }
       }

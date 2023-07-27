@@ -299,6 +299,17 @@ for (i in 1:length(grid_ids)) {
   # Convert to sf object with point geometry
   df_sf <- st_as_sf(df, coords = c("longitude", "latitude"), crs = 4326)
   
+  # Translate legend
+  ## Use ecological flags to store the time-flag (Temporary or Persistent) and the process (Thinning and Enchroachment)
+  ## To get time-flag, divide by 100 and apply a round (4= Temporary; 5= Persistent)
+  ## To get the ecological process, apply the modulo (%% 100) (30= Thinning; 40= Enchroachment)
+  df_sf$ecological_id <- gsub("Inconclusive", 100,
+                          gsub("Stable", 200,
+                               gsub("Temporary Thinning", 430,
+                                    gsub("Temporary Enchroachment", 440,
+                                         gsub("Persistent Thinning", 530,
+                                              gsub('Persistent Enchroachment', 540,
+                                                   df_sf$ecological_flag))))))
   
   }
 

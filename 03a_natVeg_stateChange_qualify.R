@@ -280,7 +280,11 @@ for (i in 1:length(grid_ids)) {
   
   # Combine lists and maintain sublist index
   combined_list <- Map(function(lst, traj_res) c(lst, traj_res), lst, traj_res)
-  
+  # Convert the list to a data.frame
+  df <- as.data.frame(do.call(rbind, combined_list))
+  # Rename last column (result)
+  colnames(df)[length(df)] <- 'Result'
+  # Parse results into independent columns
   
   
   }

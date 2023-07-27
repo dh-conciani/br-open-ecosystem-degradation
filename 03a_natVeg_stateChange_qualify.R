@@ -284,7 +284,9 @@ for (i in 1:length(grid_ids)) {
   df <- as.data.frame(do.call(rbind, combined_list))
   # Rename last column (result)
   colnames(df)[length(df)] <- 'Result'
-  # Parse results into independent columns
+  # Parse results into independent columns using ; as delimiter
+  results_list <- lapply(df$Result, function(string) 
+    return(strsplit(string, ';')))
   
   
   }

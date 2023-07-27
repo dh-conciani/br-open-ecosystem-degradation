@@ -216,13 +216,13 @@ for (i in 1:length(grid_ids)) {
         if(pixel$value[length(pixel$value)] == 3) {
           ## If stable pixel exits, insert label
           if(nrow(pixel) == 1) {
-            return('Stable')
+            return('Stable;Stable;37')
           }
           ## REMOVE INITIAL/FINAL CLASS FROM THE ARRAY
           x <- pixel[pixel$value != 3,]
           ## if does not exist intermediary class, flag as inconclusive
           if(nrow(x) == 0) {
-            return('Inconclusive')
+            return('Inconclusive;Inconclusive;37')
           }
           ## RULE G: AND INTERMEDIARY CLASS IS 4 (SAVANNA), IT WAS A TEMPORARY THINNING
           if (x$value[length(x$value)] == 4) {
@@ -238,12 +238,12 @@ for (i in 1:length(grid_ids)) {
         if(pixel$value[length(pixel$value)] == 4) {
           ## If stable pixel exits, insert label
           if(nrow(pixel) == 1) {
-            return('Stable')
+            return('Stable;Stable;37')
           }
           ## REMOVE INITIAL/FINAL CLASS FROM THE ARRAY
           x <- pixel[pixel$value != 4,]
           if(nrow(x) == 0) {
-            return('Inconclusive')
+            return('Inconclusive;Inconclusive;37')
           }
           ## RULE I: AND INTERMEDIARY CLASS IS 3 (FOREST), IT WAS A TEMPORARY ENCHROACHMENT
           if (x$value[length(x$value)] == 3) {
@@ -259,12 +259,12 @@ for (i in 1:length(grid_ids)) {
         if(pixel$value[length(pixel$value)] == 12) {
           ## If stable pixel exits, insert label
           if(nrow(pixel) == 1) {
-            return('Stable')
+            return('Stable;Stable;37')
           }
           ## REMOVE INITIAL/FINAL CLASS FROM THE ARRAY
           x <- pixel[pixel$value != 12,]
           if(nrow(x) == 0) {
-            return('Inconclusive')
+            return('Inconclusive;Inconclusive;37')
           }
           ## RULE K: AND INTERMEDIARY CLASS IS 3 (FOREST), IT WAS A TEMPORARY ENCHROACHMENT
           if (x$value[length(x$value)] == 3) {
@@ -284,13 +284,25 @@ for (i in 1:length(grid_ids)) {
   df <- as.data.frame(do.call(rbind, combined_list))
   # Rename last column (result)
   colnames(df)[length(df)] <- 'Result'
-  # Parse results into independent columns using ; as delimiter
+  # Parse results into independent entries using ";" as delimiter
   results_list <- lapply(df$Result, function(string) 
     return(strsplit(string, ';')))
+  # Use sapply to put parsed results into de data.frame
+  df$trajectory <- sapply(results_list, function(result) return(unlist(result)[1]))
+  df$ecological_flag <- sapply(results_list, function(result) return(unlist(result)[2]))
+  df$age <- sapply(results_list, function(result) return(unlist(result)[3]))
+  # Split the geometry column into longitude and latitude columns
+  df$longitude <- as.numeric(sub(".*\\(([^,]+),.*", "\\1", df$geometry))
+  df$latitude <- as.numeric(sub(".*,\\s*([^\\)]+)\\)", "\\1", df$geometry))
+  # Remove the geometry column
+  df <- df[, !(names(df) %in% c("geometry"))]
+  # Convert to sf object with point geometry
+  df_sf <- st_as_sf(df, coords = c("longitude", "latitude"), crs = 4326)
   
   
   }
 
+# Use lapply to extract the first string from each sublist
 
 
 

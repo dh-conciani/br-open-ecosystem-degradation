@@ -122,7 +122,8 @@ for (i in 1:length(grid_ids)) {
   
   ## HERE STARTS THE RULES TO DEAL WITH THE ERRORS
   ## RULE 1: And it is empty (full NA), export a full-NA grid
-  if(unique(grepl("The source could be corrupt or not supported", result)) == TRUE) {
+  if(unique(grepl("The source could be corrupt or not supported", result)) == TRUE ||
+     nrow(result) == 0) {
     # Do something if the text is found
     print('Downloading tile to export as NA')
     

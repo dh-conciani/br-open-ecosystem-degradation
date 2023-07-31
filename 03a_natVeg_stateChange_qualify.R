@@ -122,7 +122,7 @@ for (i in 1:length(grid_ids)) {
   
   ## HERE STARTS THE RULES TO DEAL WITH THE ERRORS
   ## RULE 1: And it is empty (full NA), export a full-NA grid
-  if(grepl("The source could be corrupt or not supported", result) == TRUE) {
+  if(unique(grepl("The source could be corrupt or not supported", result)) == TRUE) {
     # Do something if the text is found
     print('Downloading tile to export as NA')
     
@@ -140,7 +140,7 @@ for (i in 1:length(grid_ids)) {
       x = r,
       overwrite = TRUE,
       assetId = paste0(out_dir, '/', grid_ids[i]),
-      bucket = "degrad-traj1"
+      bucket = "degrad-structure-change"
     )
     
     rm(r, result)

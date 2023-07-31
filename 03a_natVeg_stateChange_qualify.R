@@ -2,7 +2,7 @@
 ## dhemerson.costa@ipam.org.br
 ## gt degradação mapbiomas
 
-########## next work - labels of temproary changes
+########## next work - trajectory labels
 
 ## read libraries
 library(rgee)
@@ -226,11 +226,11 @@ for (i in 1:length(grid_ids)) {
           }
           ## RULE G: AND INTERMEDIARY CLASS IS 4 (SAVANNA), IT WAS A TEMPORARY THINNING
           if (x$value[length(x$value)] == 4) {
-            return(paste0('Forest -> Savanna -> Forest;Temporary Thinning;', pixel$length[length(pixel$length)]))
+            return(paste0('Savanna -> Forest;Temporary Thinning;', pixel$length[length(pixel$length)]))
           }
           ## RULE H: AND INTERMEDIARY CLASS IS 12 (GRASSLAND), IT WAS A TEMPORARY WOODY THINNING
           if (x$value[length(x$value)] == 12) {
-            return(paste0('Forest -> Grassland -> Forest;Temporary Thinning;',  pixel$length[length(pixel$length)]))
+            return(paste0('Grassland -> Forest;Temporary Thinning;',  pixel$length[length(pixel$length)]))
           }
         }
         
@@ -247,11 +247,11 @@ for (i in 1:length(grid_ids)) {
           }
           ## RULE I: AND INTERMEDIARY CLASS IS 3 (FOREST), IT WAS A TEMPORARY ENCHROACHMENT
           if (x$value[length(x$value)] == 3) {
-            return(paste0('Savanna -> Forest -> Savanna;Temporary Enchroachment;', pixel$length[length(pixel$length)]))
+            return(paste0('Forest -> Savanna;Temporary Enchroachment;', pixel$length[length(pixel$length)]))
           }
           ## RULE J: AND INTERMEDIARY CLASS IS 12 (GRASSLAND), IT WAS A TEMPORARY WOODY THINNING
           if (x$value[length(x$value)] == 12) {
-            return(paste0('Savanna -> Grassland -> Savanna;Temporary Thinning;', pixel$length[length(pixel$length)]))
+            return(paste0('Grassland -> Savanna;Temporary Thinning;', pixel$length[length(pixel$length)]))
           }
         }
         
@@ -268,11 +268,11 @@ for (i in 1:length(grid_ids)) {
           }
           ## RULE K: AND INTERMEDIARY CLASS IS 3 (FOREST), IT WAS A TEMPORARY ENCHROACHMENT
           if (x$value[length(x$value)] == 3) {
-            return(paste0('Grassland -> Forest -> Grassland;Temporary Enchroachment;', pixel$length[length(pixel$length)]))
+            return(paste0('Forest -> Grassland;Temporary Enchroachment;', pixel$length[length(pixel$length)]))
           }
           ## RULE L: AND INTERMEDIARY CLASS IS 4 (SAVANNA), IT WAS A TEMPORARY WOODY ENCHRACHMENT
           if (x$value[length(x$value)] == 4) {
-            return(paste0('Grassland -> Savanna -> Grassland;Temporary Enchroachment;', pixel$length[length(pixel$length)]))
+            return(paste0('Savanna -> Grassland;Temporary Enchroachment;', pixel$length[length(pixel$length)]))
           }
         }
       }
@@ -311,9 +311,22 @@ for (i in 1:length(grid_ids)) {
                                               gsub('Persistent Enchroachment', 540,
                                                    df_sf$ecological_flag))))))
   
+  ## Store trajectories
+  ## to get from class, divide by 100 and apply a round; to get the to class, apply a modulo %% 100
+  df_sf$trajectory_id <- gsub('Grassland -> Forest', 1203,
+                              gsub('Forest -> Grassland', 312,
+                                   gsub('Grassland -> Savanna', 1204,
+                                        gsub('Stable', 0,
+                                             gsub('Inconclusive', 0,
+                                                  gsub('Savanna -> Grassland', 412,
+                                                       gsub('Savanna -> Forest', 403,
+                                                            gsub('Forest -> Savanna', 304,
+                                                                 df_sf$trajectory))))))))
+  
+  
+  
+  
   }
-
-# Use lapply to extract the first string from each sublist
 
 
 

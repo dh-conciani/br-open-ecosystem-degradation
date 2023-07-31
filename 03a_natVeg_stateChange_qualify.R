@@ -323,6 +323,39 @@ for (i in 1:length(grid_ids)) {
                                                             gsub('Forest -> Savanna', 304,
                                                                  df_sf$trajectory))))))))
   
+  ## select only relevant columns
+  df_sf <- df_sf %>% dplyr::select(id, age, ecological_id, trajectory_id)
+  
+  # Define the raster extent and resolution
+  resultRaster <- try({
+    r <- raster(extent(df_sf), resolution = 0.0002694946)
+  }, silent = TRUE)
+  
+  # Check if there was an error
+  if (inherits(resultRaster, "try-error")) {
+    # Extract the error message from the result object
+    resultRaster <- as.character(resultRaster)
+    print('raster error')
+  }
+  
+  ## If the rasterize function have same min and max extent (occurs in tiles with rare pixels)
+  if(grepl("min and max y are the same", resultRaster) == TRUE) {
+    ## add a simbolic value do diferentiate y axis
+    e <- extent(df_sf)
+    e[3] <- e[3] - 0.00001
+    ## rasterize
+    r <- raster(e, resolution = 0.0002694946)
+  }
+  
+  ## If the rasterize function have same min and max extent (occurs in tiles with rare pixels)
+  if(grepl("min and max x are the same", resultRaster) == TRUE) {
+    ## add a simbolic value do diferentiate y axis
+    e <- extent(df_sf)
+    e[1] <- e[1] - 0.00001
+    ## rasterize
+    r <- raster(e, resolution = 0.0002694946)
+    
+  }
   
   
   

@@ -386,9 +386,7 @@ for (i in 1:length(grid_ids)) {
   
   ## convert to stars object
   s_stack <- st_as_stars(r_stack)
-  
-  names(s_stack)
-  
+
   ## Export to GEE
   raster_as_ee(
     x = s_stack,

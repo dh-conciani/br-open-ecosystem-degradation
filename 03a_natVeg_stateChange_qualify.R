@@ -357,6 +357,28 @@ for (i in 1:length(grid_ids)) {
     
   }
   
+  ## rasterize
+  ## a. ecological id
+  r_ecological <- rasterize(df_sf, 
+                            r,
+                            field = as.numeric(df_sf$ecological_id))
+  
+  ## b. trajectory id
+  r_trajectory <- rasterize(df_sf, 
+                            r,
+                            field = as.numeric(df_sf$trajectory_id))
+  
+  ## c. age
+  r_age <- rasterize(df_sf, 
+                          r,
+                          field = as.numeric(df_sf$age))
+  
+  ## stack rasters
+  r_stack <- stack(r_ecological, r_trajectory, r_age)
+  
+  ## rename rasters
+  names(r_stack) <- c('structure_change', 'trajectory', 'age')
+  
   
   
   }

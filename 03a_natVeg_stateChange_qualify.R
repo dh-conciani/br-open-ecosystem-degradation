@@ -11,6 +11,7 @@ library(sf)
 library(dplyr)
 library(googleCloudStorageR)
 library(raster)
+library(stars)
 
 ## Start APIs
 ee_Initialize(drive= TRUE, gcs= TRUE)
@@ -358,7 +359,7 @@ for (i in 1:length(grid_ids)) {
   }
   
   ## rasterize
-  ## a. ecological id
+  ## a. structure change id
   r_ecological <- rasterize(df_sf, 
                             r,
                             field = as.numeric(df_sf$ecological_id))
@@ -379,15 +380,26 @@ for (i in 1:length(grid_ids)) {
   ## rename rasters
   names(r_stack) <- c('structure_change', 'trajectory', 'age')
   
+  # Set the projection to EPSG 4326
+  r_stack@crs <- CRS("+init=EPSG:4326")
+  proj4string(r_stack) <- CRS("+proj=longlat +datum=WGS84")
   
+  ## convert to stars object
+  s_stack <- st_as_stars(r_stack)
+  
+  names(s_stack)
+  
+  ## Export to GEE
+  raster_as_ee(
+    x = s_stack,
+    overwrite = TRUE,
+    assetId = paste0(out_dir, '/', grid_ids[i]),
+    bucket = "degrad-structure-change"
+  )
+  
+  print('done! next --->')
+  rm(grid_i, collection_i, collection_i_arr, f, x, lst, lst_x, trajs, traj_rle, traj_res, combined_list, df, df_sf, r,
+     r_ecological, r_trajectory, r_age, r_stack)
+  gc()
   
   }
-
-
-
-Map$addLayer(state_change, list(palette=c('#2D7E1D', '#75F70A', '#606060', '#FFF700', '#F41BE7'),
-                                min=1, max=5), 'NV state change') +
-  Map$addLayer(collection$select('classification_2021'))
-
-
-

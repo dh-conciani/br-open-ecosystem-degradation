@@ -90,6 +90,10 @@ if(length(processed_with_letters) > 0) {
   grid_ids <- grid_ids[-which(grid_ids %in% processed_with_letters)]
 }
 
+## subset to parallelize
+#grid_ids <- grid_ids[1:150]
+
+
 ## for each carta 
 for (i in 1:length(grid_ids)) {
   print(paste0('processing tile ', i, ' of ', length(grid_ids)))
@@ -112,7 +116,7 @@ for (i in 1:length(grid_ids)) {
   result <- try({
     collection_i_arr <- ee_as_sf(collection_i, via = "drive", quiet= TRUE)
   }, silent = TRUE)
-
+  
   # Check if there was an error
   if (inherits(result, "try-error")) {
     # Extract the error message from the result object
@@ -306,12 +310,12 @@ for (i in 1:length(grid_ids)) {
   ## To get time-flag, divide by 100 and apply a round (4= Temporary; 5= Persistent)
   ## To get the ecological process, apply the modulo (%% 100) (30= Thinning; 40= Enchroachment)
   df_sf$ecological_id <- gsub("Inconclusive", 100,
-                          gsub("Stable", 200,
-                               gsub("Temporary Thinning", 430,
-                                    gsub("Temporary Enchroachment", 440,
-                                         gsub("Persistent Thinning", 530,
-                                              gsub('Persistent Enchroachment', 540,
-                                                   df_sf$ecological_flag))))))
+                              gsub("Stable", 200,
+                                   gsub("Temporary Thinning", 430,
+                                        gsub("Temporary Enchroachment", 440,
+                                             gsub("Persistent Thinning", 530,
+                                                  gsub('Persistent Enchroachment', 540,
+                                                       df_sf$ecological_flag))))))
   
   ## Store trajectories
   ## to get from class, divide by 100 and apply a round; to get the to class, apply a modulo %% 100
@@ -338,6 +342,33 @@ for (i in 1:length(grid_ids)) {
     # Extract the error message from the result object
     resultRaster <- as.character(resultRaster)
     print('raster error')
+  }
+  
+  ## if the data frame have a single pixel, export a null tile
+  if(nrow(df_sf) == 1) {
+    # Do something if the text is found
+    print('Downloading tile to export as NA')
+    
+    # Define the raster extent and resolution as the same of the grid
+    r <- raster(extent(ee_as_sf(grid_i, via = 'drive')), resolution = 0.0002694946 )
+    ## Set all pixels to NA
+    r <- setValues(r, NA)
+    
+    # Set the projection to EPSG 4326
+    r@crs <- CRS("+init=EPSG:4326")
+    proj4string(r) <- CRS("+proj=longlat +datum=WGS84")
+    
+    ## Export to GEE
+    raster_as_ee(
+      x = r,
+      overwrite = TRUE,
+      assetId = paste0(out_dir, '/', grid_ids[i]),
+      bucket = "degrad-structure-change"
+    )
+    
+    rm(r, result)
+    gc()
+    next
   }
   
   ## If the rasterize function have same min and max extent (occurs in tiles with rare pixels)
@@ -372,8 +403,8 @@ for (i in 1:length(grid_ids)) {
   
   ## c. age
   r_age <- rasterize(df_sf, 
-                          r,
-                          field = as.numeric(df_sf$age))
+                     r,
+                     field = as.numeric(df_sf$age))
   
   ## stack rasters
   r_stack <- stack(r_ecological, r_trajectory, r_age)
@@ -387,7 +418,7 @@ for (i in 1:length(grid_ids)) {
   
   ## convert to stars object
   s_stack <- st_as_stars(r_stack)
-
+  
   ## Export to GEE
   raster_as_ee(
     x = s_stack,
@@ -401,4 +432,4 @@ for (i in 1:length(grid_ids)) {
      r_ecological, r_trajectory, r_age, r_stack)
   gc()
   
-  }
+}

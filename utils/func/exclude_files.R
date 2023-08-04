@@ -27,7 +27,7 @@ grid_ids <- unique(grid$aggregate_array('id')$getInfo())
 ## exclude pantanal files from root
 for (i in 1:length(grid_ids)) {
   print(paste0('deleting ', grid_ids[i]))
-  ee_manage_delete(paste0(out_dir, '/', grid_ids[i]))
+  try(ee_manage_delete(paste0(out_dir, '/', grid_ids[i])), silent= TRUE)
 }
 
 length(grid_ids)

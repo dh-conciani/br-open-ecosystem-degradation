@@ -26,7 +26,7 @@ var ignore_classes = {
 var edge_rules = {
   'amazonia':       90,
   'caatinga':       90,
-  'cerrado':        60,
+  'cerrado':        90,
   'mata_atlantica': 90,
   'pampa':          90,
   'pantanal':       90
@@ -42,15 +42,6 @@ var patch_size_rules = {
   'pantanal':       5
 };
 
-// definir criterio de degradação por idade da vegetação secundaria (em anos)
-var secondary_rules = {
-  'amazonia':       37,
-  'caatinga':       37,
-  'cerrado':        37,
-  'mata_atlantica': 37,
-  'pampa':          37,
-  'pantanal':       37
-};
 
 // * -- end of definitions
 
@@ -75,8 +66,8 @@ var collection = ee.Image('projects/mapbiomas-workspace/public/collection7_1/map
 
 // create recipes
 var edge_degrad = ee.Image(0);
+var edge_anthropogenic = ee.Image(0);
 var size_degrad = ee.Image(0);
-var secondary_degrad = ee.Image(0);
 
 // for each biome, compute fragmentation by using specific criteria
 biomes_name.forEach(function(biome_i) {
@@ -104,6 +95,10 @@ biomes_name.forEach(function(biome_i) {
     edge = edge.updateMask(collection_i.neq(class_i));
   });
   
+  // compute classes that causes edge effect
+  var edge_out = edge.distance(ee.Kernel.euclidean(edge_rules[biome_i] + 10, 'meters'), false);
+  edge_out = edge_out.mask(edge_out.lt(edge_rules[biome_i])).mask(anthropogenic).selfMask().updateMask(biomes.eq(biomes_dict[biome_i]));
+  //Map.addLayer(edge_out.randomVisualizer())
 
   // -- * get patche size 
   // dissolve all native veg. classes into each one
@@ -120,29 +115,20 @@ biomes_name.forEach(function(biome_i) {
   
   // get only patches smaller than the criteria
   var size_degradation = patch_size.lte(size_criteria).selfMask();
-  
-  // -- * get degradation by secondary vegetation age
-  var secondary =  ee.Image('projects/mapbiomas-workspace/public/collection7_1/mapbiomas_collection71_secondary_vegetation_age_v1')
-    .updateMask(biomes.eq(biomes_dict[biome_i]))
-    .select('secondary_vegetation_age_2021')
-    .updateMask(native_l0.eq(1))
-    .selfMask();
-    secondary= secondary.updateMask(secondary.lt(secondary_rules[biome_i]));
-  
-  // * --
+
   print(biome_i + ' rules:',
     'native classes: ' + native_classes[biome_i], 
     'ignored classes: ' + ignore_classes[biome_i],
     'edge distance: ' + edge_rules[biome_i] + ' meters',
-    'patche size: ' + size_criteria + ' px',
-    'secondary age: less than ' + secondary_rules[biome_i] + ' years'
+    'patche size: ' + size_criteria + ' px'
     );
 
   // blend into recipes
   edge_degrad = edge_degrad.blend(edge).selfMask().rename('edge_degradation');
+  edge_anthropogenic = edge_anthropogenic.blend(edge_out).selfMask().rename('edge_anthropogenic');
   size_degrad = size_degrad.blend(size_degradation).selfMask().rename('patche_size_degradation');
-  secondary_degrad = secondary_degrad.blend(secondary).selfMask().rename('secondary_veg_degradation');
 });
+
 
 // get mapbiomas pallete
 var vis = {
@@ -160,6 +146,16 @@ var view_collection = collection.remap({
 
 // plot
 Map.addLayer(view_collection, vis, 'Mapbiomas 2021', false);
+Map.addLayer(edge_anthropogenic, {'palette': ('blue')}, 'Classes que causam degradação');
 Map.addLayer(edge_degrad, {'palette': ('red')}, 'Degradação por borda');
 Map.addLayer(size_degrad, {'palette': ('orange')}, 'Degradação por tamanho');
-Map.addLayer(secondary_degrad, {'palette': ('yellow')}, 'Degradado por idade');
+
+// Retain classes from edge to export edge 
+var inner = collection.select('classification_2021').updateMask(edge_degrad).rename('edge_native_class');
+var out = collection.select('classification_2021').updateMask(edge_anthropogenic).rename('edge_anthropogenic_class');
+var size_class = collection.select('classification_2021').updateMask(size_degrad).rename('size_class');
+
+// Build image to export
+var toExport = inner.addBands(out).addBands(size_class).addBands(size_degrad);
+
+// Export asset

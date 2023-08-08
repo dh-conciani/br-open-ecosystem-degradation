@@ -42,8 +42,11 @@ var patch_size_rules = {
   'pantanal':       5
 };
 
-
 // * -- end of definitions
+
+// * -- ingest infrastructure data
+
+// * -- end o f infrastructure data
 
 // read biomes
 var biomes = ee.Image('projects/mapbiomas-workspace/AUXILIAR/biomas-2019-raster');
@@ -124,9 +127,9 @@ biomes_name.forEach(function(biome_i) {
     );
 
   // blend into recipes
-  edge_degrad = edge_degrad.blend(edge).selfMask().rename('edge_degradation');
-  edge_anthropogenic = edge_anthropogenic.blend(edge_out).selfMask().rename('edge_anthropogenic');
-  size_degrad = size_degrad.blend(size_degradation).selfMask().rename('patche_size_degradation');
+  edge_degrad = edge_degrad.blend(edge).selfMask().rename('edge_native_distance');
+  edge_anthropogenic = edge_anthropogenic.blend(edge_out).selfMask().rename('edge_anthropogenic_distance');
+  size_degrad = size_degrad.blend(size_degradation).selfMask().rename('size_area');
 });
 
 
@@ -156,6 +159,15 @@ var out = collection.select('classification_2021').updateMask(edge_anthropogenic
 var size_class = collection.select('classification_2021').updateMask(size_degrad).rename('size_class');
 
 // Build image to export
-var toExport = inner.addBands(out).addBands(size_class).addBands(size_degrad);
+var toExport = inner.addBands(edge_degrad).addBands(out).addBands(edge_anthropogenic).addBands(size_class).addBands(size_degrad);
+print(toExport);
 
 // Export asset
+Export.image.toAsset({
+		image: toExport,
+    description: 'FRAGMENTATION_V1',
+    assetId: 'projects/mapbiomas-workspace/DEGRADACAO/FRAGMENTATION/FRAGMENTATION_V1',
+    region: biomes.geometry(),
+    scale: 30,
+    maxPixels: 1e13,
+});

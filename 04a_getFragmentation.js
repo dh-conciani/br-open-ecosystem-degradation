@@ -157,7 +157,7 @@ var view_collection = collection.remap({
 
 // plot
 Map.addLayer(view_collection, vis, 'Mapbiomas 2021', false);
-Map.addLayer(edge_anthropogenic, {'palette': ('blue')}, 'Classes que causam degradação');
+Map.addLayer(edge_anthropogenic, {'palette': ('purple')}, 'Classes que causam degradação');
 Map.addLayer(edge_degrad, {'palette': ('red')}, 'Degradação por borda');
 Map.addLayer(size_degrad, {'palette': ('orange')}, 'Degradação por tamanho');
 

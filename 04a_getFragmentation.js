@@ -45,6 +45,9 @@ var patch_size_rules = {
 // * -- end of definitions
 
 // * -- ingest infrastructure data
+var dnit_roads = ee.Image('projects/mapbiomas-workspace/DEGRADACAO/INFRASTRUCTURE/dnit_roads_image');
+Map.addLayer(dnit_roads, {}, 'Estradas');
+
 
 // * -- end o f infrastructure data
 
@@ -65,7 +68,8 @@ var biomes_dict = {
 
 // read collection
 var collection = ee.Image('projects/mapbiomas-workspace/public/collection7_1/mapbiomas_collection71_integration_v1')
-  .select('classification_2021');
+  .select('classification_2021')
+  .blend(dnit_roads);
 
 // create recipes
 var edge_degrad = ee.Image(0);
@@ -80,15 +84,19 @@ biomes_name.forEach(function(biome_i) {
     .remap({from: native_classes[biome_i].concat(ignore_classes[biome_i]),
             to: native_classes[biome_i].concat(ignore_classes[biome_i]),
             defaultValue: 21
-    }).updateMask(biomes.eq(biomes_dict[biome_i]));
+    })
+    // add infrastructure
+    .blend(dnit_roads.remap([1], [21]))
+    .updateMask(biomes.eq(biomes_dict[biome_i]));
   
   // mask collection to retain raw classes
   var collection_i = collection.updateMask(native_mask.neq(21));
+  //Map.addLayer(collection_i.randomVisualizer())
 
   // -- * get edge effect
   // retain anthropogenic classes to be used as reference for the edge 
   var anthropogenic = native_mask.updateMask(native_mask.eq(21));
-
+  
   // compute edge 
   var edge = anthropogenic.distance(ee.Kernel.euclidean(edge_rules[biome_i] + 10, 'meters'), false);
   edge = edge.mask(edge.lt(edge_rules[biome_i])).mask(collection).selfMask().updateMask(biomes.eq(biomes_dict[biome_i]));
@@ -98,8 +106,8 @@ biomes_name.forEach(function(biome_i) {
     edge = edge.updateMask(collection_i.neq(class_i));
   });
   
-  // compute classes that causes edge effect
-  var edge_out = edge.distance(ee.Kernel.euclidean(edge_rules[biome_i] + 10, 'meters'), false);
+  // compute classes that causes edge effect (1px)
+  var edge_out = edge.distance(ee.Kernel.euclidean(35, 'meters'), false);
   edge_out = edge_out.mask(edge_out.lt(edge_rules[biome_i])).mask(anthropogenic).selfMask().updateMask(biomes.eq(biomes_dict[biome_i]));
   //Map.addLayer(edge_out.randomVisualizer())
 
@@ -143,8 +151,8 @@ var vis = {
 
 // remap collection to provide view
 var view_collection = collection.remap({
-  from: [3, 4, 5, 49, 11, 12, 32, 29, 50, 13, 15, 19, 39, 20, 40, 62, 41, 36, 46, 47, 48, 9, 21, 23, 24, 30, 25, 33, 31],
-  to: [  1, 10, 1,  1, 10, 10, 10, 10, 10, 10, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14,14, 22, 22, 22, 22, 26, 26]
+  from: [1,  3, 4, 5, 49, 11, 12, 32, 29, 50, 13, 15, 19, 39, 20, 40, 62, 41, 36, 46, 47, 48, 9, 21, 23, 24, 30, 25, 33, 31],
+  to: [  27, 1, 10, 1,  1, 10, 10, 10, 10, 10, 10, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14,14, 22, 22, 22, 22, 26, 26]
 });
 
 // plot
@@ -165,8 +173,8 @@ print(toExport);
 // Export asset
 Export.image.toAsset({
 		image: toExport,
-    description: 'FRAGMENTATION_V1',
-    assetId: 'projects/mapbiomas-workspace/DEGRADACAO/FRAGMENTATION/FRAGMENTATION_V1',
+    description: 'FRAGMENTATION_V2',
+    assetId: 'projects/mapbiomas-workspace/DEGRADACAO/FRAGMENTATION/FRAGMENTATION_V2',
     region: biomes.geometry(),
     scale: 30,
     maxPixels: 1e13,

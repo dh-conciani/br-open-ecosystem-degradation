@@ -95,8 +95,8 @@ periods.forEach(function(period_i) {
 
 });
 
-print('mean freq.', periods_mean);
-Map.addLayer(periods_mean.randomVisualizer(), {}, 'mean frequency');
+//print('mean freq.', periods_mean);
+Map.addLayer(periods_mean, {}, 'mean frequency', false);
 
 // Select all bands except the last one
 var bandNames = periods_mean.bandNames();
@@ -105,15 +105,15 @@ var historicalMean = periods_mean.select(bandNames.slice(0, bandNames.length().s
 // compute historical mean
 historicalMean = historicalMean.reduce(ee.Reducer.mean());
 
-print('historicalMean', historicalMean);
-Map.addLayer(historicalMean.randomVisualizer(), {}, 'historicalMean');
+//print('historicalMean', historicalMean);
+Map.addLayer(historicalMean, {}, 'historicalMean', false);
 
 // compute difference (observed frequency - expected frequency [mean of historical])
 var difference_freq = periods_mean.select(ee.String(periods_mean.bandNames().get(-1)))
   .subtract(historicalMean);
 
-print(difference_freq);
-Map.addLayer(difference_freq,  {palette: ['blue', 'white', 'red'], min: -0.3, max: 0.3}, 'freq. difference (unfiltered)');
+print('unfiltered', difference_freq);
+Map.addLayer(difference_freq,  {palette: ['blue', 'white', 'red'], min: -0.3, max: 0.3}, 'freq. difference (unfiltered)', false);
 
 // Now we neeed to extract historical patterns to filter expected changes
 // Get the band names
@@ -145,25 +145,21 @@ var changes_wLast = changes.select(bandNames.slice(0, bandNames.length().subtrac
 // Compute the net over historical series 
 var historicalChange_sd = changes_wLast.reduce(ee.Reducer.stdDev());
 
-// Now, use historicalChange_sd to mask pixels within historical change interval
-var filtered_difference = difference_freq.where(difference_freq.lt(historicalChange_sd))
+// Now, use historicalChange_sd to mask pixels within historical change interval (+sd and -sd)
+var filtered_difference = difference_freq.where(difference_freq.lte(historicalChange_sd)
+  .and(difference_freq.gte(historicalChange_sd.multiply(-1))), 0);
+  
+print(filtered_difference);
+Map.addLayer(filtered_difference,  {palette: ['blue', 'white', 'red'], min: -0.3, max: 0.3}, 'freq. difference (filtered)');
 
-
-print (0.12 < )
-
-
-
-
-
-
-
-
-
+// Export
 Export.image.toAsset({
-		image: difference2.rename('fire_regime_changes'),
-    description: 'fire_regime_changes_v1',
-    assetId: 'projects/mapbiomas-workspace/DEGRADACAO/FOGO/fire_regime_changes_v1',
-    region: geometry,
+		image: filtered_difference.rename('fire_regime_changes'),
+    description: 'fire_regime_changes_v2',
+    assetId: 'projects/mapbiomas-workspace/DEGRADACAO/FOGO/fire_regime_changes_v2',
+    region: collection.geometry(),
     scale: 30,
     maxPixels: 1e13,
 });
+
+//Map.addLayer(collection.geometry(), {}, 'geometry', false);

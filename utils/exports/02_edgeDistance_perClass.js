@@ -36,7 +36,7 @@ var recipe = ee.FeatureCollection([]);
 // for each class [i]
 classes.forEach(function(class_i) {
   // get the classification for the class [i]
-  var asset_i = native_edge.updateMask(native_edge.eq(class_i));
+  var asset_i = native_edge.updateMask(native_edge.select('edge_native_class').eq(class_i));
   Map.addLayer(asset_i.randomVisualizer(), {}, 'class ' + class_i);
       
       // Geometry to export

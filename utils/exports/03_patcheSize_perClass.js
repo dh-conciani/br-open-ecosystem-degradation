@@ -56,7 +56,7 @@ classes.forEach(function(class_i) {
                     var tableColumns = ee.Feature(null)
                         .set('ecoregion', territory)
                         .set('class', class_i)
-                        .set('distance', classId)
+                        .set('size', classId)
                         .set('area', area)
                     return tableColumns;
                 }

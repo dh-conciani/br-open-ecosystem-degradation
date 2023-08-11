@@ -104,7 +104,7 @@ classes.forEach(function(class_i) {
       // perform per year 
         var areas = bands.map(
             function (band_i) {
-                var image = asset_i.select(band_i);
+                var image = asset_ijk.select(band_i);
                 var areas = calculateArea(image, territory, geometry);
                 // set additional properties
                 areas = areas.map(

@@ -49,7 +49,10 @@ classes.forEach(function(class_i) {
   // use it to get only anthropogenic classes that causes edge effect for each native class
   var anthropogenic_i = native_edge.select('edge_anthropogenic_class').updateMask(buffer_i.select(0));
   //Map.addLayer(anthropogenic_i.randomVisualizer(), {}, 'pressure ' + class_i, false)
-
+  
+  // store to process
+  asset_i = anthropogenic_i; 
+  
       // Geometry to export
       var geometry = asset_i.geometry();
       

@@ -71,7 +71,7 @@ edge_rules.forEach(function(distance_i) {
   
     // read collection 
     var collection = ee.Image('projects/mapbiomas-workspace/public/collection8/mapbiomas_collection80_integration_v1')
-      .select('classification_' + year_i);
+      .select('classification_' + year_j);
       //.blend(dnit_roads);
   
     // for each biome, compute fragmentation by using specific criteria
@@ -88,15 +88,33 @@ edge_rules.forEach(function(distance_i) {
       
       // mask collection to retain raw classes
       var collection_i = collection.updateMask(native_mask.neq(21));
-      //Map.addLayer(collection_i.randomVisualizer(), {}, year_i + ' ' + distance_j + ' ' + biome_k);
+      //Map.addLayer(collection_i.randomVisualizer(), {}, year_i + ' ' + distance_i + ' ' + biome_k);
       
       // -- * get edge effect
       // retain anthropogenic classes to be used as reference for the edge 
       var anthropogenic = native_mask.updateMask(native_mask.eq(21));
       
       // compute edge 
-      var edge = anthropogenic.distance(ee.Kernel.euclidean(edge_rules[biome_i] + 10, 'meters'), false);
-      edge = edge.mask(edge.lt(edge_rules[biome_i])).mask(collection).selfMask().updateMask(biomes.eq(biomes_dict[biome_i]));
+      var edge = anthropogenic.distance(ee.Kernel.euclidean(distance_i + 10, 'meters'), false);
+      edge = edge.mask(edge.lt(distance_i)).mask(collection).selfMask().updateMask(biomes.eq(biomes_dict[biome_k]));
+      
+        // remove edges over ignored classes
+      ignore_classes[biome_k].forEach(function(class_m) {
+        edge = edge.updateMask(collection_i.neq(class_m));
+      });
+      
+      // compute classes that causes edge effect (1px)
+      if (distance_i === 30) {
+         var edge_out = edge.distance(ee.Kernel.euclidean(35, 'meters'), false);
+         edge_out = edge_out.mask(edge_out.lt(distance_i)).mask(anthropogenic).selfMask().updateMask(biomes.eq(biomes_dict[biome_k]));
+      //Map.addLayer(edge_out.randomVisualizer())
+      }
+     
+      
+      // blend into recipes
+      edge_degrad = edge_degrad.blend(edge).selfMask().rename('edge_' + distance_i + 'm_' + year_j);
+      edge_anthropogenic = edge_anthropogenic.blend(edge_out).selfMask().rename('edge_anthropogenic_distance');
+
     });
   });
 });
@@ -105,57 +123,6 @@ edge_rules.forEach(function(distance_i) {
 
 
 
-
-
-
-// for each biome, compute fragmentation by using specific criteria
-biomes_name.forEach(function(biome_i) {
-  
-  
-  
-  
-
- 
-  
-  
-
-  // remove edges over ignored classes
-  ignore_classes[biome_i].forEach(function(class_i) {
-    edge = edge.updateMask(collection_i.neq(class_i));
-  });
-  
-  // compute classes that causes edge effect (1px)
-  var edge_out = edge.distance(ee.Kernel.euclidean(35, 'meters'), false);
-  edge_out = edge_out.mask(edge_out.lt(edge_rules[biome_i])).mask(anthropogenic).selfMask().updateMask(biomes.eq(biomes_dict[biome_i]));
-  //Map.addLayer(edge_out.randomVisualizer())
-
-  // -- * get patche size 
-  // dissolve all native veg. classes into each one
-  var native_l0 = collection_i.remap({
-    from: native_classes[biome_i],
-    to: ee.List.repeat(1, ee.List(native_classes[biome_i]).length())
-  });
-  
-  // get patch sizes
-  // convert ha to number of pixels
-  var size_criteria = parseInt((patch_size_rules[biome_i] * 10000) / 900);
-  // compute patche sizes
-  var patch_size = native_l0.connectedPixelCount(size_criteria + 5, true);
-  
-  // get only patches smaller than the criteria
-  var size_degradation = patch_size.lte(size_criteria).selfMask();
-
-  print(biome_i + ' rules:',
-    'native classes: ' + native_classes[biome_i], 
-    'ignored classes: ' + ignore_classes[biome_i],
-    'edge distance: ' + edge_rules[biome_i] + ' meters',
-    'patche size: ' + size_criteria + ' px'
-    );
-
-  // blend into recipes
-  edge_degrad = edge_degrad.blend(edge).selfMask().rename('edge_native_distance');
-  edge_anthropogenic = edge_anthropogenic.blend(edge_out).selfMask().rename('edge_anthropogenic_distance');
-  size_degrad = size_degrad.blend(size_degradation).selfMask().rename('size_area');
 });
 
 

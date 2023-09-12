@@ -3,23 +3,25 @@
 
 // -- * definitions
 // definir classes a serem consideradas como vegetação nativa (nas quais o efeito de borda e tamanho do fragmento serão estimados)
+// 3 (form. florestal), 4 (form. savânica), 5 (mangue), 6 (florestal alagável), 11 (wetland), 12 (campo)
 var native_classes = {
-  'amazonia':       [3, 4, 5, 6, 11, 12, 32],
-  'caatinga':       [3, 4, 5, 11, 12, 32],
-  'cerrado':        [3, 4, 5, 11, 12, 32],
-  'mata_atlantica': [3, 4, 5, 11, 12, 13, 32, 49, 50],
-  'pampa':          [3, 4, 5, 11, 12, 32, 49, 50],
-  'pantanal':       [3, 4, 5, 11, 12, 32]
+  'amazonia':       [3, 4, 5, 6, 11, 12],
+  'caatinga':       [3, 4, 5, 11, 12],
+  'cerrado':        [3, 4, 5, 11, 12],
+  'mata_atlantica': [3, 4, 5, 11, 12],
+  'pampa':          [3, 4, 5, 11, 12],
+  'pantanal':       [3, 4, 5, 11, 12]
 };
 
 // definir classes que serão ignoradas (ex: as quais não podem produzir efeitos de borda sobre as classes de veg. nativa)
+// 13 (outras form. não florestais), 29 (afloramento rochoso), 32 (apicum), 33 (água), 49 (restinga arborea), 50 (restinga herbacea)
 var ignore_classes = {
-  'amazonia':       [29, 49, 50, 33],
-  'caatinga':       [29, 49, 50, 33],
-  'cerrado':        [29, 33],
-  'mata_atlantica': [29, 49, 50, 33],
-  'pampa':          [29, 49, 50, 33],
-  'pantanal':       [29, 49, 50, 33]
+  'amazonia':       [13, 29, 32, 33, 49, 50],
+  'caatinga':       [13, 29, 32, 33, 49, 50],
+  'cerrado':        [13, 29, 32, 33, 49, 50],
+  'mata_atlantica': [13, 29, 32, 33, 49, 50],
+  'pampa':          [13, 29, 32, 49, 33, 50],
+  'pantanal':       [13, 29, 32, 49, 33, 50]
 };
 
 // definir conjunto de distancias (em metros) para estimar a área sobre efeito de borda

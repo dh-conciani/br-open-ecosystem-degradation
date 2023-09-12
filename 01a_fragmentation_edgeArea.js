@@ -107,17 +107,22 @@ edge_rules.forEach(function(distance_i) {
       if (distance_i === 30) {
          var edge_out = edge.distance(ee.Kernel.euclidean(35, 'meters'), false);
          edge_out = edge_out.mask(edge_out.lt(distance_i)).mask(anthropogenic).selfMask().updateMask(biomes.eq(biomes_dict[biome_k]));
+         
+         // blend into recipe
+         edge_anthropogenic = edge_anthropogenic.blend(edge_out).selfMask().rename('pressure_' + distance_i + 'm_' + year_j);
       //Map.addLayer(edge_out.randomVisualizer())
       }
      
       
       // blend into recipes
       edge_degrad = edge_degrad.blend(edge).selfMask().rename('edge_' + distance_i + 'm_' + year_j);
-      edge_anthropogenic = edge_anthropogenic.blend(edge_out).selfMask().rename('edge_anthropogenic_distance');
+      
 
     });
   });
 });
+
+print(edge_degrad)
 
 /*
 

@@ -27,12 +27,17 @@ var ignore_classes = {
 // definir conjunto de distancias (em metros) para estimar a área sobre efeito de borda
 var edge_rules = [30, 60, 90, 120, 150, 300, 600, 1000];
 
+// Set years to be processed 
+var years_list = [1985, 1986, 1987, 1988, 1989, 1990, 1991, 1992, 1993, 1994, 1995,
+                  1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,
+                  2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017,
+                  2018, 2019, 2020, 2021, 2022];
+
 // * -- end of definitions
 
 // * -- ingest infrastructure data
-var dnit_roads = ee.Image('projects/mapbiomas-workspace/DEGRADACAO/INFRASTRUCTURE/dnit_roads_image');
-Map.addLayer(dnit_roads, {}, 'Estradas');
-
+//var dnit_roads = ee.Image('projects/mapbiomas-workspace/DEGRADACAO/INFRASTRUCTURE/dnit_roads_image');
+//Map.addLayer(dnit_roads, {}, 'Estradas');
 
 // * -- end o f infrastructure data
 

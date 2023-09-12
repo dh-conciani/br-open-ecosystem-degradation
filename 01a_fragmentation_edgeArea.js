@@ -25,13 +25,16 @@ var ignore_classes = {
 };
 
 // definir conjunto de distancias (em metros) para estimar a área sobre efeito de borda
-var edge_rules = [30, 60, 90, 120, 150, 300, 600, 1000];
+//var edge_rules = [30, 60, 90, 120, 150, 300, 600, 1000];
+var edge_rules = [90];
+
 
 // Set years to be processed 
-var years_list = [1985, 1986, 1987, 1988, 1989, 1990, 1991, 1992, 1993, 1994, 1995,
-                  1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,
-                  2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017,
-                  2018, 2019, 2020, 2021, 2022];
+//var years_list = [1985, 1986, 1987, 1988, 1989, 1990, 1991, 1992, 1993, 1994, 1995,
+//                  1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,
+//                  2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017,
+//                  2018, 2019, 2020, 2021, 2022];
+var years_list = [2022];
 
 // * -- end of definitions
 
@@ -56,54 +59,65 @@ var biomes_dict = {
   'pantanal':       3
 };
 
-// for each year
-years_list.forEach(function(year_i) {
-  
-  // read collection 
-  var collection = ee.Image('projects/mapbiomas-workspace/public/collection7_1/mapbiomas_collection71_integration_v1')
-    .select('classification_' + year_i);
-    //.blend(dnit_roads);
+// for each edge rule (distance)
+edge_rules.forEach(function(distance_i) {
   
   // build recipes
   var edge_degrad = ee.Image(0);
   var edge_anthropogenic = ee.Image(0);
-  var size_degrad = ee.Image(0);
+
+  // for each year
+  years_list.forEach(function(year_j) {
   
-  // for each edge rule distance
-  edge_rules.forEach(function(distance_j) {
-    
+    // read collection 
+    var collection = ee.Image('projects/mapbiomas-workspace/public/collection8/mapbiomas_collection80_integration_v1')
+      .select('classification_' + year_i);
+      //.blend(dnit_roads);
+  
     // for each biome, compute fragmentation by using specific criteria
     biomes_name.forEach(function(biome_k) {
+      // get native vegetation map
+      var native_mask = collection
+        .remap({from: native_classes[biome_k].concat(ignore_classes[biome_k]),
+                to: native_classes[biome_k].concat(ignore_classes[biome_k]),
+                defaultValue: 21
+        })
+        // add infrastructure
+        //.blend(dnit_roads.remap([1], [21]))
+        .updateMask(biomes.eq(biomes_dict[biome_k]));
+      
+      // mask collection to retain raw classes
+      var collection_i = collection.updateMask(native_mask.neq(21));
+      //Map.addLayer(collection_i.randomVisualizer(), {}, year_i + ' ' + distance_j + ' ' + biome_k);
+      
+      // -- * get edge effect
+      // retain anthropogenic classes to be used as reference for the edge 
+      var anthropogenic = native_mask.updateMask(native_mask.eq(21));
+      
+      // compute edge 
+      var edge = anthropogenic.distance(ee.Kernel.euclidean(edge_rules[biome_i] + 10, 'meters'), false);
+      edge = edge.mask(edge.lt(edge_rules[biome_i])).mask(collection).selfMask().updateMask(biomes.eq(biomes_dict[biome_i]));
     });
   });
 });
+
+/*
+
+
+
 
 
 
 // for each biome, compute fragmentation by using specific criteria
 biomes_name.forEach(function(biome_i) {
   
-  // get native vegetation map
-  var native_mask = collection
-    .remap({from: native_classes[biome_i].concat(ignore_classes[biome_i]),
-            to: native_classes[biome_i].concat(ignore_classes[biome_i]),
-            defaultValue: 21
-    })
-    // add infrastructure
-    .blend(dnit_roads.remap([1], [21]))
-    .updateMask(biomes.eq(biomes_dict[biome_i]));
   
-  // mask collection to retain raw classes
-  var collection_i = collection.updateMask(native_mask.neq(21));
-  //Map.addLayer(collection_i.randomVisualizer())
+  
+  
 
-  // -- * get edge effect
-  // retain anthropogenic classes to be used as reference for the edge 
-  var anthropogenic = native_mask.updateMask(native_mask.eq(21));
+ 
   
-  // compute edge 
-  var edge = anthropogenic.distance(ee.Kernel.euclidean(edge_rules[biome_i] + 10, 'meters'), false);
-  edge = edge.mask(edge.lt(edge_rules[biome_i])).mask(collection).selfMask().updateMask(biomes.eq(biomes_dict[biome_i]));
+  
 
   // remove edges over ignored classes
   ignore_classes[biome_i].forEach(function(class_i) {
@@ -183,3 +197,5 @@ Export.image.toAsset({
     scale: 30,
     maxPixels: 1e13,
 });
+
+*/

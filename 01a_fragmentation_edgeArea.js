@@ -1,12 +1,12 @@
-// ecosystem fragmentation - edge effect // gt degradaçao - mapbiomas
+// ecosystem fragmentation - edge effect // gt degradaçao - mapbiomas //
 // any issue, bug or report write to dhemerson.costa@ipam.org.br and/or mrosa@arcplan.com.br
 
 // set version
 var version = 1;
 
 // -- * definitions
-// definir classes a serem consideradas como vegetação nativa (nas quais o efeito de borda e tamanho do fragmento serão estimados)
-// 3 (form. florestal), 4 (form. savânica), 5 (mangue), 6 (florestal alagável), 11 (wetland), 12 (campo)
+// set classes in which edge area will be applied 
+// 3 (forest), 4 (savanna), 5 (mangrove), 6 (flooded forest), 11 (wetland), 12 (grassland)
 var native_classes = {
   'amazonia':       [3, 4, 5, 6, 11, 12],
   'caatinga':       [3, 4, 5, 11, 12],
@@ -16,8 +16,8 @@ var native_classes = {
   'pantanal':       [3, 4, 5, 11, 12]
 };
 
-// definir classes que serão ignoradas (ex: as quais não podem produzir efeitos de borda sobre as classes de veg. nativa)
-// 13 (outras form. não florestais), 29 (afloramento rochoso), 32 (apicum), 33 (água), 49 (restinga arborea), 50 (restinga herbacea)
+// dset classes to be ignored (which doesn't produces edge area)
+// 13 (other non forest), 29 (rocky outcrop), 32 (hypersaline tidal flat), 33 (water), 49 (wooded restinga), 50 (herbaceous restinga)
 var ignore_classes = {
   'amazonia':       [13, 29, 32, 33, 49, 50],
   'caatinga':       [13, 29, 32, 33, 49, 50],
@@ -28,16 +28,13 @@ var ignore_classes = {
 };
 
 // definir conjunto de distancias (em metros) para estimar a área sobre efeito de borda
-//var edge_rules = [30, 60, 90, 120, 150, 300, 600, 1000];
-var edge_rules = [30, 60];
-
+var edge_rules = [30, 60, 90, 120, 150, 300, 600, 1000];
 
 // Set years to be processed 
-//var years_list = [1985, 1986, 1987, 1988, 1989, 1990, 1991, 1992, 1993, 1994, 1995,
-//                  1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,
-//                  2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017,
-//                  2018, 2019, 2020, 2021, 2022];
-var years_list = [1985, 2000, 2022];
+var years_list = [1985, 1986, 1987, 1988, 1989, 1990, 1991, 1992, 1993, 1994, 1995,
+                  1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,
+                  2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017,
+                  2018, 2019, 2020, 2021, 2022];
 
 // * -- end of definitions
 
@@ -171,7 +168,7 @@ edge_rules.forEach(function(distance_i) {
     Export.image.toAsset({
 		image: edge_anthropogenic,
     description: 'pressure_' + distance_i + 'm_v' + version,
-    assetId: 'projects/mapbiomas-workspace/DEGRADACAO/COLECAO/BETA/PROCESS/edge_pressure' + 'pressure_' + distance_i + 'm_v' + version,
+    assetId: 'projects/mapbiomas-workspace/DEGRADACAO/COLECAO/BETA/PROCESS/edge_pressure/' + 'pressure_' + distance_i + 'm_v' + version,
     region: biomes.geometry(),
     scale: 30,
     maxPixels: 1e13

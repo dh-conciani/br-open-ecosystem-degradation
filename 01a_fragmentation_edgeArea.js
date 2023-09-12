@@ -26,7 +26,7 @@ var ignore_classes = {
 
 // definir conjunto de distancias (em metros) para estimar a área sobre efeito de borda
 //var edge_rules = [30, 60, 90, 120, 150, 300, 600, 1000];
-var edge_rules = [90];
+var edge_rules = [30, 60, 90];
 
 
 // Set years to be processed 
@@ -34,7 +34,7 @@ var edge_rules = [90];
 //                  1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,
 //                  2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017,
 //                  2018, 2019, 2020, 2021, 2022];
-var years_list = [2022];
+var years_list = [1985, 2022];
 
 // * -- end of definitions
 
@@ -63,8 +63,8 @@ var biomes_dict = {
 edge_rules.forEach(function(distance_i) {
   
   // build recipes
-  var edge_degrad = ee.Image(0);
-  var edge_anthropogenic = ee.Image(0);
+  var edge_degrad = ee.Image([]);
+  var edge_anthropogenic = ee.Image([]);
 
   // for each year
   years_list.forEach(function(year_j) {
@@ -108,21 +108,23 @@ edge_rules.forEach(function(distance_i) {
          var edge_out = edge.distance(ee.Kernel.euclidean(35, 'meters'), false);
          edge_out = edge_out.mask(edge_out.lt(distance_i)).mask(anthropogenic).selfMask().updateMask(biomes.eq(biomes_dict[biome_k]));
          
-         // blend into recipe
-         edge_anthropogenic = edge_anthropogenic.blend(edge_out).selfMask().rename('pressure_' + distance_i + 'm_' + year_j);
-      //Map.addLayer(edge_out.randomVisualizer())
+        // blend into recipe
+        var anthropogenic_estimate = ee.Image(0).blend(edge_out).selfMask().rename('pressure_' + distance_i + 'm_' + year_j);
+        //Map.addLayer(edge_out.randomVisualizer())
+        // bind into recipe
+        
       }
      
       
       // blend into recipes
-      edge_degrad = edge_degrad.blend(edge).selfMask().rename('edge_' + distance_i + 'm_' + year_j);
+      var edge_estimate = ee.Image(0).blend(edge).selfMask().rename('edge_' + distance_i + 'm_' + year_j);
       
 
     });
   });
+  print(edge_degrad)
 });
 
-print(edge_degrad)
 
 /*
 

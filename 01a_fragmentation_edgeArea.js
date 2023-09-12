@@ -56,15 +56,29 @@ var biomes_dict = {
   'pantanal':       3
 };
 
-// read collection
-var collection = ee.Image('projects/mapbiomas-workspace/public/collection7_1/mapbiomas_collection71_integration_v1')
-  .select('classification_2021')
-  .blend(dnit_roads);
+// for each year
+years_list.forEach(function(year_i) {
+  
+  // read collection 
+  var collection = ee.Image('projects/mapbiomas-workspace/public/collection7_1/mapbiomas_collection71_integration_v1')
+    .select('classification_' + year_i);
+    //.blend(dnit_roads);
+  
+  // build recipes
+  var edge_degrad = ee.Image(0);
+  var edge_anthropogenic = ee.Image(0);
+  var size_degrad = ee.Image(0);
+  
+  // for each edge rule distance
+  edge_rules.forEach(function(distance_j) {
+    
+    // for each biome, compute fragmentation by using specific criteria
+    biomes_name.forEach(function(biome_k) {
+    });
+  });
+});
 
-// create recipes
-var edge_degrad = ee.Image(0);
-var edge_anthropogenic = ee.Image(0);
-var size_degrad = ee.Image(0);
+
 
 // for each biome, compute fragmentation by using specific criteria
 biomes_name.forEach(function(biome_i) {

@@ -1,6 +1,9 @@
 // ecosystem fragmentation - edge effect // gt degradaçao - mapbiomas
 // any issue, bug or report write to dhemerson.costa@ipam.org.br and/or mrosa@arcplan.com.br
 
+// set version
+var version = 1;
+
 // -- * definitions
 // definir classes a serem consideradas como vegetação nativa (nas quais o efeito de borda e tamanho do fragmento serão estimados)
 // 3 (form. florestal), 4 (form. savânica), 5 (mangue), 6 (florestal alagável), 11 (wetland), 12 (campo)
@@ -26,7 +29,7 @@ var ignore_classes = {
 
 // definir conjunto de distancias (em metros) para estimar a área sobre efeito de borda
 //var edge_rules = [30, 60, 90, 120, 150, 300, 600, 1000];
-var edge_rules = [30, 60, 90];
+var edge_rules = [30, 60];
 
 
 // Set years to be processed 
@@ -34,7 +37,7 @@ var edge_rules = [30, 60, 90];
 //                  1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,
 //                  2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017,
 //                  2018, 2019, 2020, 2021, 2022];
-var years_list = [1985, 2022];
+var years_list = [1985, 2000, 2022];
 
 // * -- end of definitions
 
@@ -142,52 +145,37 @@ edge_rules.forEach(function(distance_i) {
     edge_anthropogenic = edge_anthropogenic.addBands(out);
     
   });
-  print(edge_degrad);
-});
-
-
-/*
-
-
-
-});
-
-
-// get mapbiomas pallete
-var vis = {
-          'min': 0,
-          'max': 62,
-          'palette': require('users/mapbiomas/modules:Palettes.js').get('classification7'),
-          'format': 'png'
-      };
-
-// remap collection to provide view
-var view_collection = collection.remap({
-  from: [1,  3, 4, 5, 49, 11, 12, 32, 29, 50, 13, 15, 19, 39, 20, 40, 62, 41, 36, 46, 47, 48, 9, 21, 23, 24, 30, 25, 33, 31],
-  to: [  27, 1, 10, 1,  1, 10, 10, 10, 10, 10, 10, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14,14, 22, 22, 22, 22, 26, 26]
-});
-
-// plot
-Map.addLayer(view_collection, vis, 'Mapbiomas 2021', false);
-Map.addLayer(edge_anthropogenic, {'palette': ('purple')}, 'Classes que causam degradação');
-Map.addLayer(edge_degrad, {'palette': ('red')}, 'Degradação por borda');
-Map.addLayer(size_degrad, {'palette': ('orange')}, 'Degradação por tamanho');
-
-
-var size_class = collection.select('classification_2021').updateMask(size_degrad).rename('size_class');
-
-// Build image to export
-var toExport = inner.addBands(edge_degrad).addBands(out).addBands(edge_anthropogenic).addBands(size_class).addBands(size_degrad);
-print(toExport);
-
-// Export asset
-Export.image.toAsset({
-		image: toExport,
-    description: 'FRAGMENTATION_V2',
-    assetId: 'projects/mapbiomas-workspace/DEGRADACAO/FRAGMENTATION/FRAGMENTATION_V2',
+  
+  // Set properties
+  edge_degrad = edge_degrad.set({'version': version})
+                           .set({'distance': distance_i});
+  
+  edge_anthropogenic = edge_anthropogenic.set({'version': version})
+                           .set({'distance': distance_i});
+                           
+  // Export 
+  print(edge_degrad, edge_anthropogenic);
+  
+  // Edge area
+  Export.image.toAsset({
+		image: edge_degrad,
+    description: 'edge_' + distance_i + 'm_v' + version,
+    assetId: 'projects/mapbiomas-workspace/DEGRADACAO/COLECAO/BETA/PROCESS/edge_area/' + 'edge_' + distance_i + 'm_v' + version,
     region: biomes.geometry(),
     scale: 30,
     maxPixels: 1e13,
+  });
+  
+  // Pressure class
+  if (distance_i === 30) {
+    Export.image.toAsset({
+		image: edge_anthropogenic,
+    description: 'pressure_' + distance_i + 'm_v' + version,
+    assetId: 'projects/mapbiomas-workspace/DEGRADACAO/COLECAO/BETA/PROCESS/edge_pressure' + 'pressure_' + distance_i + 'm_v' + version,
+    region: biomes.geometry(),
+    scale: 30,
+    maxPixels: 1e13
+    });
+  }
 });
 
-*/

@@ -68,7 +68,11 @@ edge_rules.forEach(function(distance_i) {
 
   // for each year
   years_list.forEach(function(year_j) {
-  
+    
+    // build recipes
+    var edge_degrad_year = ee.Image(0);
+    var edge_anthropogenic_year = ee.Image(0);
+      
     // read collection 
     var collection = ee.Image('projects/mapbiomas-workspace/public/collection8/mapbiomas_collection80_integration_v1')
       .select('classification_' + year_j);
@@ -76,6 +80,7 @@ edge_rules.forEach(function(distance_i) {
   
     // for each biome, compute fragmentation by using specific criteria
     biomes_name.forEach(function(biome_k) {
+
       // get native vegetation map
       var native_mask = collection
         .remap({from: native_classes[biome_k].concat(ignore_classes[biome_k]),
@@ -109,20 +114,35 @@ edge_rules.forEach(function(distance_i) {
          edge_out = edge_out.mask(edge_out.lt(distance_i)).mask(anthropogenic).selfMask().updateMask(biomes.eq(biomes_dict[biome_k]));
          
         // blend into recipe
-        var anthropogenic_estimate = ee.Image(0).blend(edge_out).selfMask().rename('pressure_' + distance_i + 'm_' + year_j);
+        edge_anthropogenic_year = edge_anthropogenic_year.blend(edge_out).selfMask();
         //Map.addLayer(edge_out.randomVisualizer())
-        // bind into recipe
         
+        // bind into recipe
+        //edge_anthropogenic = edge_anthropogenic.addBands(anthropogenic_estimate);
       }
      
+      // blend edge into recipe
+      edge_degrad_year = edge_degrad_year.blend(edge).selfMask();
+      //edge_degrad = edge_degrad.addBands(edge_estimate);
       
-      // blend into recipes
-      var edge_estimate = ee.Image(0).blend(edge).selfMask().rename('edge_' + distance_i + 'm_' + year_j);
-      
-
     });
+
+    // Retain classes from edge, build-up data and store into recipe 
+    var inner = collection.updateMask(edge_degrad_year)
+      .rename('edge_' + distance_i + 'm_' + year_j);
+      
+    var out = collection.updateMask(edge_anthropogenic_year)
+      .rename('pressure_' + distance_i + 'm_' + year_j);
+      
+    //Map.addLayer(inner.randomVisualizer(), {}, year_j + ' inner ' + distance_i);
+    //Map.addLayer(out.randomVisualizer(), {}, year_j + ' out ' + distance_i);
+    
+    // Build images to export 
+    edge_degrad = edge_degrad.addBands(inner);
+    edge_anthropogenic = edge_anthropogenic.addBands(out);
+    
   });
-  print(edge_degrad)
+  print(edge_degrad);
 });
 
 
@@ -153,9 +173,7 @@ Map.addLayer(edge_anthropogenic, {'palette': ('purple')}, 'Classes que causam de
 Map.addLayer(edge_degrad, {'palette': ('red')}, 'Degradação por borda');
 Map.addLayer(size_degrad, {'palette': ('orange')}, 'Degradação por tamanho');
 
-// Retain classes from edge to export edge 
-var inner = collection.select('classification_2021').updateMask(edge_degrad).rename('edge_native_class');
-var out = collection.select('classification_2021').updateMask(edge_anthropogenic).rename('edge_anthropogenic_class');
+
 var size_class = collection.select('classification_2021').updateMask(size_degrad).rename('size_class');
 
 // Build image to export

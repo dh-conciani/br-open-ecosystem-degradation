@@ -1,6 +1,9 @@
 // get patch sizes (runs in native level)
 // any issue and/or bug, please report to dhemerson.costa@ipam.org.br and mrosa@arcplan.com.br
 
+// set version
+var version = 1;
+
 // -- * definitions
 // set classes to be computed  
 // 3 (forest), 4 (savanna), 5 (mangrove), 6 (flooded forest), 11 (wetland), 12 (grassland)
@@ -15,14 +18,14 @@ var native_classes = {
 
 // set patch size rules (in hectares)
 //var patch_sizes = [1, 2, 3, 4, 5, 10];
-var patch_sizes = [5];
+var patch_sizes = [1, 5];
 
 // Set years to be processed 
 //var years_list = [1985, 1986, 1987, 1988, 1989, 1990, 1991, 1992, 1993, 1994, 1995,
 //                  1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,
 //                  2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017,
 //                  2018, 2019, 2020, 2021, 2022];
-var years_list = [2022];
+var years_list = [1985, 2000, 2022];
 
 // read biomes
 var biomes = ee.Image('projects/mapbiomas-workspace/AUXILIAR/biomas-2019-raster');
@@ -37,7 +40,6 @@ var biomes_dict = {
   'pampa':          6,
   'pantanal':       3
 };
-
 
 // for each patche size 
 patch_sizes.forEach(function(size_i) {
@@ -84,15 +86,30 @@ patch_sizes.forEach(function(size_i) {
       
       // retain classes from original classification 
       var size_class = collection.select('classification_' + year_j)
-        .updateMask(size_degradation)
-        .rename('size_' + size_i + '_' + year_j);
-        
+        .updateMask(size_degradation);
       
+      // insert into recipe
+      recipe_year = recipe_year.blend(size_class).selfMask();
       
       });
     
+    // store into recipe
+    recipe_size = recipe_size.addBands(recipe_year.rename('size_' + size_i + 'ha_' + year_j));
+
+  });
+  
+  //Map.addLayer(recipe_size.select('size_' + size_i + 'ha_1985').randomVisualizer(), {}, size_i + ' 1985');
+  //Map.addLayer(recipe_size.select('size_' + size_i + 'ha_2000').randomVisualizer(), {}, size_i + ' 2000');
+  //Map.addLayer(recipe_size.select('size_' + size_i + 'ha_2022').randomVisualizer(), {}, size_i + ' 2022');
+
+  // Export
+   Export.image.toAsset({
+		image: recipe_size,
+    description: 'size_' + size_i + 'ha_v' + version,
+    assetId: 'projects/mapbiomas-workspace/DEGRADACAO/COLECAO/BETA/PROCESS/patch_size/' + 'size_' + size_i + 'ha_v' + version,
+    region: biomes.geometry(),
+    scale: 30,
+    maxPixels: 1e13,
   });
   
 });
-
-

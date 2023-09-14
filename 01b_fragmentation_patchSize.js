@@ -45,8 +45,14 @@ patch_sizes.forEach(function(size_i) {
   // convert hectares to number of pixels
   var size_criteria = parseInt((size_i * 10000) / 900);
   
+  // build recipe for the size
+  var recipe_size = ee.Image([]);
+  
   // for each year
   years_list.forEach(function(year_j) {
+    
+    // build recipe for the year 
+    var recipe_year = ee.Image(0);
     
     // read collection 
     var collection = ee.Image('projects/mapbiomas-workspace/public/collection8/mapbiomas_collection80_integration_v1')
@@ -71,37 +77,22 @@ patch_sizes.forEach(function(size_i) {
       });
     
       // compute patche sizes
-      var size = native_l0.connectedPixelCount(size_criteria + 5, true);
+      var patches = native_l0.connectedPixelCount(size_criteria + 5, true);
       
       // get only patches smaller than the criteria
-      var size_degradation = patch_size.lte(size_criteria).selfMask();
+      var size_degradation = patches.lte(size_criteria).selfMask();
       
       // retain classes from original classification 
-      var size_class = collection.select('classification_2021').updateMask(size_degrad).rename('size_class');
-
+      var size_class = collection.select('classification_' + year_j)
+        .updateMask(size_degradation)
+        .rename('size_' + size_i + '_' + year_j);
+        
       
-    });
+      
+      });
     
   });
   
 });
 
 
-
-
-
-// -- * get patche size 
-// dissolve all native veg. classes into each one
-var native_l0 = collection_i.remap({
-  from: native_classes[biome_i],
-  to: ee.List.repeat(1, ee.List(native_classes[biome_i]).length())
-});
-
-// get patch sizes
-// convert ha to number of pixels
-var size_criteria = parseInt((patch_size_rules[biome_i] * 10000) / 900);
-// compute patche sizes
-var patch_size = native_l0.connectedPixelCount(size_criteria + 5, true);
-
-// get only patches smaller than the criteria
-var size_degradation = patch_size.lte(size_criteria).selfMask();

@@ -5,7 +5,7 @@
 var collection = ee.Image('projects/mapbiomas-workspace/public/collection8/mapbiomas_collection80_integration_v1');
 
 // set native classes
-var native_classes = [3, 4, 5, 6, 11, 12];
+var native_classes =          [3, 4, 5, 6, 11, 12];
 var native_classes_adjusted = [3, 4, 3, 3, 12, 12];
 
 // set ignored classes
@@ -34,7 +34,7 @@ years_list.forEach(function(year_i) {
             'to': native_classes_adjusted.concat(ignore_classes),
             'defaultValue': 0
     }) // mask anthropogenic areas
-    .selfMask()
+    //.selfMask()
     // rename
     .rename('classification_' + year_i);
   
@@ -42,12 +42,24 @@ years_list.forEach(function(year_i) {
   collection_x = collection_x.addBands(x);
 });
 
+// ps. consider water
+// temporal filter to remove temporal patches smaller than persistence rule
+// 3yr? 5yr? 
+
+// temporal filter to fill zero's with previous native class
+
+// temporal filter to perform enchroachment/thinning rule
+
+// temporal filter to mask anthropogenic years
+
+
+
 print(collection_x);
 
 
 
 
-
+/*
 // get native vegetation in the last year
 var collection_last = collection.select('classification_' + years_list[years_list.length - 1])
   // and retain only native vegetation + ignored classes
@@ -62,7 +74,7 @@ var collection_last = collection.select('classification_' + years_list[years_lis
 // mask the entire collection by using last  
 collection = collection.updateMask(collection_last);
 
-
+*/
 
 
 
@@ -79,6 +91,7 @@ var vis = {
 };
 
 // plot
-//Map.addLayer(collection_last.randomVisualizer(), {}, 'native vegetation in the last year');
 Map.addLayer(collection_x.select('classification_' + years_list[years_list.length - 1]), vis, 'last year collection');
+Map.addLayer(collection_x, {}, 'collection');
+
 Map.addLayer(n_classes, {palette: ['green', 'yellow', 'red'], min:1, max:3}, 'number of native class changes');

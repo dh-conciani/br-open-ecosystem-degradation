@@ -20,7 +20,7 @@ var persistence = 3;
 // set years to be processed
 var years_list = [1985, 1986, 1987, 1988, 1989, 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
                   2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014,
-                  2015, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022];
+                  2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022];
 
 // remap collection to structural levels
 // build an empty recipe
@@ -29,14 +29,20 @@ var collection_x = ee.Image([]);
 years_list.forEach(function(year_i) {
   // get collection for the year [i]
   var x = collection.select('classification_' + year_i)
-    // remap from the native + ignored classes
-    .remap({'from': [],
-            'to': [],
+    // remap native classes to structural levels
+    .remap({'from': native_classes.concat(ignore_classes),
+            'to': native_classes_adjusted.concat(ignore_classes),
             'defaultValue': 0
-    })
+    }) // mask anthropogenic areas
+    .selfMask()
+    // rename
+    .rename('classification_' + year_i);
   
+  // store the result at recipe
+  collection_x = collection_x.addBands(x);
 });
 
+print(collection_x);
 
 
 

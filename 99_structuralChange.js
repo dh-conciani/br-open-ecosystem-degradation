@@ -22,15 +22,43 @@ var years_list = [1985, 1986, 1987, 1988, 1989, 1990, 1991, 1992, 1993, 1994, 19
                   2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014,
                   2015, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022];
 
-// get native vegetation in the last year mask (including water)
-var collection_last = collection.select('classification_' + years_list[years_list.length - 1])
-  .remap({'from': native_classes.concat(ignore_classes),
-          'to': ee.List.repeat({'value': 1, 'count': native_classes.concat(ignore_classes).length}),
-          'defaultValue': 0 }
-          ).selfMask();
+// remap collection to structural levels
+// build an empty recipe
+var collection_x = ee.Image([]);
+// for each year
+years_list.forEach(function(year_i) {
+  // get collection for the year [i]
+  var x = collection.select('classification_' + year_i)
+    // remap from the native + ignored classes
+    .remap({'from': [],
+            'to': [],
+            'defaultValue': 0
+    })
+  
+});
 
-// mask the entire collection 
+
+
+
+
+
+// get native vegetation in the last year
+var collection_last = collection.select('classification_' + years_list[years_list.length - 1])
+  // and retain only native vegetation + ignored classes
+  .remap({'from': native_classes.concat(ignore_classes),
+          // remmaping them to value == 1
+          'to': ee.List.repeat({'value': 1, 'count': native_classes.concat(ignore_classes).length}),
+          // non-declared vlaues assumes values == 0
+          'defaultValue': 0 }
+          )// and will be masked as NULL
+          .selfMask();
+
+// mask the entire collection by using last  
 collection = collection.updateMask(collection_last);
+
+
+
+
 
 // compute the number of classes per pixel ()
 // get per pixel number of classes

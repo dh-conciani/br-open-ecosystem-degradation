@@ -68,7 +68,7 @@ collection = collection.updateMask(collection_last);
 
 // compute the number of classes per pixel ()
 // get per pixel number of classes
-var n_classes = collection.reduce(ee.Reducer.countDistinctNonNull());
+var n_classes = collection_x.reduce(ee.Reducer.countDistinctNonNull());
 
 
 // get palette
@@ -79,6 +79,6 @@ var vis = {
 };
 
 // plot
-Map.addLayer(collection_last.randomVisualizer(), {}, 'native vegetation in the last year');
-Map.addLayer(collection.select('classification_' + years_list[years_list.length - 1]), vis, 'last year collection');
+//Map.addLayer(collection_last.randomVisualizer(), {}, 'native vegetation in the last year');
+Map.addLayer(collection_x.select('classification_' + years_list[years_list.length - 1]), vis, 'last year collection');
 Map.addLayer(n_classes, {palette: ['green', 'yellow', 'red'], min:1, max:3}, 'number of native class changes');

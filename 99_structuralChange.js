@@ -55,12 +55,14 @@ assess_classes.forEach(function(class_i) {
      if (year_j === years_list[0]) {
        // in this case, use next + 1 year as reference
        var previous = collection_x.select('classification_' + String(year_j + 2));
+       var next = collection_x.select('classification_' + String(year_j + 1));
      }
      
       // If is the last year, next reference does not exists
      if (year_j === years_list[years_list.length-1]) {
        // in this case, use previous - 1 as reference
        var next = collection_x.select('classification_' + String(year_j - 2));
+       var previous = collection_x.select('classification_' + String(year_j - 1));
      }
      
     //  Place specfic rule here?
@@ -72,9 +74,18 @@ assess_classes.forEach(function(class_i) {
       // get next
       var next = collection_x.select('classification_' + String(year_j + 1));
     }
+  
+  // apply persistence rules
+  // build mask
+  //print(current, previous, next)
+  var mask_a = ee.Image(0).where(current.eq(class_i).and(previous.eq(class_i)), 1)
+  
+  //.where(previous.eq(class_i).and(current.eq(class_i).and(next.eq(class_i), 1)));
+    
+  Map.addLayer(mask_a, {}, String(class_i + year_j), false)
+  
      
-     
-
+ 
       
      // apply rules
      

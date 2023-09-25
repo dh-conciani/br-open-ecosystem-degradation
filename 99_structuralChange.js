@@ -48,6 +48,7 @@ var step_a = ee.Image([]);
 // for each class 
 years_list.forEach(function(year_i) {
   // define recipe
+  var recipe = ee.Image(0);
   
   // for each year
   assess_classes.forEach(function(class_j) {
@@ -59,17 +60,40 @@ years_list.forEach(function(year_i) {
       // previous reference does'nt exists, use next two years to validate
       var next1 = collection_x.select('classification_' + String(year_i + 1));
       var next2 = collection_x.select('classification_' + String(year_i + 2));
-      
       // compute persitence mask 
       var x = ee.Image(0).where(current.eq(class_j).and(next1.eq(class_j).and(next2.eq(class_j))), 1);
-      // apply 
-      var y = current.updateMask(x.eq(1));
-      // store
-      
+      // apply and store filtered 
+      recipe = recipe.blend(current.updateMask(x.eq(1))).selfMask();
+      return;
      }
+    
+    // if is the last year
+    if (year_i === years_list[years_list.length-1]) {
+      // next reference does not exists, use two previous years to validate
+      var prev1 = collection_x.select('classification_' + String(year_i - 1));
+      var prev2 = collection_x.select('classification_' + String(year_i - 2));
+      
+      // compute persitence mask 
+      var x = ee.Image(0).where(current.eq(class_j).and(prev1.eq(class_j).and(prev2.eq(class_j))), 1);
+      // apply and store filtered 
+      recipe = recipe.blend(current.updateMask(x.eq(1))).selfMask();
+      return;
+    }
      
     
      
+
+     
+   });
+   
+   // store
+   step_a = step_a.addBands(recipe.rename('classification_' + year_i));
+});
+
+
+Map.addLayer(step_a, vis, 'aa')
+print(step_a)
+
      //print(year_i + '->');
      
      // first, process start and end of the time series
@@ -123,10 +147,6 @@ years_list.forEach(function(year_i) {
      //var next1 = collection_x.select('classification_' + String(year_i + 1));
      
      
-     
-   });
-});
-
 
 
 // insert sinthetic years as nodata (-2 than minimum and +2 than maximum)

@@ -78,7 +78,8 @@ assess_classes.forEach(function(class_i) {
   // apply persistence rules
   // build mask
   //print(current, previous, next)
-  var mask_a = ee.Image(0).where(current.eq(class_i).and(previous.eq(class_i)), 1)
+  var mask_a = ee.Image(0)
+    .where(current.eq(class_i).and(previous.eq(class_i).and(next.eq(class_i))), 1);
   
   //.where(previous.eq(class_i).and(current.eq(class_i).and(next.eq(class_i), 1)));
     

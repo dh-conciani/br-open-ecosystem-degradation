@@ -42,6 +42,53 @@ years_list.forEach(function(year_i) {
   collection_x = collection_x.addBands(x);
 });
 
+// step a) remove spatial patches smaller than the persistence threshold
+var step_a = ee.Image([]);
+// for each class 
+assess_classes.forEach(function(class_i) {
+   // for each year
+   years_list.forEach(function(year_j) {
+     // get files
+     var current = collection_x.select('classification_' + year_j);
+     
+     // if is the first year, previous does not exists
+     if (year_j === years_list[0]) {
+       // in this case, use next + 1 year as reference
+       var previous = collection_x.select('classification_' + String(year_j + 2));
+     }
+     
+      // If is the last year, next reference does not exists
+     if (year_j === years_list[years_list.length-1]) {
+       // in this case, use previous - 1 as reference
+       var next = collection_x.select('classification_' + String(year_j -2));
+     }
+     
+    //  Place specfic rule here?
+    
+    // If is in mid years, previous and next exists as reference
+    if ()
+     
+     
+
+      
+     // apply rules
+     
+     // first next year
+     //var next1 = collection_x.select('classification_' + String(year_i + 1));
+     
+     
+     
+   });
+});
+
+
+
+
+
+
+
+
+
 // ps. consider water
 // temporal filter to remove temporal patches smaller than persistence rule
 // 3yr? 5yr? 

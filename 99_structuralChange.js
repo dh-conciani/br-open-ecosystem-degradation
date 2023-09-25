@@ -82,7 +82,7 @@ assess_classes.forEach(function(class_i) {
   
   //.where(previous.eq(class_i).and(current.eq(class_i).and(next.eq(class_i), 1)));
     
-  Map.addLayer(mask_a, {}, String(class_i + year_j), false)
+  Map.addLayer(mask_a, {}, String(class_i + ' '+ year_j), false)
   
      
  

@@ -42,48 +42,77 @@ years_list.forEach(function(year_i) {
   collection_x = collection_x.addBands(x);
 });
 
+
 // step a) remove spatial patches smaller than the persistence threshold
 var step_a = ee.Image([]);
 // for each class 
-assess_classes.forEach(function(class_i) {
-   // for each year
-   years_list.forEach(function(year_j) {
-     // get files
-     var current = collection_x.select('classification_' + year_j);
-     
-     // if is the first year, previous does not exists
-     if (year_j === years_list[0]) {
-       // in this case, use next + 1 year as reference
-       var previous = collection_x.select('classification_' + String(year_j + 2));
-       var next = collection_x.select('classification_' + String(year_j + 1));
+years_list.forEach(function(year_i) {
+  // define recipe
+  
+  // for each year
+  assess_classes.forEach(function(class_j) {
+    // get  current year classification 
+    var current = collection_x.select('classification_' + year_i);
+    
+    // if is the first year
+    if (year_i === years_list[0]) {
+      // previous reference does'nt exists, use next two years to validate
+      var next1 = collection_x.select('classification_' + String(year_i + 1));
+      var next2 = collection_x.select('classification_' + String(year_i + 2));
+      
+      // compute persitence mask 
+      var x = ee.Image(0).where(current.eq(class_j).and(next1.eq(class_j).and(next2.eq(class_j))), 1);
+      // apply 
+      var y = current.updateMask(x.eq(1));
+      // store
+      
      }
      
-      // If is the last year, next reference does not exists
-     if (year_j === years_list[years_list.length-1]) {
-       // in this case, use previous - 1 as reference
-       var next = collection_x.select('classification_' + String(year_j - 2));
-       var previous = collection_x.select('classification_' + String(year_j - 1));
-     }
+    
+     
+     //print(year_i + '->');
+     
+     // first, process start and end of the time series
+     //if (year_j === years_list[0] & year_j === years_list[years_list.length-1]) {
+       
+       // if is the first year, previous does not exists
+    //   if (year_j === ) {
+         // use the next two years to filter
+    //    
+    //   }
+       
+        // If is the last year, next reference does not exists
+    //    if (year_j === years_list[years_list.length-1]) {
+          // in this case, use previous - 1 as reference
+    //      var next = collection_x.select('classification_' + String(year_j - 2));
+    //      var previous = collection_x.select('classification_' + String(year_j - 1));
+    //    }
+      
+    //  }
+
+     
+    
+     
+   
      
     //  Place specfic rule here?
     
     // If is in mid years, previous and next exists as reference
-    if (year_j !== years_list[0] & year_j !== years_list[years_list.length-1]) {
-      // get previous
-      var previous = collection_x.select('classification_' + String(year_j - 1))
-      // get next
-      var next = collection_x.select('classification_' + String(year_j + 1));
-    }
+    //if (year_j !== years_list[0] & year_j !== years_list[years_list.length-1]) {
+    //  // get previous
+    //  var previous = collection_x.select('classification_' + String(year_j - 1))
+    //  // get next
+    //  var next = collection_x.select('classification_' + String(year_j + 1));
+    //}
   
   // apply persistence rules
   // build mask
   //print(current, previous, next)
-  var mask_a = ee.Image(0)
-    .where(current.eq(class_i).and(previous.eq(class_i).and(next.eq(class_i))), 1);
+ 
   
-  //.where(previous.eq(class_i).and(current.eq(class_i).and(next.eq(class_i), 1)));
-    
-  Map.addLayer(mask_a, {}, String(class_i + ' '+ year_j), false)
+
+  //print(mask_a)
+  //Map.addLayer(mask_a, {}, String(class_i + ' '+ year_j), false)
   
      
  
@@ -100,7 +129,8 @@ assess_classes.forEach(function(class_i) {
 
 
 
-
+// insert sinthetic years as nodata (-2 than minimum and +2 than maximum)
+print(collection_x);
 
 
 
@@ -118,7 +148,7 @@ assess_classes.forEach(function(class_i) {
 
 
 
-print(collection_x);
+//print(collection_x);
 
 
 

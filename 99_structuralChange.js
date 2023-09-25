@@ -60,13 +60,18 @@ assess_classes.forEach(function(class_i) {
       // If is the last year, next reference does not exists
      if (year_j === years_list[years_list.length-1]) {
        // in this case, use previous - 1 as reference
-       var next = collection_x.select('classification_' + String(year_j -2));
+       var next = collection_x.select('classification_' + String(year_j - 2));
      }
      
     //  Place specfic rule here?
     
     // If is in mid years, previous and next exists as reference
-    if ()
+    if (year_j !== years_list[0] & year_j !== years_list[years_list.length-1]) {
+      // get previous
+      var previous = collection_x.select('classification_' + String(year_j - 1))
+      // get next
+      var next = collection_x.select('classification_' + String(year_j + 1));
+    }
      
      
 

@@ -120,6 +120,11 @@ years_list.forEach(function(year_i) {
     
     ///////////////////////////////////////////////// end of  4 year filter (1986 & 2021)
     
+    ////////////////// start of the 5yr filter (mid years)
+    print(years_list[0] + 1)
+    print(years_list[years_list.length - 2])
+
+    
 
      
      

@@ -129,16 +129,19 @@ years_list.forEach(function(year_i) {
       var next1 = collection_x.select('classification_' + String(year_i + 1));
       var next2 = collection_x.select('classification_' + String(year_i + 2));
       
+      // compute persitence mask 
+      var x = ee.Image(0).where(prev2.eq(class_j).and(prev1.eq(class_j).and(current.eq(class_j))), 1)
+                         .where(prev1.eq(class_j).and(current.eq(class_j).and(next1.eq(class_j))), 1)
+                         .where(current.eq(class_j).and(next1.eq(class_j).and(next2.eq(class_j))), 1);
       
-      
+       // apply and store filtered 
+      recipe = recipe.blend(current.updateMask(x.eq(1))).selfMask();
+      return;
     }
-
-    //print(year_i)
-    //print()
-
     
+    ///////////////////////////////////////// end of 5 year filter (mid years)
 
-     
+
      
    });
    

@@ -69,8 +69,8 @@ years_list.forEach(function(year_i) {
      }
     
     // if is the last year
-    if (year_i === years_list[years_list.length-1]) {
-      // next reference does not exists, use two previous years to validate
+    if (year_i === years_list[years_list.length - 1]) {
+      // next reference does not exists, use twoprevious years to validate
       var prev1 = collection_x.select('classification_' + String(year_i - 1));
       var prev2 = collection_x.select('classification_' + String(year_i - 2));
       
@@ -81,7 +81,7 @@ years_list.forEach(function(year_i) {
       return;
     }
     
-    //////////////////////////////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////////// end of 3-yr filter (1985 & 2022)
     
     /////////// use 4 year filter for first+1 and last-1 years
     // if year == first +1  
@@ -91,9 +91,35 @@ years_list.forEach(function(year_i) {
       // get next years
       var next1 = collection_x.select('classification_' + String(year_i + 1));
       var next2 = collection_x.select('classification_' + String(year_i + 2));
-
       
+      // compute persitence mask 
+      var x = ee.Image(0).where(prev1.eq(class_j).and(current.eq(class_j).and(next1.eq(class_j))), 1)
+                         .where(current.eq(class_j).and(next1.eq(class_j).and(next2.eq(class_j))), 1);
+
+      // apply and store filtered 
+      recipe = recipe.blend(current.updateMask(x.eq(1))).selfMask();
+      return;
     }
+    
+    // if year == last + 1  
+    if (year_i === years_list[years_list.length - 2]) {
+      // get previous
+      var prev1 = collection_x.select('classification_' + String(year_i - 1));
+      var prev2 = collection_x.select('classification_' + String(year_i - 2));
+      // get next years
+      var next1 = collection_x.select('classification_' + String(year_i + 1));
+
+      // compute persitence mask 
+      var x = ee.Image(0).where(prev1.eq(class_j).and(current.eq(class_j).and(next1.eq(class_j))), 1)
+                         .where(prev2.eq(class_j).and(prev1.eq(class_j).and(current.eq(class_j))), 1);
+
+      // apply and store filtered 
+      recipe = recipe.blend(current.updateMask(x.eq(1))).selfMask();
+      return;
+    }
+    
+    ///////////////////////////////////////////////// end of  4 year filter (1986 & 2021)
+    
 
      
      

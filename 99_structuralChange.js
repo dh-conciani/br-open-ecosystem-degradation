@@ -55,6 +55,7 @@ years_list.forEach(function(year_i) {
     // get  current year classification 
     var current = collection_x.select('classification_' + year_i);
     
+    /////////////////////// use 3yr filter for first and last
     // if is the first year
     if (year_i === years_list[0]) {
       // previous reference does'nt exists, use next two years to validate
@@ -79,16 +80,29 @@ years_list.forEach(function(year_i) {
       recipe = recipe.blend(current.updateMask(x.eq(1))).selfMask();
       return;
     }
-     
     
-     
+    //////////////////////////////////////////////////////////////////////////////
+    
+    /////////// use 4 year filter for first+1 and last-1 years
+    // if year == first +1  
+    if (year_i === years_list[0] + 1) {
+      // get previous
+      var prev1 = collection_x.select('classification_' + String(year_i - 1));
+      // get next years
+      var next1 = collection_x.select('classification_' + String(year_i + 1));
+      var next2 = collection_x.select('classification_' + String(year_i + 2));
 
+      
+    }
+
+     
      
    });
    
    // store
    step_a = step_a.addBands(recipe.rename('classification_' + year_i));
 });
+
 
 
 Map.addLayer(step_a, vis, 'aa')

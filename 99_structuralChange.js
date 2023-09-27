@@ -1,6 +1,10 @@
 // get woody enchorachment and thinning in brazilian native vegetation 
 // gt degradação - mapbiomas- dhemerson.costa@ipam.org.br
 
+// runs by yhe following steps
+// a. temporal filter of 3, 4 and 5 years (remove teporal patches <3 yr)
+// b. gapfill filter (replace zero by last native class)
+
 // read collection 8
 var collection = ee.Image('projects/mapbiomas-workspace/public/collection8/mapbiomas_collection80_integration_v1');
 
@@ -140,75 +144,15 @@ years_list.forEach(function(year_i) {
     }
     
     ///////////////////////////////////////// end of 5 year filter (mid years)
-
-
      
    });
    
    // store
    step_a = step_a.addBands(recipe.rename('classification_' + year_i));
 });
-
-
-
-Map.addLayer(step_a, vis, 'aa')
-print(step_a)
-
-     //print(year_i + '->');
-     
-     // first, process start and end of the time series
-     //if (year_j === years_list[0] & year_j === years_list[years_list.length-1]) {
-       
-       // if is the first year, previous does not exists
-    //   if (year_j === ) {
-         // use the next two years to filter
-    //    
-    //   }
-       
-        // If is the last year, next reference does not exists
-    //    if (year_j === years_list[years_list.length-1]) {
-          // in this case, use previous - 1 as reference
-    //      var next = collection_x.select('classification_' + String(year_j - 2));
-    //      var previous = collection_x.select('classification_' + String(year_j - 1));
-    //    }
-      
-    //  }
-
-     
-    
-     
-   
-     
-    //  Place specfic rule here?
-    
-    // If is in mid years, previous and next exists as reference
-    //if (year_j !== years_list[0] & year_j !== years_list[years_list.length-1]) {
-    //  // get previous
-    //  var previous = collection_x.select('classification_' + String(year_j - 1))
-    //  // get next
-    //  var next = collection_x.select('classification_' + String(year_j + 1));
-    //}
-  
-  // apply persistence rules
-  // build mask
-  //print(current, previous, next)
  
-  
 
-  //print(mask_a)
-  //Map.addLayer(mask_a, {}, String(class_i + ' '+ year_j), false)
-  
-     
- 
-      
-     // apply rules
-     
-     // first next year
-     //var next1 = collection_x.select('classification_' + String(year_i + 1));
-     
-     
-
-
+Map.addLayer(step_a, {}, 'step a');
 // insert sinthetic years as nodata (-2 than minimum and +2 than maximum)
 print(collection_x);
 

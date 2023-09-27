@@ -121,8 +121,20 @@ years_list.forEach(function(year_i) {
     ///////////////////////////////////////////////// end of  4 year filter (1986 & 2021)
     
     ////////////////// start of the 5yr filter (mid years)
-    print(years_list[0] + 1)
-    print(years_list[years_list.length - 2])
+    if (year_i > years_list[0] + 1 & year_i < years_list[years_list.length - 2]) {
+      // get previous years
+      var prev1 = collection_x.select('classification_' + String(year_i - 1));
+      var prev2 = collection_x.select('classification_' + String(year_i - 2));
+      // get next years
+      var next1 = collection_x.select('classification_' + String(year_i + 1));
+      var next2 = collection_x.select('classification_' + String(year_i + 2));
+      
+      
+      
+    }
+
+    //print(year_i)
+    //print()
 
     
 

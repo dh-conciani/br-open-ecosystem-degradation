@@ -153,8 +153,117 @@ years_list.forEach(function(year_i) {
  
 
 Map.addLayer(step_a, {}, 'step a');
-// insert sinthetic years as nodata (-2 than minimum and +2 than maximum)
-print(collection_x);
+
+////////////// STEP B
+///////////////////////// GAPFILL
+
+// discard zero pixels in the image
+var image = step_a.mask(step_a.neq(0));
+// set the list of years to be filtered
+var years = years_list;
+
+// user defined functions
+var applyGapFill = function (image) {
+
+    // apply the gap fill form t0 until tn
+    var imageFilledt0tn = bandNames.slice(1)
+        .iterate(
+            function (bandName, previousImage) {
+
+                var currentImage = image.select(ee.String(bandName));
+
+                previousImage = ee.Image(previousImage);
+
+                currentImage = currentImage.unmask(
+                    previousImage.select([0]));
+
+                return currentImage.addBands(previousImage);
+
+            }, ee.Image(imageAllBands.select([bandNames.get(0)]))
+        );
+
+    imageFilledt0tn = ee.Image(imageFilledt0tn);
+
+    // apply the gap fill form tn until t0
+    var bandNamesReversed = bandNames.reverse();
+
+    var imageFilledtnt0 = bandNamesReversed.slice(1)
+        .iterate(
+            function (bandName, previousImage) {
+
+                var currentImage = imageFilledt0tn.select(ee.String(bandName));
+
+                previousImage = ee.Image(previousImage);
+
+                currentImage = currentImage.unmask(
+                    previousImage.select(previousImage.bandNames().length().subtract(1)));
+
+                return previousImage.addBands(currentImage);
+
+            }, ee.Image(imageFilledt0tn.select([bandNamesReversed.get(0)]))
+        );
+
+    imageFilledtnt0 = ee.Image(imageFilledtnt0).select(bandNames);
+
+    return imageFilledtnt0;
+};
+
+// get band names list 
+var bandNames = ee.List(
+    years.map(
+        function (year) {
+            return 'classification_' + String(year);
+        }
+    )
+);
+
+// generate a histogram dictionary of [bandNames, image.bandNames()]
+var bandsOccurrence = ee.Dictionary(
+    bandNames.cat(image.bandNames()).reduce(ee.Reducer.frequencyHistogram())
+);
+
+// insert a masked band 
+var bandsDictionary = bandsOccurrence.map(
+    function (key, value) {
+        return ee.Image(
+            ee.Algorithms.If(
+                ee.Number(value).eq(2),
+                image.select([key]).byte(),
+                ee.Image().rename([key]).byte().updateMask(image.select(0))
+            )
+        );
+    }
+);
+
+// convert dictionary to image
+var imageAllBands = ee.Image(
+    bandNames.iterate(
+        function (band, image) {
+            return ee.Image(image).addBands(bandsDictionary.get(ee.String(band)));
+        },
+        ee.Image().select()
+    )
+);
+
+// generate image pixel years
+var imagePixelYear = ee.Image.constant(years)
+    .updateMask(imageAllBands)
+    .rename(bandNames);
+
+// apply the gap fill
+var imageFilledtnt0 = applyGapFill(imageAllBands);
+var imageFilledYear = applyGapFill(imagePixelYear);
+
+// check filtered image
+Map.addLayer(imageFilledtnt0, {},  'step_b');
+
+
+
+
+
+
+
+
 
 
 

@@ -355,7 +355,7 @@ years_list.forEach(function(year_i) {
   
   // if year is not the first, get ages
   if (year_i != years_list[0]) {
-    print(year_i);
+    ///////
   }
   
 });

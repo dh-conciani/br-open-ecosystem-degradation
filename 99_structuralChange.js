@@ -336,6 +336,9 @@ years_list.forEach(function(year_i) {
   n_changes = n_changes.addBands(x);
 });
 
+// plot
+Map.addLayer(n_changes, {}, 'collection n_changes', false);
+
 // now, use the layer n_changes to get the time since last NV structural change
 var step_d = ee.Image([]);
 
@@ -364,7 +367,7 @@ years_list.forEach(function(year_i) {
 
 
 
-Map.addLayer(n_changes, {}, 'number of changes');
+
 
 
 
@@ -381,7 +384,7 @@ var vis = {
 Map.addLayer(collection_x, {}, 'collection', false);
 
 Map.addLayer(n_changes.select('classification_2022'), {'min': 0, 'max': 5, 'palette': ["#C8C8C8", "#FED266", "#FBA713", "#cb701b",
-                                                        "#a95512", "#662000", "#cb181d"],'format': 'png'}, 'number of NV changes', false);
+                                                        "#a95512", "#662000", "#cb181d"],'format': 'png'}, 'sum of n changes', false);
   
 
 //var n_classes = step_c.reduce(ee.Reducer.countDistinctNonNull());

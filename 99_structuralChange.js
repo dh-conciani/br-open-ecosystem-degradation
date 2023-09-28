@@ -336,6 +336,34 @@ years_list.forEach(function(year_i) {
   n_changes = n_changes.addBands(x);
 });
 
+// now, use the layer n_changes to get the time since last NV structural change
+var step_d = ee.Image([]);
+
+years_list.forEach(function(year_i) {
+  
+  // get the number of changes
+  var n_changes_yi = n_changes.select('classification_' + year_i);
+  
+  // if is the first year, all the age is equal to 0
+  if (year_i === years_list[0]) {
+    // insert a blank image, t=0
+    step_d = step_d.addBands(ee.Image(0).rename('classification_' + year_i));
+  }
+  
+  // if year is not the first, get ages
+  if (year_i != years_list[0]) {
+    print(year_i);
+  }
+  
+});
+
+
+
+
+
+
+
+
 Map.addLayer(n_changes, {}, 'number of changes');
 
 

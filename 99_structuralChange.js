@@ -276,14 +276,20 @@ years_list.slice(1).forEach(function(year_i) {
   var x = ee.Image(0)
     // where clas is the same, no change
     .where(current.eq(prev1), step_c.select('classification_' + String(year_i - 1)))
-    ///// SET ENCHROACHMENT
-    ///// from savana to forest
+    // SET ENCHROACHMENT
+    /// from savana to forest
     .where(prev1.eq(4).and(current.eq(3)), step_c.select('classification_' + String(year_i - 1)).add(1))
-    
-    //// set THINNING
-    //// from sava
-    //.where(prev1.eq(4))
-    
+    /// from grassland to savana
+    .where(prev1.eq(12).and(current.eq(4)), step_c.select('classification_' + String(year_i - 1)).add(1))
+    /// from grassland to forest
+    .where(prev1.eq(12).and(current.eq(3)), step_c.select('classification_' + String(year_i - 1)).add(2))
+    // SET THINNING
+    /// from forest to savana
+    .where(prev1.eq(3).and(current.eq(4)), step_c.select('classification_' + String(year_i - 1)).subtract(1))
+    /// from savana to grassland
+    .where(prev1.eq(4).and(current.eq(12)), step_c.select('classification_' + String(year_i - 1)).subtract(1))
+    /// from forest to grassland
+    .where(prev1.eq(3).and(current.eq(12)), step_c.select('classification_' + String(year_i - 1)).subtract(2))
     // rename to store
     .rename('classification_' + year_i);
   

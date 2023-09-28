@@ -306,7 +306,7 @@ years_list.slice(1).forEach(function(year_i) {
 
 // plot results
 Map.addLayer(step_c, {}, 'step_c', false);
-Map.addLayer(step_c.select('classification_2022'), {palette:['#AF00FB', '#FF0000', 'white', '#23FF00', '#0D5202'], min:-2, max:2}, 'enchroachment last year');
+//Map.addLayer(step_c.select('classification_2022'), {palette:['#AF00FB', '#FF0000', 'white', '#23FF00', '#0D5202'], min:-2, max:2}, 'enchroachment last year');
 
 /////////////////////////////// end of step C
 
@@ -379,22 +379,34 @@ years_list.forEach(function(year_i) {
 });
 
 Map.addLayer(step_d, {}, 'step_d', false);
-Map.addLayer(step_d.select('classification_2022'), {palette:['#00FFFB', '#FFF700', '4E1054'], min:0, max:10}, 'times since the last change [last year]', false);
-
 
 //////////////////////////// end of step d
 ///////////////////////////////////////////// STEP E. MASK ANTHROPOGENIC YEARS /set water as NA
 
 // build final recipe
-var final = ee.Image([]);
+var step_e = ee.Image([]);
 
 // for each year
 years_list.forEach(function(year_i) {
   // get results
-  var x = step_d.select('classification_' + year_i);
+  var x = step_c.select('classification_' + year_i);
+  // get reference for anthropogenic
+  var ref = collection_x.select('classification_' + year_i);
+  // get reference for water
+  var water = collection.select('classification_' + year_i);
   
+  // apply rules
+  /// remove anthopogenic years
+  x = x.updateMask(ref.neq(0)).rename('classification_' + year_i);
+  /// mask water 
+  x = x.updateMask(water.neq(33));
+  
+  // bind
+  step_e = step_e.addBands(x);
 });
 
+Map.addLayer(step_e, {}, 'step e', false);
+Map.addLayer(step_e.select('classification_2022'), {palette:['#AF00FB', '#FF0000', 'white', '#23FF00', '#0D5202'], min:-2, max:2}, 'enchroachment last year');
 
 
 //////////////////////////////// end of step e

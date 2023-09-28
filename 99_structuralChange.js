@@ -48,6 +48,7 @@ years_list.forEach(function(year_i) {
   collection_x = collection_x.addBands(x);
 });
 
+Map.addLayer(collection_x, {}, 'collection', false);
 
 // step a) remove spatial patches smaller than the persistence threshold
 var step_a = ee.Image([]);
@@ -345,7 +346,7 @@ var step_d = ee.Image([]);
 years_list.forEach(function(year_i) {
   
   // get the number of changes
-  var n_changes_yi = n_changes.select('classification_' + year_i);
+  var current = n_changes.select('classification_' + year_i);
   
   // if is the first year, all the age is equal to 0
   if (year_i === years_list[0]) {
@@ -355,12 +356,23 @@ years_list.forEach(function(year_i) {
   
   // if year is not the first, get ages
   if (year_i != years_list[0]) {
-    ///////
+    // get n changes in the previous year
+    var prev1 = n_changes.select('classification_' + String(year_i - 1));
+    
+    // apply rules to get age
+    var x = ee.Image(0)
+      // keep age == 0 when NV class doesn't change
+      .where(current.eq(0), 0)
+      // rename
+      .rename('classification_' + year_i);
+    
+    // store
+    step_d = step_d.addBands(x);
   }
   
 });
 
-
+Map.addLayer(step_d, {}, 'step_d')
 
 
 
@@ -381,7 +393,7 @@ var vis = {
 
 // plot
 //Map.addLayer(collection_x.select('classification_' + years_list[years_list.length - 1]), vis, 'last year collection');
-Map.addLayer(collection_x, {}, 'collection', false);
+
 
 Map.addLayer(n_changes.select('classification_2022'), {'min': 0, 'max': 5, 'palette': ["#C8C8C8", "#FED266", "#FBA713", "#cb701b",
                                                         "#a95512", "#662000", "#cb181d"],'format': 'png'}, 'sum of n changes', false);

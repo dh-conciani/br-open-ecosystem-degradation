@@ -385,6 +385,15 @@ Map.addLayer(step_d.select('classification_2022'), {palette:['#00FFFB', '#FFF700
 //////////////////////////// end of step d
 ///////////////////////////////////////////// STEP E. MASK ANTHROPOGENIC YEARS /set water as NA
 
+// build final recipe
+var final = ee.Image([]);
+
+// for each year
+years_list.forEach(function(year_i) {
+  // get results
+  var x = step_d.select('classification_' + year_i);
+  
+});
 
 
 

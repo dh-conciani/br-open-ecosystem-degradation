@@ -7,7 +7,12 @@
 // c. compute enchroachment/thinning [-2 to +2]
 // d. compute time since the last structural change
 // e. mask anthropogenic years and build final product 
-// f. restart year count when exists anthropogenic use among same class NV temporal patches
+
+// set output version
+var version = 1;
+
+// set output folder
+var outpur = 'projects/mapbiomas-workspace/DEGRADACAO/COLECAO/BETA/PROCESS/structure_change';
 
 // read collection 8
 var collection = ee.Image('projects/mapbiomas-workspace/public/collection8/mapbiomas_collection80_integration_v1');
@@ -423,16 +428,31 @@ Map.addLayer(step_e_age.select('classification_2022'), {palette:['green', 'yello
 
 
 //////////////////////////////// end of step e
-// get palette
 
-var vis = {
-    'min': 0,
-    'max': 62,
-    'palette': require('users/mapbiomas/modules:Palettes.js').get('classification7')
-};
 
+// data vis
 Map.addLayer(n_changes.select('classification_2022'), {'min': 0, 'max': 5, 'palette': ["#C8C8C8", "#FED266", "#FBA713", "#cb701b",
                                                         "#a95512", "#662000", "#cb181d"],'format': 'png'}, 'sum of n changes', false);
 
-//var n_classes = step_c.reduce(ee.Reducer.countDistinctNonNull());
-//Map.addLayer(n_classes, {palette: ['green', 'yellow', 'red'], min:1, max:3}, 'number of NV classes', false);
+//////////////////////////////
+////// set properties
+// structure change 
+step_e_structure = step_e_structure.set({'version': version})
+                                   .set({'product': 'change'});
+
+// time since the last change                                   
+step_e_structure = step_e_structure.set({'version': version})
+                                   .set({'product': 'age'});
+
+Map.addLayer(collection.geometry())
+// export
+Export.image.toAsset({
+		image: step_e_structure,
+    description: 'structure_change_v' + version,
+    assetId: output + '/' + 'structure_change_v' + version,
+    region: biomes.geometry(),
+    scale: 30,
+    maxPixels: 1e13
+    });
+
+

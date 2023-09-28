@@ -4,6 +4,8 @@
 // runs by yhe following steps
 // a. temporal filter of 3, 4 and 5 years (remove teporal patches <3 yr)
 // b. gapfill filter (replace zero by last native class)
+// c. compute enchroachment/thinning [-2 to +2]
+// d. compute time since the last structural change
 
 // read collection 8
 var collection = ee.Image('projects/mapbiomas-workspace/public/collection8/mapbiomas_collection80_integration_v1');
@@ -260,8 +262,8 @@ var step_b = imageFilledtnt0;
 // check filtered image
 Map.addLayer(step_b, {},  'step_b', false);
 
-//////////////////////////// STEP C
-////////////////////////////////////// RUN ENCHORACHMENT/THINNING
+/////////////////////////////////////////////////////////// STEP C
+//////////////////////////////////////////////////////////////////////// RUN ENCHORACHMENT/THINNING
 
 // build and empty recipe with first year (no one changes in the first year)
 var step_c = ee.Image(0).rename('classification_' +  years_list[0]);
@@ -303,12 +305,18 @@ years_list.slice(1).forEach(function(year_i) {
 Map.addLayer(step_c, {}, 'step_c', false);
 Map.addLayer(step_c.select('classification_2022'), {palette:['#AF00FB', '#FF0000', 'white', '#23FF00', '#0D5202'], min:-2, max:2}, 'enchroachment last year');
 
+/////////////////////////////// end of step C
+
+/////////////////////////////////////////// STEP D.
+///////////////////  COMPUTE AGE OF LAST CHANGE
+
+// first, get the number of native vegetation class changes, per year - to be used as input 
 
 
 
 // compute the number of classes per pixel ()
 // get per pixel number of classes
-var n_classes = collection_x.reduce(ee.Reducer.countDistinctNonNull());
+var n_classes = step_c.reduce(ee.Reducer.countDistinctNonNull());
 
 
 // get palette

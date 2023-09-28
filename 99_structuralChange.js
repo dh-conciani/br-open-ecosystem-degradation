@@ -384,12 +384,15 @@ Map.addLayer(step_d, {}, 'step_d', false);
 ///////////////////////////////////////////// STEP E. MASK ANTHROPOGENIC YEARS /set water as NA
 
 // build final recipe
-var step_e = ee.Image([]);
+var step_e_structure = ee.Image([]);
+var step_e_age = ee.Image([]);
 
 // for each year
 years_list.forEach(function(year_i) {
   // get results
   var x = step_c.select('classification_' + year_i);
+  var y = step_d.select('classification_' + year_i);
+  
   // get reference for anthropogenic
   var ref = collection_x.select('classification_' + year_i);
   // get reference for water
@@ -400,13 +403,22 @@ years_list.forEach(function(year_i) {
   x = x.updateMask(ref.neq(0)).rename('classification_' + year_i);
   /// mask water 
   x = x.updateMask(water.neq(33));
+  // do the same for age 
+  y = y.updateMask(ref.neq(0)).rename('classification_' + year_i);
+  y = y.updateMask(water.neq(33));
   
   // bind
-  step_e = step_e.addBands(x);
+  step_e_structure = step_e_structure.addBands(x);
+  step_e_age = step_e_age.addBands(y);
+  
 });
 
-Map.addLayer(step_e, {}, 'step e', false);
-Map.addLayer(step_e.select('classification_2022'), {palette:['#AF00FB', '#FF0000', 'white', '#23FF00', '#0D5202'], min:-2, max:2}, 'enchroachment last year');
+// plot 
+Map.addLayer(step_e_structure, {}, 'step e-structure', false);
+Map.addLayer(step_e_structure.select('classification_2022'), {palette:['#AF00FB', '#FF0000', 'white', '#23FF00', '#0D5202'], min:-2, max:2}, 'enchroachment last year');
+/////
+Map.addLayer(step_e_age, {}, 'step e-age', false);
+Map.addLayer(step_e_age.select('classification_2022'), {palette:['green', 'yellow', 'red'], min:0, max:10}, 'time since last change');
 
 
 //////////////////////////////// end of step e

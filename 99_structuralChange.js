@@ -299,12 +299,9 @@ years_list.slice(1).forEach(function(year_i) {
   
 });
 
+Map.addLayer(step_c, {}, 'step_c');
 
-Map.addLayer(step_c, {}, 'step_c')
-print(step_c);
-
-
-
+Map.addLayer(step_c.select('classification_2022'), {palette:['#AF00FB', '#FF0000', 'white', '#23FF00', '#0D5202'], min:-2, max:2}, 'enchroachment last year');
 
 
 

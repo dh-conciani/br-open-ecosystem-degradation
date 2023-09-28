@@ -275,13 +275,14 @@ years_list.slice(1).forEach(function(year_i) {
   // set rules 
   var x = ee.Image(0)
     // where clas is the same, no change
-    .where(current.eq(prev1), 0)
+    .where(current.eq(prev1), step_c.select('classification_' + String(year_i - 1)))
     ///// SET ENCHROACHMENT
     ///// from savana to forest
     .where(prev1.eq(4).and(current.eq(3)), step_c.select('classification_' + String(year_i - 1)).add(1))
     
     //// set THINNING
-    
+    //// from sava
+    //.where(prev1.eq(4))
     
     // rename to store
     .rename('classification_' + year_i);

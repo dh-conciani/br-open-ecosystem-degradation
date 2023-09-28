@@ -385,25 +385,20 @@ Map.addLayer(step_d.select('classification_2022'), {palette:['#00FFFB', '#FFF700
 //////////////////////////// end of step d
 ///////////////////////////////////////////// STEP E. MASK ANTHROPOGENIC YEARS /set water as NA
 
-// now mask anthropogenic years
 
 
 
-
+//////////////////////////////// end of step e
 // get palette
+
 var vis = {
     'min': 0,
     'max': 62,
     'palette': require('users/mapbiomas/modules:Palettes.js').get('classification7')
 };
 
-// plot
-//Map.addLayer(collection_x.select('classification_' + years_list[years_list.length - 1]), vis, 'last year collection');
-
-
 Map.addLayer(n_changes.select('classification_2022'), {'min': 0, 'max': 5, 'palette': ["#C8C8C8", "#FED266", "#FBA713", "#cb701b",
                                                         "#a95512", "#662000", "#cb181d"],'format': 'png'}, 'sum of n changes', false);
-  
 
 //var n_classes = step_c.reduce(ee.Reducer.countDistinctNonNull());
 //Map.addLayer(n_classes, {palette: ['green', 'yellow', 'red'], min:1, max:3}, 'number of NV classes', false);

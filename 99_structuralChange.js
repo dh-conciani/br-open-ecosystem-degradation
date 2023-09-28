@@ -267,11 +267,34 @@ Map.addLayer(step_b, {},  'step_b');
 var step_c = ee.Image(0).rename('classification_' +  years_list[0]);
 
 // start from first + 1 
-print(years_list[0] + 1)
+years_list.slice(1).forEach(function(year_i) {
+  // get layers
+  var current = step_b.select('classification_' + year_i);
+  var prev1 = step_b.select('classification_' + String(year_i - 1));
+  
+  // set rules 
+  var x = ee.Image(0)
+    // where clas is the same, no change
+    .where(current.eq(prev1), 0)
+    ///// SET ENCHROACHMENT
+    ///// from savana to forest
+    .where(prev1.eq(4).and(current.eq(3)), step_c.select('classification_' + String(year_i - 1)).add(1))
+    
+    //// set THINNING
+    
+    
+    // rename to store
+    .rename('classification_' + year_i);
+  
+  // store
+  step_c = step_c.addBands(x);
+  
+  
+});
 
 
-
-
+Map.addLayer(step_c, {}, 'step_c')
+print(step_c);
 
 
 
@@ -325,7 +348,7 @@ var vis = {
 };
 
 // plot
-Map.addLayer(collection_x.select('classification_' + years_list[years_list.length - 1]), vis, 'last year collection');
+//Map.addLayer(collection_x.select('classification_' + years_list[years_list.length - 1]), vis, 'last year collection');
 Map.addLayer(collection_x, {}, 'collection');
 
-Map.addLayer(n_classes, {palette: ['green', 'yellow', 'red'], min:1, max:3}, 'number of native class changes');
+Map.addLayer(n_classes, {palette: ['green', 'yellow', 'red'], min:1, max:3}, 'number of native class changes', false);

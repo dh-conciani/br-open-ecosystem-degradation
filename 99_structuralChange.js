@@ -260,8 +260,14 @@ var step_b = imageFilledtnt0;
 // check filtered image
 Map.addLayer(step_b, {},  'step_b');
 
+//////////////////////////// STEP C
+////////////////////////////////////// RUN ENCHORACHMENT/THINNING
 
+// build and empty recipe with first year (no one changes in the first year)
+var step_c = ee.Image(0).rename('classification_' +  years_list[0]);
 
+// start from first + 1 
+print(years_list[0] + 1)
 
 
 

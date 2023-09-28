@@ -152,7 +152,7 @@ years_list.forEach(function(year_i) {
 });
  
 
-Map.addLayer(step_a, {}, 'step a');
+Map.addLayer(step_a, {}, 'step a', false);
 
 ////////////// STEP B
 ///////////////////////// GAPFILL
@@ -258,7 +258,7 @@ var imageFilledYear = applyGapFill(imagePixelYear);
 // store
 var step_b = imageFilledtnt0;
 // check filtered image
-Map.addLayer(step_b, {},  'step_b');
+Map.addLayer(step_b, {},  'step_b', false);
 
 //////////////////////////// STEP C
 ////////////////////////////////////// RUN ENCHORACHMENT/THINNING
@@ -299,43 +299,10 @@ years_list.slice(1).forEach(function(year_i) {
   
 });
 
-Map.addLayer(step_c, {}, 'step_c');
-
+// plot results
+Map.addLayer(step_c, {}, 'step_c', false);
 Map.addLayer(step_c.select('classification_2022'), {palette:['#AF00FB', '#FF0000', 'white', '#23FF00', '#0D5202'], min:-2, max:2}, 'enchroachment last year');
 
-
-
-// ps. consider water
-// temporal filter to remove temporal patches smaller than persistence rule
-// 3yr? 5yr? 
-
-// temporal filter to perform enchroachment/thinning rule
-
-// temporal filter to mask anthropogenic years
-
-
-
-//print(collection_x);
-
-
-
-
-/*
-// get native vegetation in the last year
-var collection_last = collection.select('classification_' + years_list[years_list.length - 1])
-  // and retain only native vegetation + ignored classes
-  .remap({'from': native_classes.concat(ignore_classes),
-          // remmaping them to value == 1
-          'to': ee.List.repeat({'value': 1, 'count': native_classes.concat(ignore_classes).length}),
-          // non-declared vlaues assumes values == 0
-          'defaultValue': 0 }
-          )// and will be masked as NULL
-          .selfMask();
-
-// mask the entire collection by using last  
-collection = collection.updateMask(collection_last);
-
-*/
 
 
 
@@ -353,6 +320,6 @@ var vis = {
 
 // plot
 //Map.addLayer(collection_x.select('classification_' + years_list[years_list.length - 1]), vis, 'last year collection');
-Map.addLayer(collection_x, {}, 'collection');
+Map.addLayer(collection_x, {}, 'collection', false);
 
 Map.addLayer(n_classes, {palette: ['green', 'yellow', 'red'], min:1, max:3}, 'number of native class changes', false);

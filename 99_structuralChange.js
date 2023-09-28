@@ -12,7 +12,7 @@
 var version = 1;
 
 // set output folder
-var outpur = 'projects/mapbiomas-workspace/DEGRADACAO/COLECAO/BETA/PROCESS/structure_change';
+var output = 'projects/mapbiomas-workspace/DEGRADACAO/COLECAO/BETA/PROCESS/structure_change';
 
 // read collection 8
 var collection = ee.Image('projects/mapbiomas-workspace/public/collection8/mapbiomas_collection80_integration_v1');
@@ -424,7 +424,7 @@ Map.addLayer(step_e_structure, {}, 'step e-structure', false);
 Map.addLayer(step_e_structure.select('classification_2022'), {palette:['#AF00FB', '#FF0000', 'white', '#23FF00', '#0D5202'], min:-2, max:2}, 'enchroachment last year');
 /////
 Map.addLayer(step_e_age, {}, 'step e-age', false);
-Map.addLayer(step_e_age.select('classification_2022'), {palette:['green', 'yellow', 'red'], min:1, max:10}, 'time since last change');
+Map.addLayer(step_e_age.select('classification_2022'), {palette:['green', 'yellow', 'red'], min:1, max:10}, 'time since last change', false);
 
 
 //////////////////////////////// end of step e
@@ -444,15 +444,21 @@ step_e_structure = step_e_structure.set({'version': version})
 step_e_structure = step_e_structure.set({'version': version})
                                    .set({'product': 'age'});
 
-Map.addLayer(collection.geometry())
 // export
 Export.image.toAsset({
 		image: step_e_structure,
     description: 'structure_change_v' + version,
     assetId: output + '/' + 'structure_change_v' + version,
-    region: biomes.geometry(),
+    region: collection.geometry(),
     scale: 30,
     maxPixels: 1e13
     });
 
-
+Export.image.toAsset({
+		image: step_e_age,
+    description: 'age_v' + version,
+    assetId: output + '/' + 'age_v' + version,
+    region: collection.geometry(),
+    scale: 30,
+    maxPixels: 1e13
+    });

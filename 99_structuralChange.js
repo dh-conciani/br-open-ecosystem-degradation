@@ -325,18 +325,20 @@ years_list.forEach(function(year_i) {
     return 'classification_' + year;
   });
   
-  // filter collection
-  var x = step_c.select(band_names);
-  print(x)
+  // filter collection for interval
+  var x = step_c.select(band_names)
+    //and compute the number of changes
+    .reduce(ee.Reducer.countRuns()).subtract(1)
+    // rename
+    .rename('classification_' + year_i);
+  
+  // compute the number of changes
+  n_changes = n_changes.addBands(x);
 });
 
+Map.addLayer(n_changes, {}, 'number of changes');
 
 
-
-// compute the number of classes per pixel ()
-// get per pixel number of classes
-//var n_classes = step_c.reduce(ee.Reducer.countDistinctNonNull());
-//var n_changes = step_c.reduce(ee.Reducer.countRuns()).subtract(1);
 
 
 // get palette
@@ -350,7 +352,9 @@ var vis = {
 //Map.addLayer(collection_x.select('classification_' + years_list[years_list.length - 1]), vis, 'last year collection');
 Map.addLayer(collection_x, {}, 'collection', false);
 
-Map.addLayer(n_changes, {'min': 0, 'max': 5, 'palette': ["#C8C8C8", "#FED266", "#FBA713", "#cb701b",
-                                                         "#a95512", "#662000", "#cb181d"],'format': 'png'}, 'number of NV changes', false);
-                                                         
-Map.addLayer(n_classes, {palette: ['green', 'yellow', 'red'], min:1, max:3}, 'number of NV classes', false);
+Map.addLayer(n_changes.select('classification_2022'), {'min': 0, 'max': 5, 'palette': ["#C8C8C8", "#FED266", "#FBA713", "#cb701b",
+                                                        "#a95512", "#662000", "#cb181d"],'format': 'png'}, 'number of NV changes', false);
+  
+
+//var n_classes = step_c.reduce(ee.Reducer.countDistinctNonNull());
+//Map.addLayer(n_classes, {palette: ['green', 'yellow', 'red'], min:1, max:3}, 'number of NV classes', false);

@@ -315,14 +315,19 @@ var n_changes = ee.Image([]);
 
 // for each year
 years_list.forEach(function(year_i) {
-
   // Use the filter method to create the subset list of years to be used
-  var subset_list = years_list.filter(function(year) {
+  var interval = years_list.filter(function(year) {
     return year <= year_i;
   });
   
+  // Use the map() function to add 'classification_' before each value
+  var band_names = interval.map(function(year) {
+    return 'classification_' + year;
+  });
   
-  print(subset_list)
+  // filter collection
+  var x = step_c.select(band_names);
+  print(x)
 });
 
 

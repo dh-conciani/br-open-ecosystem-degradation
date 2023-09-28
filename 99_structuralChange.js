@@ -6,9 +6,11 @@
 // b. gapfill filter (replace zero by last native class)
 // c. compute enchroachment/thinning [-2 to +2]
 // d. compute time since the last structural change
+// e. mask anthropogenic years and build final product 
 
 // read collection 8
 var collection = ee.Image('projects/mapbiomas-workspace/public/collection8/mapbiomas_collection80_integration_v1');
+Map.addLayer(collection, {}, 'mapbiomas c8', false);
 
 // set native classes
 var native_classes =          [3, 4, 5, 6, 11, 12];
@@ -48,7 +50,7 @@ years_list.forEach(function(year_i) {
   collection_x = collection_x.addBands(x);
 });
 
-Map.addLayer(collection_x, {}, 'collection', false);
+Map.addLayer(collection_x, {}, 'NV collection', false);
 
 // step a) remove spatial patches smaller than the persistence threshold
 var step_a = ee.Image([]);
@@ -377,6 +379,13 @@ years_list.forEach(function(year_i) {
 });
 
 Map.addLayer(step_d, {}, 'step_d', false);
+Map.addLayer(step_d.select('classification_2022'), {palette:['#00FFFB', '#FFF700', '4E1054'], min:0, max:10}, 'times since the last change [last year]', false);
+
+
+//////////////////////////// end of step d
+///////////////////////////////////////////// STEP E. MASK ANTHROPOGENIC YEARS /set water as NA
+
+// now mask anthropogenic years
 
 
 

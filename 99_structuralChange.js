@@ -254,8 +254,11 @@ var imagePixelYear = ee.Image.constant(years)
 var imageFilledtnt0 = applyGapFill(imageAllBands);
 var imageFilledYear = applyGapFill(imagePixelYear);
 
+
+// store
+var step_b = imageFilledtnt0;
 // check filtered image
-Map.addLayer(imageFilledtnt0, {},  'step_b');
+Map.addLayer(step_b, {},  'step_b');
 
 
 
@@ -272,8 +275,6 @@ Map.addLayer(imageFilledtnt0, {},  'step_b');
 // ps. consider water
 // temporal filter to remove temporal patches smaller than persistence rule
 // 3yr? 5yr? 
-
-// temporal filter to fill zero's with previous native class
 
 // temporal filter to perform enchroachment/thinning rule
 

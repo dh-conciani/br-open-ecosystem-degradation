@@ -7,6 +7,7 @@
 // c. compute enchroachment/thinning [-2 to +2]
 // d. compute time since the last structural change
 // e. mask anthropogenic years and build final product 
+// f. restart year count when exists anthropogenic use among same class NV temporal patches
 
 // read collection 8
 var collection = ee.Image('projects/mapbiomas-workspace/public/collection8/mapbiomas_collection80_integration_v1');
@@ -409,7 +410,7 @@ years_list.forEach(function(year_i) {
   
   // bind
   step_e_structure = step_e_structure.addBands(x);
-  step_e_age = step_e_age.addBands(y);
+  step_e_age = step_e_age.addBands(y).selfMask();
   
 });
 
@@ -418,7 +419,7 @@ Map.addLayer(step_e_structure, {}, 'step e-structure', false);
 Map.addLayer(step_e_structure.select('classification_2022'), {palette:['#AF00FB', '#FF0000', 'white', '#23FF00', '#0D5202'], min:-2, max:2}, 'enchroachment last year');
 /////
 Map.addLayer(step_e_age, {}, 'step e-age', false);
-Map.addLayer(step_e_age.select('classification_2022'), {palette:['green', 'yellow', 'red'], min:0, max:10}, 'time since last change');
+Map.addLayer(step_e_age.select('classification_2022'), {palette:['green', 'yellow', 'red'], min:1, max:10}, 'time since last change');
 
 
 //////////////////////////////// end of step e

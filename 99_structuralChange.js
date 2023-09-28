@@ -363,6 +363,10 @@ years_list.forEach(function(year_i) {
     var x = ee.Image(0)
       // keep age == 0 when NV class doesn't change
       .where(current.eq(0), 0)
+      // map first year of each change
+      .where(current.neq(0).and(current.neq(prev1)), 1)
+      // map age (time since the change)
+      .where(current.neq(0).and(current.eq(prev1)), step_d.select('classification_' + String(year_i - 1)).add(1))
       // rename
       .rename('classification_' + year_i);
     
@@ -372,14 +376,7 @@ years_list.forEach(function(year_i) {
   
 });
 
-Map.addLayer(step_d, {}, 'step_d')
-
-
-
-
-
-
-
+Map.addLayer(step_d, {}, 'step_d', false);
 
 
 

@@ -1,22 +1,26 @@
-// get age of structural change by class, type and direction (for each territory) 
-// dhemerson.costa@ipam.org.br
+// export edge area per biome 
+// dhemerson.costa@ipam.org.br -- mapbiomas gt degradação 
 
 // an adaptation from:
 // calculate area of @author João Siqueira
 
-// structural change
-var native_edge = ee.Image('projects/mapbiomas-workspace/DEGRADACAO/FRAGMENTATION/FRAGMENTATION_V2');
+// set input image collection
+var native_edge = ee.ImageCollection('projects/mapbiomas-workspace/DEGRADACAO/COLECAO/BETA/PROCESS/edge_area')
+  // filter version
+  .filterMetadata('version', 'equals', 1);
 
-// define bands to be computed
-var bands = ['edge_native_distance'];
+// define years to be computed
+var bands = [1985, 1986, 1987, 1988, 1989, 1990, 1991, 1992, 1993, 1994, 1995,
+             1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,
+             2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017,
+             2018, 2019, 2020, 2021, 2022];
 
-// native classes in which statistics will be processed
-var classes = [3, 4, 11, 12];
+// define distances
+var distances = [30, 60, 90, 120, 150, 300, 600, 1000];
 
 // get biomes territory
 var territory = ee.Image('projects/mapbiomas-workspace/AUXILIAR/biomas-2019-raster');
 Map.addLayer(territory.randomVisualizer());
-
 
 // change the scale if you need.
 var scale = 30;
@@ -30,14 +34,14 @@ var pixelArea = ee.Image.pixelArea().divide(10000);
 // create recipe to bind data
 var recipe = ee.FeatureCollection([]);
 
-// for each class [i]
-classes.forEach(function(class_i) {
-  // get the classification for the class [i]
-  var asset_i = native_edge.updateMask(native_edge.select('edge_native_class').eq(class_i));
-  Map.addLayer(asset_i.randomVisualizer(), {}, 'class ' + class_i);
-      
+// get stats
+distances.forEach(function(distance_i) {
+  
+  // filter image
+  var image_i = native_edge.filterMetadata('distance', 'equals', distance_i).min();
+
       // Geometry to export
-      var geometry = asset_i.geometry();
+      var geometry = native_edge.geometry();
       
       // convert a complex object to a simple feature collection 
         var convert2table = function (obj) {
@@ -53,7 +57,7 @@ classes.forEach(function(class_i) {
                     var tableColumns = ee.Feature(null)
                         .set('ecoregion', territory)
                         .set('class', class_i)
-                        .set('distance', classId)
+                        .set('value', classId)
                         .set('area', area)
                     return tableColumns;
                 }
@@ -81,7 +85,10 @@ classes.forEach(function(class_i) {
       // perform per year 
         var areas = bands.map(
             function (band_i) {
-                var image = asset_i.select(band_i);
+                var image = structural_change.select('classification_' + band_i)
+                  // filter only to class [i]
+                  .updateMask(collection.select('classification_' + band_i).eq(class_i));
+                  
                 var areas = calculateArea(image, territory, geometry);
                 // set additional properties
                 areas = areas.map(
@@ -97,12 +104,12 @@ classes.forEach(function(class_i) {
         areas = ee.FeatureCollection(areas).flatten();
         // store
         recipe = recipe.merge(areas);
-    });
+});
 
-// store
+// export 
 Export.table.toDrive({
       collection: recipe,
-      description: 'native_edge_distance_per_class',
+      description: 'structural_change',
       folder: driverFolder,
       fileFormat: 'CSV'
 });

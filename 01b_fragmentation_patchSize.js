@@ -100,6 +100,14 @@ patch_sizes.forEach(function(size_i) {
   //Map.addLayer(recipe_size.select('size_' + size_i + 'ha_2000').randomVisualizer(), {}, size_i + ' 2000');
   //Map.addLayer(recipe_size.select('size_' + size_i + 'ha_2022').randomVisualizer(), {}, size_i + ' 2022');
 
+
+  // Set properties
+  recipe_size = recipe_size.set({'version': version})
+                           .set({'distance': size_i});
+
+  // Export 
+  print(recipe_size);
+
   // Export
    Export.image.toAsset({
 		image: recipe_size,

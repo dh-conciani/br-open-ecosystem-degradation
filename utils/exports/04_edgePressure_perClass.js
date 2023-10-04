@@ -1,5 +1,5 @@
-// get age of structural change by class, type and direction (for each territory) 
-// dhemerson.costa@ipam.org.br
+// get anthropogenic pressure by class 
+// dhemerson.costa@ipam.org.br -- gt degradação mapbiomas
 
 // an adaptation from:
 // calculate area of @author João Siqueira

@@ -1,5 +1,5 @@
-// get age of structural change by class, type and direction (for each territory) 
-// dhemerson.costa@ipam.org.br
+// export lulc per biome to be used as reference in relative area analysis 
+// dhemerson.costa@ipam.org.br -- mapbiomas degradação 
 
 // an adaptation from:
 // calculate area of @author João Siqueira
@@ -8,10 +8,14 @@
 var collection = ee.Image('projects/mapbiomas-workspace/public/collection7_1/mapbiomas_collection71_integration_v1');
 
 // define bands to be computed
-var bands = ['classification_2021'];
+var bands = [1985, 1986, 1987, 1988, 1989, 1990, 1991, 1992, 1993, 1994, 1995,
+             1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,
+             2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017,
+             2018, 2019, 2020, 2021, 2022];
 
 // native classes in which statistics will be processed
-var classes = [3, 4, 11, 12];
+var classes =     [3, 4, 5, 6, 11, 12];
+var remap_class = [3, 4, 3, 3, 11, 12];
 
 // Load the base ecoregions for Cerrado
 //var ecoregions = ee.FeatureCollection('users/geomapeamentoipam/AUXILIAR/territorios/ecoregions_cerrado');

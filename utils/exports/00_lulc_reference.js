@@ -4,22 +4,14 @@
 // an adaptation from:
 // calculate area of @author João Siqueira
 
-// structural change
-var collection = ee.Image('projects/mapbiomas-workspace/public/collection7_1/mapbiomas_collection71_integration_v1');
+// mapbiomas collection 
+var collection = ee.Image('projects/mapbiomas-workspace/public/collection8/mapbiomas_collection80_integration_v1');
 
 // define bands to be computed
 var bands = [1985, 1986, 1987, 1988, 1989, 1990, 1991, 1992, 1993, 1994, 1995,
              1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,
              2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017,
              2018, 2019, 2020, 2021, 2022];
-
-// native classes in which statistics will be processed
-var classes =     [3, 4, 5, 6, 11, 12];
-var remap_class = [3, 4, 3, 3, 11, 12];
-
-// Load the base ecoregions for Cerrado
-//var ecoregions = ee.FeatureCollection('users/geomapeamentoipam/AUXILIAR/territorios/ecoregions_cerrado');
-//var ecoregions_img = ee.Image().paint(ecoregions, 'region');
 
 // Multiply ecoregions by 100 to create a territory layer
 var territory = ee.Image('projects/mapbiomas-workspace/AUXILIAR/biomas-2019-raster');
@@ -84,7 +76,7 @@ var recipe = ee.FeatureCollection([]);
       // perform per year 
         var areas = bands.map(
             function (band_i) {
-                var image = asset_i.select(band_i);
+                var image = asset_i.select('classification_' + band_i);
                 var areas = calculateArea(image, territory, geometry);
                 // set additional properties
                 areas = areas.map(

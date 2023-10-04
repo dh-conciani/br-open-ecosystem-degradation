@@ -1,17 +1,29 @@
-// get anthropogenic pressure by class 
+// get edge pressure by class 
 // dhemerson.costa@ipam.org.br -- gt degradação mapbiomas
 
 // an adaptation from:
 // calculate area of @author João Siqueira
 
-// structural change
-var native_edge = ee.Image('projects/mapbiomas-workspace/DEGRADACAO/FRAGMENTATION/FRAGMENTATION_V2');
+// read edge area
+var native_edge = ee.ImageCollection('projects/mapbiomas-workspace/DEGRADACAO/COLECAO/BETA/PROCESS/edge_area')
+  .filterMetadata('version', 'equals', 1)
+  .filterMetadata('distance', 'equals', 30)
+  .min();
+
+// read edge pressure
+var edge_pressure = ee.ImageCollection('projects/mapbiomas-workspace/DEGRADACAO/COLECAO/BETA/PROCESS/edge_pressure')
+  .filterMetadata('version', 'equals', 1)
+  .filterMetadata('distance', 'equals', 30)
+  .min();
 
 // define bands to be computed
-var bands = ['edge_anthropogenic_class'];
+var bands = [1985, 1986, 1987, 1988, 1989, 1990, 1991, 1992, 1993, 1994, 1995,
+             1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,
+             2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017,
+             2018, 2019, 2020, 2021, 2022];
 
 // native classes in which statistics will be processed
-var classes = [3, 4, 11, 12];
+var classes = [3, 4, 5, 6, 11, 12];
 
 // get biomes territory
 var territory = ee.Image('projects/mapbiomas-workspace/AUXILIAR/biomas-2019-raster');
@@ -31,26 +43,9 @@ var recipe = ee.FeatureCollection([]);
 
 // for each class [i]
 classes.forEach(function(class_i) {
-  // get the classification for the class [i]
-  var asset_i = native_edge.updateMask(native_edge.select('edge_native_class').eq(class_i));
-  Map.addLayer(asset_i.randomVisualizer(), {}, 'class ' + class_i, false);
-  
-  // compute a buffer arround the interest native class
-  var buffer_i = asset_i.distance(ee.Kernel.euclidean(35, 'meters'), false);
-  // get only for anthropogenic classes [ignore intersects with other native classes]
-  buffer_i = buffer_i.updateMask(native_edge.select('edge_native_class').unmask(99).eq(99));
 
-  //Map.addLayer(buffer_i.randomVisualizer(), {}, 'buffer ' + class_i, false);
-
-  // use it to get only anthropogenic classes that causes edge effect for each native class
-  var anthropogenic_i = native_edge.select('edge_anthropogenic_class').updateMask(buffer_i.select(0));
-  //Map.addLayer(anthropogenic_i.randomVisualizer(), {}, 'pressure ' + class_i, false)
-  
-  // store to process
-  asset_i = anthropogenic_i; 
-  
       // Geometry to export
-      var geometry = asset_i.geometry();
+      var geometry = native_edge.geometry();
       
       // convert a complex object to a simple feature collection 
         var convert2table = function (obj) {
@@ -94,6 +89,24 @@ classes.forEach(function(class_i) {
       // perform per year 
         var areas = bands.map(
             function (band_i) {
+              
+            // get the classification for the class [i]
+            var edge_i = native_edge.select('edge_30m_' + band_i)
+              // select only class i
+              .updateMask(native_edge.select('edge_30m_' + band_i).eq(class_i));
+
+            // compute a buffer arround the interest native class
+            var buffer_i = edge_i.distance(ee.Kernel.euclidean(35, 'meters'), false);
+            
+            // get only for anthropogenic classes [ignore intersects with other native classes]
+            buffer_i = buffer_i.updateMask(native_edge.select('edge_30m_' + band_i).unmask(99).eq(99));
+                         
+            // use it to get only anthropogenic classes that causes edge effect for each native class
+            var anthropogenic_i = edge_pressure.select('pressure_30m_' + band_i).updateMask(buffer_i.select(0));
+
+            // store to process
+            var asset_i = anthropogenic_i; 
+              
                 var image = asset_i.select(band_i);
                 var areas = calculateArea(image, territory, geometry);
                 // set additional properties
@@ -115,7 +128,7 @@ classes.forEach(function(class_i) {
 // store
 Export.table.toDrive({
       collection: recipe,
-      description: 'edge_per_class_anthropogenic_pressure',
+      description: 'edge_pressure',
       folder: driverFolder,
       fileFormat: 'CSV'
 });

@@ -77,7 +77,7 @@ classes.forEach(function(class_i) {
             var territotiesData = pixelArea.addBands(territory).addBands(image)
                 .reduceRegion({
                     reducer: ee.Reducer.sum().group(1, 'class').group(1, 'territory'),
-                    geometry: geometry,
+                    geometry: territory.geometry(),
                     scale: scale,
                     maxPixels: 1e12
                 });

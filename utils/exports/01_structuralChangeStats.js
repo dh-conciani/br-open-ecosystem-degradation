@@ -13,16 +13,11 @@ var bands = [1985, 1986, 1987, 1988, 1989, 1990, 1991, 1992, 1993, 1994, 1995,
              2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017,
              2018, 2019, 2020, 2021, 2022];
 
-// mapbiomas data (last year)
-var mapbiomas = ee.Image('projects/mapbiomas-workspace/public/collection7_1/mapbiomas_collection71_integration_v1')
-                  .select(['classification_2021']);
-                  
-// native classes in which statistics will be processed
-var classes = [3, 4, 11, 12];
+// mapbiomas lulc 
+var collection = ee.Image('projects/mapbiomas-workspace/public/collection8/mapbiomas_collection80_integration_v1');
 
-// set structural change classes
-var type_classes = [4, 5];
-var direction_classes = [3, 4];
+// native classes in which statistics will be processed
+var classes = [3, 4, 5, 6, 11, 12];
 
 // get biomes territory
 var territory = ee.Image('projects/mapbiomas-workspace/AUXILIAR/biomas-2019-raster');
@@ -40,24 +35,11 @@ var pixelArea = ee.Image.pixelArea().divide(10000);
 // create recipe to bind data
 var recipe = ee.FeatureCollection([]);
 
-// for each class [i]
+// get stats
 classes.forEach(function(class_i) {
-  // get the classification for the class [i]
-  var asset_i = structural_change.updateMask(mapbiomas.eq(class_i));
-  //Map.addLayer(asset_i, {}, 'class ' + class_i);
-  
-  // for each type of structural change
-  type_classes.forEach(function(type_j) {
-    var asset_ij = asset_i.updateMask(structural_change.select('structure_change').eq(type_j));
-    //Map.addLayer(asset_ij, {}, class_i + ' , ' + type_j)
-  
-    // for each direction of change
-    direction_classes.forEach(function(direction_k) {
-      var asset_ijk = asset_ij.updateMask(structural_change.select('direction').eq(direction_k));
-      //Map.addLayer(asset_ijk, {}, class_i + ' , type ' + type_j + ' , direction ' + direction_k);
-      
+
       // Geometry to export
-      var geometry = asset_ijk.geometry();
+      var geometry = structural_change.geometry();
       
       // convert a complex object to a simple feature collection 
         var convert2table = function (obj) {
@@ -73,9 +55,7 @@ classes.forEach(function(class_i) {
                     var tableColumns = ee.Feature(null)
                         .set('ecoregion', territory)
                         .set('class', class_i)
-                        .set('type', type_j)
-                        .set('direction', direction_k)
-                        .set('age', classId)
+                        .set('value', classId)
                         .set('area', area)
                     return tableColumns;
                 }
@@ -103,7 +83,10 @@ classes.forEach(function(class_i) {
       // perform per year 
         var areas = bands.map(
             function (band_i) {
-                var image = asset_ijk.select(band_i);
+                var image = structural_change.select('classification_' + band_i)
+                  // filter only to class [i]
+                  .updateMask(collection.select('classification_' + band_i).eq(class_i));
+                  
                 var areas = calculateArea(image, territory, geometry);
                 // set additional properties
                 areas = areas.map(
@@ -119,11 +102,9 @@ classes.forEach(function(class_i) {
         areas = ee.FeatureCollection(areas).flatten();
         // store
         recipe = recipe.merge(areas);
-    });
-  });
 });
 
-// store
+// export 
 Export.table.toDrive({
       collection: recipe,
       description: 'structural_change',

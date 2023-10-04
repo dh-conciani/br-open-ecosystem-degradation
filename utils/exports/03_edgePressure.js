@@ -8,13 +8,15 @@
 var native_edge = ee.ImageCollection('projects/mapbiomas-workspace/DEGRADACAO/COLECAO/BETA/PROCESS/edge_area')
   .filterMetadata('version', 'equals', 1)
   .filterMetadata('distance', 'equals', 30)
-  .min();
+  .min()
+  .aside(print);
 
 // read edge pressure
 var edge_pressure = ee.ImageCollection('projects/mapbiomas-workspace/DEGRADACAO/COLECAO/BETA/PROCESS/edge_pressure')
   .filterMetadata('version', 'equals', 1)
   .filterMetadata('distance', 'equals', 30)
-  .min();
+  .min()
+  .aside(print);
 
 // define bands to be computed
 var bands = [1985, 1986, 1987, 1988, 1989, 1990, 1991, 1992, 1993, 1994, 1995,
@@ -105,12 +107,11 @@ classes.forEach(function(class_i) {
             var anthropogenic_i = edge_pressure.select('pressure_30m_' + band_i).updateMask(buffer_i.select(0));
 
             // store to process
-            var asset_i = anthropogenic_i; 
-              
-                var image = asset_i.select(band_i);
-                var areas = calculateArea(image, territory, geometry);
-                // set additional properties
-                areas = areas.map(
+            var image = anthropogenic_i; 
+
+            var areas = calculateArea(image, territory, geometry);
+            // set additional properties
+            areas = areas.map(
                     function (feature) {
                         return feature.set('variable', band_i);
                     }

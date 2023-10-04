@@ -1,5 +1,5 @@
 // export edge area per biome 
-// dhemerson.costa@ipam.org.br -- mapbiomas gt degradação 
+// dhemerson.costa@ipam.org.br -- Mapbiomas GT Degradação 
 
 // an adaptation from:
 // calculate area of @author João Siqueira
@@ -61,7 +61,7 @@ sizes.forEach(function(size_i) {
                 var tableColumns = ee.Feature(null)
                     .set('ecoregion', territory)
                     .set('class', classId)
-                    .set('distance', distance_i)
+                    .set('size', size_i)
                     .set('area', area);
                 return tableColumns;
             }
@@ -89,7 +89,7 @@ sizes.forEach(function(size_i) {
   // perform per year 
     var areas = bands.map(
         function (band_i) {
-            var image = image_i.select('edge_' + distance_i + 'm_' + band_i);
+            var image = image_i.select('size_' + size_i + 'ha_' + band_i);
               
             var areas = calculateArea(image, territory, geometry);
             // set additional properties
@@ -111,7 +111,7 @@ sizes.forEach(function(size_i) {
 // export 
 Export.table.toDrive({
       collection: recipe,
-      description: 'edge_area',
+      description: 'patch_size',
       folder: driverFolder,
       fileFormat: 'CSV'
 });

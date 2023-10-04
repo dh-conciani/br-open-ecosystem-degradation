@@ -103,7 +103,7 @@ patch_sizes.forEach(function(size_i) {
 
   // Set properties
   recipe_size = recipe_size.set({'version': version})
-                           .set({'distance': size_i});
+                           .set({'size': size_i});
 
   // Export 
   print(recipe_size);

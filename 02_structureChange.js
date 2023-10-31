@@ -7,6 +7,8 @@
 // c. compute enchroachment/thinning [-2 to +2]
 // d. compute time since the last structural change
 // e. mask anthropogenic years and build final product 
+// f. apply a spatial filter (minimum size [0.5 ha])
+
 
 // set output version
 var version = 1;
@@ -19,8 +21,8 @@ var collection = ee.Image('projects/mapbiomas-workspace/public/collection8/mapbi
 Map.addLayer(collection, {}, 'mapbiomas c8', false);
 
 // set native classes
-var native_classes =          [3, 4, 5, 6, 11, 12];
-var native_classes_adjusted = [3, 4, 3, 3, 12, 12];
+var native_classes =          [3, 4, 5, 6, 49, 11, 12, 50];
+var native_classes_adjusted = [3, 4, 3, 3,  3, 12, 12, 12];
 
 // set ignored classes
 var ignore_classes = [27, 33];

@@ -423,10 +423,8 @@ years_list.forEach(function(year_i) {
 
 // plot 
 Map.addLayer(step_e_structure, {}, 'step e-structure', false);
-Map.addLayer(step_e_structure.select('classification_2022'), {palette:['#AF00FB', '#FF0000', 'white', '#23FF00', '#0D5202'], min:-2, max:2}, 'enchroachment last year');
 /////
 Map.addLayer(step_e_age, {}, 'step e-age', false);
-Map.addLayer(step_e_age.select('classification_2022'), {palette:['green', 'yellow', 'red'], min:1, max:10}, 'time since last change', false);
 
 //////////////////////////////// end of step e
 ////////////////////////////////////////// STEP F. APPLY SPATIAL FILTER
@@ -434,7 +432,7 @@ Map.addLayer(step_e_age.select('classification_2022'), {palette:['green', 'yello
 var step_f_structure = ee.Image([]);
 
 // apply filter
-[2022].forEach(function(year_i) {
+years_list.forEach(function(year_i) {
  // compute te number of connections
  var connections = step_e_structure.select(['classification_' + year_i])
   // connected pixel count only positive values Zzzz 
@@ -447,16 +445,15 @@ var step_f_structure = ee.Image([]);
  // apply filter
  var classification_i = step_e_structure.select(['classification_' + year_i])
   .where(connections.lte(6), 0);
+  print(classification_i)
   
-Map.addLayer(classification_i, {palette:['#AF00FB', '#FF0000', 'white', '#23FF00', '#0D5202'], min:-2, max:2}, 'test f-structure');
-
  // stack into container
- step_f_structure = step_f_structure.addBands(classification_i.updateMask(classification_i.neq(0)));
+ step_f_structure = step_f_structure.addBands(classification_i);
   }
 );
 
 // print filtered
-Map.addLayer(step_f_structure.select(['classification_2022']),  {palette:['#AF00FB', '#FF0000', 'white', '#23FF00', '#0D5202'], min:-2, max:2}, 'step f-structure');
+Map.addLayer(step_f_structure.select(['classification_2022']),  {palette:['#AF00FB', '#FF0000', 'white', '#23FF00', '#0D5202'], min:-2, max:2}, 'last year enchroachment');
 
 
 

@@ -11,7 +11,7 @@
 
 
 // set output version
-var version = 1;
+var version = 2;
 
 // set output folder
 var output = 'projects/mapbiomas-workspace/DEGRADACAO/COLECAO/BETA/PROCESS/structure_change';
@@ -431,7 +431,7 @@ Map.addLayer(step_e_age, {}, 'step e-age', false);
 // create an empty container
 var step_f_structure = ee.Image([]);
 
-// apply filter
+// apply filter in the structure changes
 years_list.forEach(function(year_i) {
  // compute te number of connections
  var connections = step_e_structure.select(['classification_' + year_i])
@@ -445,20 +445,37 @@ years_list.forEach(function(year_i) {
  // apply filter
  var classification_i = step_e_structure.select(['classification_' + year_i])
   .where(connections.lte(6), 0);
-  print(classification_i)
-  
+
  // stack into container
  step_f_structure = step_f_structure.addBands(classification_i);
   }
 );
 
-// print filtered
+
+// apply filter in the age 
+var step_f_age = ee.Image([]);
+years_list.forEach(function(year_i) {
+ // compute te number of connections
+ var connections = step_e_age.select(['classification_' + year_i])
+          .selfMask()
+          .connectedPixelCount({'maxSize': 100, 'eightConnected': false})
+          .reproject('EPSG:4326', null, 30);
+
+ // apply filter
+ var classification_i = step_e_age.select(['classification_' + year_i])
+  .where(connections.lte(6), 0);
+
+ // stack into container
+ step_f_age = step_f_age.addBands(classification_i);
+  }
+);
+
+// plot filtered
 Map.addLayer(step_f_structure.select(['classification_2022']),  {palette:['#AF00FB', '#FF0000', 'white', '#23FF00', '#0D5202'], min:-2, max:2}, 'last year enchroachment');
-
-
-
-
+Map.addLayer(step_f_age.select(['classification_2022']),  {palette:['green', 'yellow', 'red', 'purple'], min:1, max:20}, 'time since last change', false);
 /////////////////////////////// end of step f
+
+
 // data vis
 Map.addLayer(n_changes.select('classification_2022'), {'min': 0, 'max': 5, 'palette': ["#C8C8C8", "#FED266", "#FBA713", "#cb701b",
                                                         "#a95512", "#662000", "#cb181d"],'format': 'png'}, 'sum of n changes', false);
@@ -466,17 +483,17 @@ Map.addLayer(n_changes.select('classification_2022'), {'min': 0, 'max': 5, 'pale
 //////////////////////////////
 ////// set properties
 // structure change 
-step_e_structure = step_e_structure.set({'version': version})
+step_e_structure = step_f_structure.set({'version': version})
                                    .set({'product': 'change'});
 
 // time since the last change                                   
-step_e_structure = step_e_structure.set({'version': version})
+step_e_structure = step_f_age.set({'version': version})
                                    .set({'product': 'age'});
 
 
 // export
 Export.image.toAsset({
-		image: step_e_structure,
+		image: step_f_structure,
     description: 'structure_change_v' + version,
     assetId: output + '/' + 'structure_change_v' + version,
     region: collection.geometry(),
@@ -485,7 +502,7 @@ Export.image.toAsset({
     });
 
 Export.image.toAsset({
-		image: step_e_age,
+		image: step_f_age,
     description: 'age_v' + version,
     assetId: output + '/' + 'age_v' + version,
     region: collection.geometry(),

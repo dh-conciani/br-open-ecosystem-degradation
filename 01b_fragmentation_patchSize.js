@@ -2,22 +2,22 @@
 // any issue and/or bug, please report to dhemerson.costa@ipam.org.br and mrosa@arcplan.com.br
 
 // set version
-var version = 1;
+var version = 2;
 
 // -- * definitions
 // set classes to be computed  
 // 3 (forest), 4 (savanna), 5 (mangrove), 6 (flooded forest), 11 (wetland), 12 (grassland)
 var native_classes = {
-  'amazonia':       [3, 4, 5, 6, 11, 12],
-  'caatinga':       [3, 4, 5, 11, 12],
-  'cerrado':        [3, 4, 5, 11, 12],
-  'mata_atlantica': [3, 4, 5, 11, 12],
-  'pampa':          [3, 4, 5, 11, 12],
-  'pantanal':       [3, 4, 5, 11, 12]
+  'amazonia':       [3, 4, 5, 6, 11, 12, 49, 50],
+  'caatinga':       [3, 4, 5, 11, 12, 49, 50],
+  'cerrado':        [3, 4, 5, 11, 12, 49, 50],
+  'mata_atlantica': [3, 4, 5, 11, 12, 49, 50],
+  'pampa':          [3, 4, 5, 11, 12, 49, 50],
+  'pantanal':       [3, 4, 5, 11, 12, 49, 50]
 };
 
 // set patch size rules (in hectares)
-var patch_sizes = [1, 2, 3, 4, 5, 10];
+var patch_sizes = [1, 2, 3, 4, 5, 10, 20, 40, 90];
 
 // Set years to be processed 
 var years_list = [1985, 1986, 1987, 1988, 1989, 1990, 1991, 1992, 1993, 1994, 1995,

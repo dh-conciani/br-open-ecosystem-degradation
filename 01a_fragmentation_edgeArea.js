@@ -2,29 +2,29 @@
 // any issue, bug or report write to dhemerson.costa@ipam.org.br and/or mrosa@arcplan.com.br
 
 // set version
-var version = 1;
+var version = 2;
 
 // -- * definitions
 // set classes in which edge area will be applied 
 // 3 (forest), 4 (savanna), 5 (mangrove), 6 (flooded forest), 11 (wetland), 12 (grassland)
 var native_classes = {
-  'amazonia':       [3, 4, 5, 6, 11, 12],
-  'caatinga':       [3, 4, 5, 11, 12],
-  'cerrado':        [3, 4, 5, 11, 12],
-  'mata_atlantica': [3, 4, 5, 11, 12],
-  'pampa':          [3, 4, 5, 11, 12],
-  'pantanal':       [3, 4, 5, 11, 12]
+  'amazonia':       [3, 4, 5, 6, 11, 12, 49, 50],
+  'caatinga':       [3, 4, 5, 11, 12, 49, 50],
+  'cerrado':        [3, 4, 5, 11, 12, 49, 50],
+  'mata_atlantica': [3, 4, 5, 11, 12, 49, 50],
+  'pampa':          [3, 4, 5, 11, 12, 49, 50],
+  'pantanal':       [3, 4, 5, 11, 12, 49, 50]
 };
 
 // dset classes to be ignored (which doesn't produces edge area)
-// 13 (other non forest), 29 (rocky outcrop), 32 (hypersaline tidal flat), 33 (water), 49 (wooded restinga), 50 (herbaceous restinga)
+// 13 (other non forest), 29 (rocky outcrop), 32 (hypersaline tidal flat), 33 (water)
 var ignore_classes = {
-  'amazonia':       [13, 29, 32, 33, 49, 50],
-  'caatinga':       [13, 29, 32, 33, 49, 50],
-  'cerrado':        [13, 29, 32, 33, 49, 50],
-  'mata_atlantica': [13, 29, 32, 33, 49, 50],
-  'pampa':          [13, 29, 32, 49, 33, 50],
-  'pantanal':       [13, 29, 32, 49, 33, 50]
+  'amazonia':       [13, 29, 32, 33],
+  'caatinga':       [13, 29, 32, 33],
+  'cerrado':        [13, 29, 32, 33],
+  'mata_atlantica': [13, 29, 32, 33],
+  'pampa':          [13, 29, 32, 49],
+  'pantanal':       [13, 29, 32, 49]
 };
 
 // definir conjunto de distancias (em metros) para estimar a área sobre efeito de borda
@@ -175,4 +175,3 @@ edge_rules.forEach(function(distance_i) {
     });
   }
 });
-

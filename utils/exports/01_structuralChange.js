@@ -5,7 +5,7 @@
 // calculate area of @author João Siqueira
 
 // structural change
-var structural_change = ee.Image('projects/mapbiomas-workspace/DEGRADACAO/COLECAO/BETA/PROCESS/structure_change/structure_change_v1');
+var structural_change = ee.Image('projects/mapbiomas-workspace/DEGRADACAO/COLECAO/BETA/PROCESS/structure_change/structure_change_v2');
 
 // define bands to be computed
 var bands = [1985, 1986, 1987, 1988, 1989, 1990, 1991, 1992, 1993, 1994, 1995,
@@ -17,7 +17,7 @@ var bands = [1985, 1986, 1987, 1988, 1989, 1990, 1991, 1992, 1993, 1994, 1995,
 var collection = ee.Image('projects/mapbiomas-workspace/public/collection8/mapbiomas_collection80_integration_v1');
 
 // native classes in which statistics will be processed
-var classes = [3, 4, 5, 6, 11, 12];
+var classes = [3, 4, 5, 6, 11, 12, 49, 50];
 
 // get biomes territory
 var territory = ee.Image('projects/mapbiomas-workspace/AUXILIAR/biomas-2019-raster');

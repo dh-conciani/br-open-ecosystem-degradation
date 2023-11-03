@@ -6,14 +6,14 @@
 
 // read edge area
 var native_edge = ee.ImageCollection('projects/mapbiomas-workspace/DEGRADACAO/COLECAO/BETA/PROCESS/edge_area')
-  .filterMetadata('version', 'equals', 1)
+  .filterMetadata('version', 'equals', 2)
   .filterMetadata('distance', 'equals', 30)
   .min()
   .aside(print);
 
 // read edge pressure
 var edge_pressure = ee.ImageCollection('projects/mapbiomas-workspace/DEGRADACAO/COLECAO/BETA/PROCESS/edge_pressure')
-  .filterMetadata('version', 'equals', 1)
+  .filterMetadata('version', 'equals', 2)
   .filterMetadata('distance', 'equals', 30)
   .min()
   .aside(print);
@@ -25,7 +25,7 @@ var bands = [1985, 1986, 1987, 1988, 1989, 1990, 1991, 1992, 1993, 1994, 1995,
              2018, 2019, 2020, 2021, 2022];
 
 // native classes in which statistics will be processed
-var classes = [3, 4, 5, 6, 11, 12];
+var classes = [3, 4, 5, 6, 11, 12, 49, 50];
 
 // get biomes territory
 var territory = ee.Image('projects/mapbiomas-workspace/AUXILIAR/biomas-2019-raster');

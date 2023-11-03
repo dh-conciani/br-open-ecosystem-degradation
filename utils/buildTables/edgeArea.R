@@ -1,4 +1,4 @@
-## assess brazils structural changes
+## export table to be ingest in data-studio and end users
 ## gt degradação
 ## dhemerson.costa@ipam.org.br
 

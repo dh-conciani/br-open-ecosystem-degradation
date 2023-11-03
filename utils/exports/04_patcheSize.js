@@ -8,7 +8,7 @@
 var native_edge = ee.ImageCollection('projects/mapbiomas-workspace/DEGRADACAO/COLECAO/BETA/PROCESS/patch_size');
 
 // set version
-var version = 1;
+var version = 2;
 
 // define years to be computed
 var bands = [1985, 1986, 1987, 1988, 1989, 1990, 1991, 1992, 1993, 1994, 1995,
@@ -17,7 +17,7 @@ var bands = [1985, 1986, 1987, 1988, 1989, 1990, 1991, 1992, 1993, 1994, 1995,
              2018, 2019, 2020, 2021, 2022];
 
 // define distances
-var sizes = [1, 2, 3, 4, 5, 10];
+var sizes = [1, 2, 3, 4, 5, 10, 40];
 
 // get biomes territory
 var territory = ee.Image('projects/mapbiomas-workspace/AUXILIAR/biomas-2019-raster');

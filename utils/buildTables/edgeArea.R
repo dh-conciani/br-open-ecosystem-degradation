@@ -9,15 +9,53 @@ library(ggpattern)
 ## avoid sci notes
 options(scipen= 9e3)
 
-## get native vegetation reference values
-reference <- read.csv('../table/lulc_reference.csv')
-
 #######
-## read edge area
+## read edge area data
 data <- read.table('../table/edge_area.csv', header= TRUE, sep= ',')
 
+## get mapbiomas lcluc 
+reference <- read.csv('../table/lulc_reference.csv')
+
+## now, compute relative values by matching tables
+recipe <- as.data.frame(NULL) ## empty recipe
+
+## for each biome 
+for (i in 1:length(unique(data$ecoregion))) {
+  ## get reference for the biome i
+  ref_i <- subset(reference, ecoregion == unique(reference$ecoregion)[i])
+  ## get data for the biome i
+  data_i <- subset(data, ecoregion == unique(data$ecoregion)[i])
+  
+  ## for each year 
+  for (j in 1:length(unique(data_i$variable))) {
+    ## get reference for the biome i and year j
+    ref_ij <- subset(ref_i, variable == unique(data$variable)[j])
+    ## get data for the biome i and year j
+    data_ij <- subset(data_i, variable == unique(data$variable)[j])
+    
+    ## for each class present in data
+    for(k in 1:length(unique(data_ij$class))) {
+      ## get reference for the biome biome i, year j and class k
+      ref_ijk <- subset(ref_ij, class == unique(data_ij$class)[k])
+      ## get data for the biome i, year j and class k
+      data_ijk <- subset(data_ij, class == unique(data_ij$class)[k])
+      
+      ## retain absolute value
+      data_ijk$ref_area <- ref_ijk$area
+      ## compute relative value
+      data_ijk$relative_area <- round(data_ijk$area/data_ijk$ref_area * 100, digits=1)
+      
+      ## store in a recipe
+      recipe <- rbind(data_ijk, recipe)
+    }
+  }
+}
+
+## remove bin
+rm(ref_i, data_i, ref_ij, data_ij, ref_ijk, data_ijk)
+
 ## translate class
-data$class_str <- gsub(3, 'Formação Florestal',
+recipe$class_str <- gsub(3, 'Formação Florestal',
                        gsub(4, 'Formação Savânica',
                             gsub(11, 'Áreas Úmidas',
                                  gsub(12, 'Formação Campestre',
@@ -25,97 +63,25 @@ data$class_str <- gsub(3, 'Formação Florestal',
                                            gsub(6, 'Floresta Alagada',
                                                 gsub(49, 'Restinga Arbórea',
                                                      gsub(50, 'Restinga Herbácea',
-                                                          data$class))))))))
-
+                                                          recipe$class))))))))
 ## translate biome
-data$biome_str <- 
+recipe$biome_str <- 
   gsub(1, 'Amazônia',
        gsub(2, 'Mata Atlântica',
             gsub(3, 'Pantanal',
                  gsub(4, 'Cerrado',
                       gsub(5, 'Caatinga',
                            gsub(6, 'Pampa',
-                                data$ecoregion))))))
+                                recipe$ecoregion))))))
 
-## compute normalized area
+## drop unused columns (from GEE)
+recipe <- recipe[, !names(recipe) %in%  c("system.index",".geo")]
 
-## get only native classes
-ref <- subset(reference, eval(parse(text=  paste("class ==", paste(unique(data$class), collapse = " | class ==")))))
-
-## translate biome
-ref$biome_str <- 
-  gsub(1, 'Amazônia',
-       gsub(2, 'Mata Atlântica',
-            gsub(3, 'Pantanal',
-                 gsub(4, 'Cerrado',
-                      gsub(5, 'Caatinga',
-                           gsub(6, 'Pampa',
-                                ref$biome))))))
-
-## now, compute percent per year, per biome
-recipe <- as.data.frame(NULL)
-for(i in 1:length(unique(ref$biome_str))) {
-  ## get ref
-  ref_i <- subset(ref, biome_str == unique(ref$biome_str)[i])
-  ## get data
-  data_i <- subset(data2, biome == unique(ref$biome_str)[i])
-  
-  ## for each year
-  for (j in 1:length(unique(ref$year))) {
-    ## get ref
-    ref_ij <- subset(ref_i, year == unique(ref$year)[j])
-    ## get data
-    data_ij <- subset(data_i, year == unique(ref$year)[j])
-    
-    ## compute percent
-    data_ij$perc <- round(data_ij$area / ref_ij$area * 100, digits= 1)
-    data_ij$area_ref <- ref_ij$area
-    
-    ## bind
-    recipe <- rbind(recipe, data_ij)
-  }
-}
-
-## get legengs
-legs <- subset(recipe, year == 1985 | year == 2022)
-
-## plot
-p <- ggplot(data= recipe, mapping=aes(x= year, y= perc, linetype=as.factor(distance), colour= as.factor(distance), fill= as.factor(distance))) +
-  geom_line(size=1) +
-  #geom_line(size=3, alpha= .2) +
-  scale_colour_manual('Edge area', 
-                      values=c('#35D4E4', '#48D468', '#0B6716', '#E8DB38', '#B29725', '#F3940B', '#FA0F04', '#FC02A1')) +
-  scale_fill_manual('Edge area', 
-                    values=c('#35D4E4', '#48D468', '#0B6716', '#E8DB38', '#B29725', '#F3940B', '#FA0F04', '#FC02A1')) +
-  facet_wrap(~biome, scales= 'free_y') +
-  geom_label(data= legs, mapping=aes(x= year, label= paste0(round(perc, digits=0))), alpha= .3, size= 4,
-             vjust="inward",hjust="inward", col= 'black') + 
-  theme_bw() +
-  theme(text = element_text(size = 15)) +
-  ylab('% da vegetação nativa') +
-  xlab(NULL)
-
-p
-pdf("edge_area_relative.pdf",width=16,height=9)
-p
-dev.off()
-
-## export data to use in other analisys
-## export 
-write.table(x= data2,
-            file= './data_studio/edgeArea_absolute.csv', 
-            fileEncoding='UTF-8',
-            row.names= FALSE,
-            sep='\t',
-            dec=',',
-            col.names= TRUE)
-
-
+## export table 
 write.table(x= recipe,
-            file= './data_studio/edgeArea_relative.csv', 
+            file= '../data_studio/edgeArea_relative.csv', 
             fileEncoding='UTF-8',
             row.names= FALSE,
             sep='\t',
             dec=',',
             col.names= TRUE)
-

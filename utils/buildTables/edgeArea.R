@@ -89,10 +89,11 @@ for (i in 1:length(unique(data$ecoregion))) {
       ## get data for the biome i, year j and class k
       data_ijk <- subset(data_ij, class == unique(data_ij$class)[k])
       
-      ## retain absolute value
-      data_ijk$ref_area <- ref_ijk$area
       ## compute relative value
-      data_ijk$relative_area <- round(data_ijk$area/data_ijk$ref_area * 100, digits=1)
+      data_ijk$area <- round(data_ijk$area/ref_ijk$area * 100, digits=1)
+      
+      ## insert stat
+      data_ijk$stat = 'Área relativa'
       
       ## store in a recipe
       recipe <- rbind(data_ijk, recipe)
@@ -102,6 +103,9 @@ for (i in 1:length(unique(data$ecoregion))) {
 
 ## remove bin
 rm(ref_i, data_i, ref_ij, data_ij, ref_ijk, data_ijk)
+
+## bindo into recipe
+recipe <- rbind(data, recipe)
 
 ## translate class
 recipe$class_str <- gsub(3, 'Formação Florestal',
@@ -127,7 +131,7 @@ recipe$biome_str <-
 
 ## export table 
 write.table(x= recipe,
-            file= '../data_studio/edgeArea_v2.csv', 
+            file= '../data_studio/edgeArea_v3.csv', 
             fileEncoding='UTF-8',
             row.names= FALSE,
             sep='\t',

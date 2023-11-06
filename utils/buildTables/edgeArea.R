@@ -26,19 +26,44 @@ br_data <- aggregate(x=list(area= data$area), by= list(
   variable= data$variable), FUN= 'sum')
 
 ## merge with 
+br_data$ecoregion = 'Brasil'
+data <- rbind(data, br_data);rm(br_data)
 
+## build native vegetation class
+x <- aggregate(x=list(area= data$area), by= list(distance= data$distance, ecoregion= data$ecoregion, variable= data$variable), FUN='sum')
+x$class <- 'Vegetação Nativa'
 
+## merge
+data <- rbind(data, x); rm(x)
 
+## add descriptor 
+data$stat = 'Área absoluta'
 
-
+## drop unused columns (from GEE)
 reference <- reference[, !names(reference) %in%  c("system.index",".geo")]
 
+## subset reference only to native vegetation
+reference <- subset(reference, eval(
+  parse(text = paste("class ==", paste(unique(data$class)[- length(unique(data$class))], collapse = " | class ==")))))
 
+## build aggregation for the entire brazil
+br_reference <- aggregate(x=list(area= reference$area), by= list(
+  class = reference$class,
+  variable= reference$variable), FUN= 'sum')
 
-br_data <- aggregate(x=list(area= data$area), by= list(
-  class = data$class,
-  distance= data$distance,
-  variable= data$variable), FUN= 'sum')
+## merge with 
+br_reference$ecoregion = 'Brasil'
+reference <- rbind(reference, br_reference);rm(br_reference)
+
+## build native vegetation class
+x <- aggregate(x=list(area= reference$area), 
+               by= list(ecoregion= reference$ecoregion,
+                        variable= reference$variable), FUN= 'sum')
+
+x$class <- 'Vegetação Nativa'
+
+## merge with
+reference <- rbind(reference, x); rm(x)
 
 ## now, compute relative values by matching tables
 recipe <- as.data.frame(NULL) ## empty recipe

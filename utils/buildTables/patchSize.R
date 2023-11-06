@@ -10,11 +10,60 @@ library(ggpattern)
 options(scipen= 9e3)
 
 #######
-## read patch size data
+## read edge area data
 data <- read.table('../table/patch_size.csv', header= TRUE, sep= ',')
 
 ## get mapbiomas lcluc 
 reference <- read.csv('../table/lulc_reference.csv')
+
+## drop unused columns (from GEE)
+data <- data[, !names(data) %in%  c("system.index",".geo")]
+
+## build aggregation for the entire brazil
+br_data <- aggregate(x=list(area= data$area), by= list(
+  class = data$class,
+  size= data$size,
+  variable= data$variable), FUN= 'sum')
+
+## merge with 
+br_data$ecoregion = 'Brasil'
+data <- rbind(data, br_data);rm(br_data)
+
+## build native vegetation class
+x <- aggregate(x=list(area= data$area), by= list(size= data$size, ecoregion= data$ecoregion, variable= data$variable), FUN='sum')
+x$class <- 'Vegetação Nativa'
+
+## merge
+data <- rbind(data, x); rm(x)
+
+## add descriptor 
+data$stat = 'Área absoluta'
+
+## drop unused columns (from GEE)
+reference <- reference[, !names(reference) %in%  c("system.index",".geo")]
+
+## subset reference only to native vegetation
+reference <- subset(reference, eval(
+  parse(text = paste("class ==", paste(unique(data$class)[- length(unique(data$class))], collapse = " | class ==")))))
+
+## build aggregation for the entire brazil
+br_reference <- aggregate(x=list(area= reference$area), by= list(
+  class = reference$class,
+  variable= reference$variable), FUN= 'sum')
+
+## merge with 
+br_reference$ecoregion = 'Brasil'
+reference <- rbind(reference, br_reference);rm(br_reference)
+
+## build native vegetation class
+x <- aggregate(x=list(area= reference$area), 
+               by= list(ecoregion= reference$ecoregion,
+                        variable= reference$variable), FUN= 'sum')
+
+x$class <- 'Vegetação Nativa'
+
+## merge with
+reference <- rbind(reference, x); rm(x)
 
 ## now, compute relative values by matching tables
 recipe <- as.data.frame(NULL) ## empty recipe
@@ -40,10 +89,11 @@ for (i in 1:length(unique(data$ecoregion))) {
       ## get data for the biome i, year j and class k
       data_ijk <- subset(data_ij, class == unique(data_ij$class)[k])
       
-      ## retain absolute value
-      data_ijk$ref_area <- ref_ijk$area
       ## compute relative value
-      data_ijk$relative_area <- round(data_ijk$area/data_ijk$ref_area * 100, digits=1)
+      data_ijk$area <- round(data_ijk$area/ref_ijk$area * 100, digits=1)
+      
+      ## insert stat
+      data_ijk$stat = 'Área relativa'
       
       ## store in a recipe
       recipe <- rbind(data_ijk, recipe)
@@ -53,6 +103,9 @@ for (i in 1:length(unique(data$ecoregion))) {
 
 ## remove bin
 rm(ref_i, data_i, ref_ij, data_ij, ref_ijk, data_ijk)
+
+## bindo into recipe
+recipe <- rbind(data, recipe)
 
 ## translate class
 recipe$class_str <- gsub(3, 'Formação Florestal',
@@ -74,12 +127,11 @@ recipe$biome_str <-
                            gsub(6, 'Pampa',
                                 recipe$ecoregion))))))
 
-## drop unused columns (from GEE)
-recipe <- recipe[, !names(recipe) %in%  c("system.index",".geo")]
+
 
 ## export table 
 write.table(x= recipe,
-            file= '../data_studio/patchSize_relative.csv', 
+            file= '../data_studio/patchSize_v3.csv', 
             fileEncoding='UTF-8',
             row.names= FALSE,
             sep='\t',

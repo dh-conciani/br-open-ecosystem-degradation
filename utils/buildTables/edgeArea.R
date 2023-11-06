@@ -16,6 +16,30 @@ data <- read.table('../table/edge_area.csv', header= TRUE, sep= ',')
 ## get mapbiomas lcluc 
 reference <- read.csv('../table/lulc_reference.csv')
 
+## drop unused columns (from GEE)
+data <- data[, !names(data) %in%  c("system.index",".geo")]
+
+## build aggregation for the entire brazil
+br_data <- aggregate(x=list(area= data$area), by= list(
+  class = data$class,
+  distance= data$distance,
+  variable= data$variable), FUN= 'sum')
+
+## merge with 
+
+
+
+
+
+reference <- reference[, !names(reference) %in%  c("system.index",".geo")]
+
+
+
+br_data <- aggregate(x=list(area= data$area), by= list(
+  class = data$class,
+  distance= data$distance,
+  variable= data$variable), FUN= 'sum')
+
 ## now, compute relative values by matching tables
 recipe <- as.data.frame(NULL) ## empty recipe
 
@@ -74,12 +98,11 @@ recipe$biome_str <-
                            gsub(6, 'Pampa',
                                 recipe$ecoregion))))))
 
-## drop unused columns (from GEE)
-recipe <- recipe[, !names(recipe) %in%  c("system.index",".geo")]
+
 
 ## export table 
 write.table(x= recipe,
-            file= '../data_studio/edgeArea_relative.csv', 
+            file= '../data_studio/edgeArea_v2.csv', 
             fileEncoding='UTF-8',
             row.names= FALSE,
             sep='\t',

@@ -90,7 +90,7 @@ for (i in 1:length(unique(data$ecoregion))) {
       data_ijk <- subset(data_ij, class == unique(data_ij$class)[k])
       
       ## compute relative value
-      data_ijk$area <- round(data_ijk$area/ref_ijk$area * 100, digits=1)
+      data_ijk$area <- round(data_ijk$area/ref_ijk$area * 100, digits=2)
       
       ## insert stat
       data_ijk$stat = 'Área relativa'
@@ -130,7 +130,7 @@ recipe$biome_str <-
 
 
 ## export table 
-write.table(x= recipe,
+write.table(x= subset(recipe, size != 40),
             file= '../data_studio/patchSize_v3.csv', 
             fileEncoding='UTF-8',
             row.names= FALSE,

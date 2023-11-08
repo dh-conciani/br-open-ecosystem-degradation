@@ -22,6 +22,35 @@ data <- subset(data, pressure_class != 33)
 data <- subset(data, pressure_class != 6)
 data <- subset(data, pressure_class != 23)
 
+## translate pressure classses
+data$pressure_str <- 
+  gsub(9, 'Silvicultura',
+       gsub(15, 'Pastagem',
+            gsub(20, 'Lavoura Temporária',
+                 gsub(21, 'Mosaico de Usos',
+                      gsub(24, 'Área Urbanizada',
+                           gsub(25, 'Outras Áreas não Vegetadas',
+                                gsub(30, 'Mineração',
+                                     gsub(35, 'Lavoura Perene',
+                                          gsub(39, 'Lavoura Temporária',
+                                               gsub(41, 'Lavoura Temporária',
+                                                    gsub(31, 'Aquicultura',
+                                                         gsub(40, 'Lavoura Temporária',
+                                                              gsub(46, 'Lavoura Perene',
+                                                                   gsub(48, 'Lavoura Perene',
+                                                                        gsub(47, 'Lavoura Perene',
+                                                                             gsub(62, 'Lavoura Temporária',
+                                                                                  data$pressure_class))))))))))))))))
+
+## aggregate
+data <- aggregate(x=list(area= data$area), by=list(
+  ecoregion= data$ecoregion,
+  native_class= data$native_class,
+  variable= data$variable,
+  pressure_class= data$pressure_str
+), FUN= 'sum')
+
+
 ## build aggregation for the entire brazil
 br_data <- aggregate(x=list(area= data$area), by= list(
   native_class = data$native_class,
@@ -88,39 +117,9 @@ recipe$biome_str <-
                            gsub(6, 'Pampa',
                                 recipe$ecoregion))))))
 
-## translate pressure classses
-recipe$pressure_str <- 
-gsub(9, 'Silvicultura',
-     gsub(15, 'Pastagem',
-          gsub(20, 'Lavoura Temporária',
-               gsub(21, 'Mosaico de Usos',
-                    gsub(24, 'Área Urbanizada',
-                         gsub(25, 'Outras Áreas não Vegetadas',
-                              gsub(30, 'Mineração',
-                                   gsub(35, 'Lavoura Perene',
-                                        gsub(39, 'Lavoura Temporária',
-                                             gsub(41, 'Lavoura Temporária',
-                                                  gsub(31, 'Aquicultura',
-                                                       gsub(40, 'Lavoura Temporária',
-                                                            gsub(46, 'Lavoura Perene',
-                                                                 gsub(48, 'Lavoura Perene',
-                                                                      gsub(47, 'Lavoura Perene',
-                                                                           gsub(62, 'Lavoura Temporária',
-                                                                                recipe$pressure_class))))))))))))))))
-
-## aggregate
-recipe2 <- aggregate(x=list(area= recipe$area),
-          by= list(
-            biome_str= recipe$biome_str,
-            variable= recipe$variable,
-            stat= recipe$stat,
-            class_str= recipe$class_str,
-            pressure_str= recipe$pressure_str
-          ), FUN= 'sum')
-
 
 ## export table 
-write.table(x= recipe2,
+write.table(x= recipe,
             file= '../data_studio/edgePressure_v3.csv', 
             fileEncoding='UTF-8',
             row.names= FALSE,

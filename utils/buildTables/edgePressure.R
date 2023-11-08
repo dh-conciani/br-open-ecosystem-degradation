@@ -108,8 +108,19 @@ gsub(9, 'Silvicultura',
                                                                            gsub(62, 'Lavoura Temporária',
                                                                                 recipe$pressure_class))))))))))))))))
 
+## aggregate
+recipe2 <- aggregate(x=list(area= recipe$area),
+          by= list(
+            biome_str= recipe$biome_str,
+            variable= recipe$variable,
+            stat= recipe$stat,
+            class_str= recipe$class_str,
+            pressure_str= recipe$pressure_str
+          ), FUN= 'sum')
+
+
 ## export table 
-write.table(x= recipe,
+write.table(x= recipe2,
             file= '../data_studio/edgePressure_v3.csv', 
             fileEncoding='UTF-8',
             row.names= FALSE,

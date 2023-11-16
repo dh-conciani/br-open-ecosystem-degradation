@@ -2,7 +2,7 @@
 // any issue and/or bug, please report to dhemerson.costa@ipam.org.br and mrosa@arcplan.com.br
 
 // set version
-var version = 2;
+var version = 3;
 
 // -- * definitions
 // set classes to be computed  
@@ -17,7 +17,7 @@ var native_classes = {
 };
 
 // set patch size rules (in hectares)
-var patch_sizes = [1, 2, 3, 4, 5, 10, 20, 40, 90];
+var patch_sizes = [3, 5, 10, 15, 25];
 
 // Set years to be processed 
 var years_list = [1985, 1986, 1987, 1988, 1989, 1990, 1991, 1992, 1993, 1994, 1995,

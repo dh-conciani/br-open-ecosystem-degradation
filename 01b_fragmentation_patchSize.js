@@ -17,7 +17,7 @@ var native_classes = {
 };
 
 // set patch size rules (in hectares)
-var patch_sizes = [3, 5, 10, 15, 25];
+var patch_sizes = [3, 5, 10, 25, 50, 75];
 
 // Set years to be processed 
 var years_list = [1985, 1986, 1987, 1988, 1989, 1990, 1991, 1992, 1993, 1994, 1995,

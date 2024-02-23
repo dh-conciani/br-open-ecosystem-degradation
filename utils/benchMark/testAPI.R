@@ -5,6 +5,9 @@
 library(httr2)
 library(utils)
 
+## avoids scientific notation
+options(scipen=9e3)
+
 ## set statistics base url
 url <- 'http://35.192.198.88:8085/api/v1/statistics/'
 
@@ -46,7 +49,7 @@ combinations[] <- lapply(combinations, function(x) replace(x, is.na(x), ''))
 toTest <- subset(territories, tipo == 'municipio')
 
 ## set the number of random estimates 
-nEstimates <- 5
+nEstimates <- 150
 
 ## define empty recipe
 recipe <- as.data.frame(NULL)
@@ -94,6 +97,6 @@ for (i in 1:nEstimates) {
   }
 }
 
-
-
+## export
+write.csv(x= recipe, file= paste0('./output/', unique(temp$tipo), '_', 'v2', '.csv'))
 

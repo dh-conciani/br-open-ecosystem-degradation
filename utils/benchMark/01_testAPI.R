@@ -2,7 +2,7 @@
 ## dhemerson.costa@ipam.org.br
 
 ## load libraries
-library(httr2)
+library(httr)
 library(utils)
 
 ## avoids scientific notation

@@ -3,6 +3,7 @@
 
 ## load libraries
 library(httr2)
+library(utils)
 
 ## set statistics base url
 url <- 'http://35.192.198.88:8085/api/v1/statistics/'
@@ -45,30 +46,54 @@ combinations[] <- lapply(combinations, function(x) replace(x, is.na(x), ''))
 toTest <- subset(territories, tipo == 'municipio')
 
 ## set the number of random estimates 
-nEstimates <- 150
+nEstimates <- 1
+
+## define empty recipe
+recipe <- as.data.frame(NULL)
 
 ## for each random estimate
 for (i in 1:nEstimates) {
-  print(paste0(i, ' of ', nEstimates, ' - ', unique(toTest$tipo)))
   
   ## sort a random territory 
   x <- toTest[ sample(x= 1:nrow(toTest), size= 1) ,]
   
   ## for each parameter combination 
   for (k in 1:nrow(combinations)) {
+    print(paste0(i, ' of ', nEstimates, ' - ', unique(toTest$tipo), ' - combination ', k, ' of ', nrow(combinations)))
+    
+    ## get combination
+    params_ik <- combinations[k,]
+    
+    ## build url
+    urlReq <- URLencode(enc2utf8(paste0(url, x$tipo, '/', x$nome, '/', '2022')))
+    
+    ## build params
+    params <- list(
+      escala = 30,
+      areaBorda = params_ik$areaBorda,
+      tamanhoFragmento = params_ik$tamanhoFragmento,
+      isolamento = params_ik$isolamento,
+      fogoIdade = params_ik$fogoIdade,
+      vegetacaoSecundariaIdade = params_ik$vegetacaoSecundariaIdade,
+      vegetacaoNativaClasse = params_ik$vegetacaoNativaClasse
+    )
+    
+        ## send request and store execution time 
+    response <- try(as.data.frame(rbind(GET(urlReq, query = params, accept_json())$times)), silent= TRUE)
+    # ## c
+    # if (inherits(response, 'try-error') == TRUE) {
+    #   
+    # }
+
+    ## bind results
+    temp <- cbind(x, params_ik, response)
+    
+    ## store into recipe
+    recipe <- rbind(recipe, temp)
     
   }
 }
 
-toTest[1,]
-## build url with type and territory 
-urlReq <- paste0(url, 'municipio', '/', 'Salvador-BA', '/', '2022')
-
-params <- list(escala = 30, areaBorda = 30, tamanhoFragmento= '')
-
-# Making the GET request
-response <- GET(urlReq, query = params, accept_json())
 
 
-content(response)
 

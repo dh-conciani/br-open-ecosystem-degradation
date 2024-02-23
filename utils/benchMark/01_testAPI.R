@@ -49,7 +49,7 @@ combinations[] <- lapply(combinations, function(x) replace(x, is.na(x), ''))
 toTest <- subset(territories, tipo == 'municipio')
 
 ## set the number of random estimates 
-nEstimates <- 1
+nEstimates <- 150
 
 ## define empty recipe
 recipe <- as.data.frame(NULL)

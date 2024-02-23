@@ -49,7 +49,7 @@ combinations[] <- lapply(combinations, function(x) replace(x, is.na(x), ''))
 toTest <- subset(territories, tipo == 'municipio')
 
 ## set the number of random estimates 
-nEstimates <- 150
+nEstimates <- 1
 
 ## define empty recipe
 recipe <- as.data.frame(NULL)
@@ -93,6 +93,8 @@ for (i in 1:nEstimates) {
     
     ## store into recipe
     recipe <- rbind(recipe, temp)
+    
+    print(paste0('Total time: ', temp$total, ' seconds'))
     
   }
 }

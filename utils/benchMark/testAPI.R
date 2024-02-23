@@ -41,8 +41,26 @@ combinations$isolamento <- as.character(combinations$isolamento)
 # Replace NA values with ''
 combinations[] <- lapply(combinations, function(x) replace(x, is.na(x), ''))
 
+## set the territoy type to test
+toTest <- subset(territories, tipo == 'municipio')
 
+## set the number of random estimates 
+nEstimates <- 150
 
+## for each random estimate
+for (i in 1:nEstimates) {
+  print(paste0(i, ' of ', nEstimates, ' - ', unique(toTest$tipo)))
+  
+  ## sort a random territory 
+  x <- toTest[ sample(x= 1:nrow(toTest), size= 1) ,]
+  
+  ## for each parameter combination 
+  for (k in 1:nrow(combinations)) {
+    
+  }
+}
+
+toTest[1,]
 ## build url with type and territory 
 urlReq <- paste0(url, 'municipio', '/', 'Salvador-BA', '/', '2022')
 

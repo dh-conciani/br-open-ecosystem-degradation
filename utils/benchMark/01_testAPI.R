@@ -38,11 +38,11 @@ territories <- do.call(rbind, dfs); rm(dfs)
 combinations <- expand.grid(
   metodo= c('gridMap'),
   numeroDeGrids = c(1, 3, 5, 7, 11, 15),
-  areaBorda = c(NA, 90),
+  areaBorda = c(NA, 30, 90),
   tamanhoFragmento = c(NA, 5),
   isolamento = c(NA),
-  fogoIdade = c(NA, 27),
-  vegetacaoSecundariaIdade = c(NA, 21),
+  fogoIdade = c(NA, 24),
+  vegetacaoSecundariaIdade = c(NA, 14),
   vegetacaoNativaClasse = c(NA)
 )
 
@@ -72,7 +72,7 @@ recipe <- as.data.frame(NULL)
   ## for each parameter combination 
   for (k in 1:nrow(combinations)) {
     #print(paste0(i, ' of ', nEstimates, ' - ', unique(toTest$tipo), ' - combination ', k, ' of ', nrow(combinations)))
-    print(paste0(i, ' of ', length(unique(toTest$nome)), ' - ', unique(toTest$tipo), ' - combination ', k, ' of ', nrow(combinations)))
+    print(paste0(i, ' of ', length(unique(toTest$nome)), ' - ', unique(toTest$tipo), ' - combination ', k, ' of ', nrow(combinations), ' - ', unique(x$nome)))
     
     ## get combination
     params_ik <- combinations[k,]
@@ -111,5 +111,5 @@ recipe <- as.data.frame(NULL)
 }
 
 ## export
-write.csv(x= recipe, file= paste0('./output/', unique(temp$tipo), '_', 'v3', '.csv'))
+write.csv(x= recipe, file= paste0('./output/', unique(temp$tipo), '_', 'v5', '.csv'))
 

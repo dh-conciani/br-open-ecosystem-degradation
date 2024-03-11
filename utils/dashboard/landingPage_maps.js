@@ -54,11 +54,47 @@ Export.image.toAsset({
 });
 
 ////////////// patch ************
-var edge_asset = 'projects/mapbiomas-workspace/DEGRADACAO/COLECAO/BETA/PROCESS/patch_size/';
-var edge_version = '3';
-var edge_sizes = [3, 5, 10, 25, 50, 75];
+var patch_asset = 'projects/mapbiomas-workspace/DEGRADACAO/COLECAO/BETA/PROCESS/patch_size/';
+var patch_version = '3';
+var patch_sizes = [75, 50, 25, 10, 5, 3];
 
-//var edge = ee.Image(edge_asset + 'size_' + size_i + 'ha_v' + edge_version);
+// build recipe
+var recipe_patches = ee.Image([]);
 
+// for each year 
+years.forEach(function(year_i) {
+  // set temp file
+  var tempFile = ee.Image(0);
+  // for each patch size 
+  patch_sizes.forEach(function(size_i) {
+    // read file 
+    var patch = ee.Image(patch_asset + 'size_' + size_i + 'ha_v' + patch_version);
+    // perform remap 
+    patch = patch.remap({
+      'from': classList,
+      'to': ee.List.repeat({'value': size_i, 'count': classList.length})
+    });
+    // store edge size 
+    tempFile = tempFile.blend(patch).selfMask();
+  });
+  // store per year 
+  recipe_patches = recipe_patches.addBands(tempFile.rename('patch_' + year_i));
+});
+
+print('patches', recipe_patches);
+Map.addLayer(recipe_patches.select(37).randomVisualizer(), {}, 'patches');
+
+// Edge area
+Export.image.toAsset({
+  image: recipe_patches,
+  description: 'patch_v' + edge_version,
+  assetId: 'projects/mapbiomas-workspace/DEGRADACAO/COLECAO/BETA/PROCESS/summary/patch_v' + patch_version,
+  region: recipe_patches.geometry(),
+  scale: 30,
+  maxPixels: 1e13,
+  pyramidingPolicy: {
+        '.default': 'mode'
+    }
+});
 
 ////////////// isolation ************

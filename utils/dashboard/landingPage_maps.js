@@ -2,7 +2,7 @@
 // dhemerson.costa@ipam.org.br
 
 // list years to be processed
-var years = [1985, 1986, 1987, 1988, 1989, 1990, 1991, 1992, 1993, 1993, 1995, 1996, 1997,
+var years = [1985, 1986, 1987, 1988, 1989, 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997,
              1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
              2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022];
 
@@ -19,6 +19,8 @@ var recipe_edges = ee.Image([]);
 
 // for each year 
 years.forEach(function(year_i) {
+  // set temp file
+  var tempFile = ee.Image(0);
   // for each edge size 
   edge_sizes.forEach(function(size_i) {
     // read file 
@@ -27,11 +29,16 @@ years.forEach(function(year_i) {
     edge = edge.remap({
       'from': classList,
       'to': ee.List.repeat({'value': size_i, 'count': classList.length})
-    }).rename('edge_');
-    
+    });
+    // store edge size 
+    tempFile = tempFile.blend(edge).selfMask();
   });
+  // store per year 
+  recipe_edges = recipe_edges.addBands(tempFile.rename('edge_' + year_i));
 });
 
+print('edges', recipe_edges);
+Map.addLayer(recipe_edges.select(37).randomVisualizer(), {}, 'edges');
 
 
 ////////////// patch ************

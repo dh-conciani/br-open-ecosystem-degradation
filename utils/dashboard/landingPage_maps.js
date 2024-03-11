@@ -24,7 +24,8 @@ years.forEach(function(year_i) {
   // for each edge size 
   edge_sizes.forEach(function(size_i) {
     // read file 
-    var edge = ee.Image(edge_asset + 'edge_' + size_i + 'm_v' + edge_version);
+    var edge = ee.Image(edge_asset + 'edge_' + size_i + 'm_v' + edge_version)
+          .select('edge_' + size_i + 'm_' + year_i);
     // perform remap 
     edge = edge.remap({
       'from': classList,
@@ -68,7 +69,8 @@ years.forEach(function(year_i) {
   // for each patch size 
   patch_sizes.forEach(function(size_i) {
     // read file 
-    var patch = ee.Image(patch_asset + 'size_' + size_i + 'ha_v' + patch_version);
+    var patch = ee.Image(patch_asset + 'size_' + size_i + 'ha_v' + patch_version)
+      .select('size_' + size_i + 'ha_' + year_i);
     // perform remap 
     patch = patch.remap({
       'from': classList,

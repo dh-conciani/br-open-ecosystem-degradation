@@ -40,6 +40,18 @@ years.forEach(function(year_i) {
 print('edges', recipe_edges);
 Map.addLayer(recipe_edges.select(37).randomVisualizer(), {}, 'edges');
 
+// Edge area
+Export.image.toAsset({
+  image: recipe_edges,
+  description: 'edge_v' + edge_version,
+  assetId: 'projects/mapbiomas-workspace/DEGRADACAO/COLECAO/BETA/PROCESS/summary/edge_v' + edge_version,
+  region: recipe_edges.geometry(),
+  scale: 30,
+  maxPixels: 1e13,
+  pyramidingPolicy: {
+        '.default': 'mode'
+    }
+});
 
 ////////////// patch ************
 var edge_asset = 'projects/mapbiomas-workspace/DEGRADACAO/COLECAO/BETA/PROCESS/patch_size/';

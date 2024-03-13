@@ -89,7 +89,7 @@ Map.addLayer(recipe_patches.select(37).randomVisualizer(), {}, 'patches');
 // Edge area
 Export.image.toAsset({
   image: recipe_patches,
-  description: 'patch_v' + edge_version,
+  description: 'patch_v' + patch_version,
   assetId: 'projects/mapbiomas-workspace/DEGRADACAO/COLECAO/BETA/PROCESS/summary/patch_v' + patch_version,
   region: recipe_patches.geometry(),
   scale: 30,
@@ -100,3 +100,50 @@ Export.image.toAsset({
 });
 
 ////////////// isolation ************
+var isolation_asset = 'projects/mapbiomas-workspace/DEGRADACAO/ISOLATION/';
+var isolation_version = '6';
+var isolation_bigSize = '500';
+var isolation_medSize = '25';
+var isolation_distances = ['05', '10', '20'];
+
+// build recipe
+var recipe_isolation = ee.Image([]);
+
+// for each year 
+years.forEach(function(year_i) {
+  // set temp file
+  var tempFile = ee.Image(0);
+  // for each patch size 
+  isolation_distances.forEach(function(distance_i) {
+    // read file 
+    var isolation = ee.Image(isolation_asset + 'nat_uso_frag' + isolation_medSize + '__dist' + distance_i + 'k__' + isolation_bigSize + '_v' + isolation_version + '_85_22')
+      .select('nat_' + year_i);
+    // perform remap 
+    isolation = isolation.remap({
+      'from': classList,
+      'to': ee.List.repeat({'value': ee.Number.parse(distance_i), 'count': classList.length})
+    });
+    // store edge size 
+    tempFile = tempFile.blend(isolation).selfMask();
+  });
+  // store per year 
+  recipe_isolation = recipe_isolation.addBands(tempFile.rename('isolation_' + year_i));
+});
+
+
+print('isolation', recipe_isolation);
+Map.addLayer(recipe_isolation.select(37).randomVisualizer(), {}, 'isolation');
+
+
+// Edge area
+Export.image.toAsset({
+  image: recipe_isolation,
+  description: 'isolation_v' + patch_version,
+  assetId: 'projects/mapbiomas-workspace/DEGRADACAO/COLECAO/BETA/PROCESS/summary/isolation_v' + isolation_version,
+  region: recipe_isolation.geometry(),
+  scale: 30,
+  maxPixels: 1e13,
+  pyramidingPolicy: {
+        '.default': 'mode'
+    }
+});

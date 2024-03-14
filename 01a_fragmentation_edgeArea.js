@@ -2,7 +2,7 @@
 // any issue, bug or report write to dhemerson.costa@ipam.org.br and/or mrosa@arcplan.com.br
 
 // set version
-var version = 2;
+var version = 3;
 
 // -- * definitions
 // set classes in which edge area will be applied 
@@ -23,8 +23,8 @@ var ignore_classes = {
   'caatinga':       [13, 29, 32, 33],
   'cerrado':        [13, 29, 32, 33],
   'mata_atlantica': [13, 29, 32, 33],
-  'pampa':          [13, 29, 32, 49],
-  'pantanal':       [13, 29, 32, 49]
+  'pampa':          [13, 29, 32, 33],
+  'pantanal':       [13, 29, 32, 33]
 };
 
 // definir conjunto de distancias (em metros) para estimar a área sobre efeito de borda
@@ -161,6 +161,7 @@ edge_rules.forEach(function(distance_i) {
     region: biomes.geometry(),
     scale: 30,
     maxPixels: 1e13,
+    priority: 999
   });
   
   // Pressure class
@@ -171,7 +172,8 @@ edge_rules.forEach(function(distance_i) {
     assetId: 'projects/mapbiomas-workspace/DEGRADACAO/COLECAO/BETA/PROCESS/edge_pressure/' + 'pressure_' + distance_i + 'm_v' + version,
     region: biomes.geometry(),
     scale: 30,
-    maxPixels: 1e13
+    maxPixels: 1e13,
+    priority: 999
     });
   }
 });

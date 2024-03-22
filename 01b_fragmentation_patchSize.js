@@ -2,7 +2,7 @@
 // any issue and/or bug, please report to dhemerson.costa@ipam.org.br and mrosa@arcplan.com.br
 
 // set version
-var version = 3;
+var version = 4;
 
 // -- * definitions
 // set classes to be computed  
@@ -13,7 +13,7 @@ var native_classes = {
   'cerrado':        [3, 4, 5, 11, 12, 49, 50],
   'mata_atlantica': [3, 4, 5, 11, 12, 49, 50],
   'pampa':          [3, 4, 5, 11, 12, 49, 50],
-  'pantanal':       [3, 4, 5, 11, 12, 49, 50]
+  'pantanal':       [3, 4, 5, 11, 12, 49, 50, 33]
 };
 
 // set patch size rules (in hectares)
@@ -84,7 +84,9 @@ patch_sizes.forEach(function(size_i) {
       
       // retain classes from original classification 
       var size_class = collection.select('classification_' + year_j)
-        .updateMask(size_degradation);
+        .updateMask(size_degradation)
+        // discard water (pantanal case)
+        .updateMask(collection.select('classification_' + year_j).neq(33));
       
       // insert into recipe
       recipe_year = recipe_year.blend(size_class).selfMask();
@@ -98,7 +100,7 @@ patch_sizes.forEach(function(size_i) {
   
   //Map.addLayer(recipe_size.select('size_' + size_i + 'ha_1985').randomVisualizer(), {}, size_i + ' 1985');
   //Map.addLayer(recipe_size.select('size_' + size_i + 'ha_2000').randomVisualizer(), {}, size_i + ' 2000');
-  //Map.addLayer(recipe_size.select('size_' + size_i + 'ha_2022').randomVisualizer(), {}, size_i + ' 2022');
+  Map.addLayer(recipe_size.select('size_' + size_i + 'ha_2022').randomVisualizer(), {}, size_i + ' 2022');
 
 
   // Set properties

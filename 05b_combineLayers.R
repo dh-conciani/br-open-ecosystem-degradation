@@ -7,18 +7,35 @@ library(rgee)
 ## imitialize GEE API
 ee_Initialize()
 
-## read layers
-## collection 8
-collection <- ee$Image('projects/mapbiomas-workspace/public/collection8/mapbiomas_collection80_integration_v1')
+## list layers in which first position are the asset and 2nd position is the band pattern 
+assets <- list(
+  'edge' = c('projects/mapbiomas-workspace/DEGRADACAO/COLECAO/BETA/PROCESS/summary/edge_v2', ''),
+  'patch' = 'projects/mapbiomas-workspace/DEGRADACAO/COLECAO/BETA/PROCESS/summary/patch_v3',
+  'isolation' = 'projects/mapbiomas-workspace/DEGRADACAO/COLECAO/BETA/PROCESS/summary/isolation_v6',
+  'fire' = 'projects/mapbiomas-workspace/DEGRADACAO/COLECAO/BETA/PROCESS/fire/age_v1',
+  'secondary' = 'projects/mapbiomas-workspace/DEGRADACAO/COLECAO/BETA/PROCESS/secondary_vegetation/secondary_vegetation_age_v1'
+)
 
-## edge area
-edge = ee$Image('projects/mapbiomas-workspace/DEGRADACAO/COLECAO/BETA/PROCESS/edge_area/edge_90m_v3')
+## years to be processed
+yearList <- seq(1985, 2022)
 
-## patch size
-patch = ee$Image('projects/mapbiomas-workspace/DEGRADACAO/COLECAO/BETA/PROCESS/patch_size/size_25ha_v4')
 
-## isolation
-isolation = ee$Image('projects/mapbiomas-workspace/DEGRADACAO/ISOLATION/nat_uso_frag50__dist10k__500_v6_85_22')
+## get layer combinations
+combinations <- expand.grid(
+  edge= c(NA, 30, 60, 90, 120, 150, 300, 600, 1000),
+  size= c(NA, 3, 5, 10, 25, 50, 75),
+  isolation= c(NA, '05', '10', '20'),
+  fire= c(NA, 1),
+  secondary= c(NA,1)
+)
 
-## fire
-fire_freq = ee$Image('projects/mapbiomas-workspace/DEGRADACAO/COLECAO/BETA/PROCESS/fire/frequency_v1')
+# Remove rows where all values are NA
+combinations <- combinations[!apply(is.na(combinations), 1, all), ]
+
+## place pixel id
+combinations$pixel_id <- 1:nrow(combinations)
+
+## build pér year image
+
+
+

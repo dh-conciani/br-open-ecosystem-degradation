@@ -7,6 +7,12 @@ library(rgee)
 ## imitialize GEE API
 ee_Initialize()
 
+## set output path
+output <- 'projects/mapbiomas-workspace/DEGRADACAO/COLECAO/BETA/PROCESS/summary/'
+
+## set output version
+output_version <- 1
+
 ## list layers in which first position are the asset and 2nd position is the band pattern 
 assets <- list(
   'edge' = c('projects/mapbiomas-workspace/DEGRADACAO/COLECAO/BETA/PROCESS/summary/edge_v3', 'edge_'),
@@ -51,7 +57,14 @@ for(i in 1:length(yearsList)) {
   edge <- ee$Image(assets$edge[1])$select(paste0(assets$edge[2], yearsList[i]))
   patch <- ee$Image(assets$patch[1])$select(paste0(assets$patch[2], yearsList[i]))
   isolation <- ee$Image(assets$isolation[1])$select(paste0(assets$isolation[2], yearsList[i]))
-  fire <- ee$Image(assets$fire[1])$select(paste0(assets$fire[2], yearsList[i]))
+  
+  if(yearsList[i] == 1985) {
+    fire <- ee$Image(0)
+  } else {
+    fire <- ee$Image(assets$fire[1])$select(paste0(assets$fire[2], yearsList[i]))
+    
+  }
+  
   #secondary <- ee$Image(assets$secondary[1])$select(paste0(assets$secondary[2], yearsList[i]))
   classification <- ee$Image(assets$classification[1])$select(paste0(assets$classification[2], yearsList[i]))
   
@@ -125,10 +138,35 @@ for(i in 1:length(yearsList)) {
   ## rename
   tempImage <- tempImage$rename(paste0('degradation_', yearsList[i]))$selfMask()
   
+  ## overlap with land cover and land use classes (multiply degradation by 100)
+  tempImage <- tempImage$multiply(100)$
+    ## add lulc class
+    add(classification)$
+    selfMask()
+  
   ## merge with recipe
   recipe <- recipe$addBands(tempImage)
   
 }
 
-print(recipe$bandNames()$getInfo())
+## get bands
+bands <- recipe$bandNames()$getInfo()
+
+## remove 'ghost' band
+recipe <- recipe$select(bands[-1])
+
+## build task
+task <- ee$batch$Export$image$toAsset(
+  image= recipe,
+  description= paste0('degradation_v', output_version),
+  assetId= paste0(output, 'degradation_v', output_version),
+  scale= 30,
+  maxPixels= 1e13,
+  pyramidingPolicy= list('.default' = 'mode'),
+  region= classification$geometry()
+)
+
+## export 
+task$start()
+
 

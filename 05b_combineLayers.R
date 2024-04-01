@@ -10,7 +10,7 @@ ee_Initialize()
 ## list layers in which first position are the asset and 2nd position is the band pattern 
 assets <- list(
   'edge' = c('projects/mapbiomas-workspace/DEGRADACAO/COLECAO/BETA/PROCESS/summary/edge_v2', 'edge_'),
-  'patch' = c('projects/mapbiomas-workspace/DEGRADACAO/COLECAO/BETA/PROCESS/summary/patch_v3', 'patch_'),
+  'patch' = c('projects/mapbiomas-workspace/DEGRADACAO/COLECAO/BETA/PROCESS/summary/patch_v4', 'patch_'),
   'isolation' = c('projects/mapbiomas-workspace/DEGRADACAO/COLECAO/BETA/PROCESS/summary/isolation_v6', 'isolation_'),
   'fire' = c('projects/mapbiomas-workspace/DEGRADACAO/COLECAO/BETA/PROCESS/fire/age_v1', 'age_'),
   'secondary' = c('projects/mapbiomas-workspace/DEGRADACAO/COLECAO/BETA/PROCESS/secondary_vegetation/secondary_vegetation_age_v1', 'age_'),
@@ -20,13 +20,13 @@ assets <- list(
 ## years to be processed
 yearsList <- seq(1985, 2022)
 
-# get layer combinations
-combinations <- expand.grid(
-  edge= c(NA, 30, 60, 90, 120, 150, 300, 600, 1000),
-  patch= c(NA, 3, 5, 10, 25, 50, 75),
-  isolation= c(NA, '05', '10', '20'),
-  fire= c(NA, 1),
-  secondary= c(NA,1)
+# # get layer combinations
+ combinations <- expand.grid(
+   edge= c(NA, 30, 60, 90, 120),
+   patch= c(NA, 3, 5, 10, 25),
+   isolation= c(NA, 5, 10, 20),
+   fire= c(NA, 1)
+   #secondary= c(NA,1)
 )
 
 # Remove rows where all values are NA
@@ -52,7 +52,7 @@ for(i in 1:length(yearsList)) {
   patch <- ee$Image(assets$patch[1])$select(paste0(assets$patch[2], yearsList[i]))
   isolation <- ee$Image(assets$isolation[1])$select(paste0(assets$isolation[2], yearsList[i]))
   fire <- ee$Image(assets$fire[1])$select(paste0(assets$fire[2], yearsList[i]))
-  secondary <- ee$Image(assets$secondary[1])$select(paste0(assets$secondary[2], yearsList[i]))
+  #secondary <- ee$Image(assets$secondary[1])$select(paste0(assets$secondary[2], yearsList[i]))
   classification <- ee$Image(assets$classification[1])$select(paste0(assets$classification[2], yearsList[i]))
   
   ## apply mask to get fire only in forest 
@@ -67,10 +67,81 @@ for(i in 1:length(yearsList)) {
   
   ## for each combination 
   for(k in 1:nrow(combinations)) {
+    print(paste0('procecessing combination ', k, ' of ', nrow(combinations), ' -----> ', yearsList[i]))
+    ## get combinations 
+    ## edge
+    if(is.na(combinations[k,]$edge) == TRUE) {
+      edge_k = ee$Image(1)
+    } else {
+      edge_k <- edge$updateMask(edge$eq(combinations[k,]$edge))
+    }
+    
+    ## patch
+    if(is.na(combinations[k,]$patch) == TRUE) {
+      patch_k = ee$Image(1)
+    } else {
+      patch_k <- patch$updateMask(patch$eq(combinations[k,]$patch))
+    }
+    
+    ## isolation
+    if(is.na(combinations[k,]$isolation) == TRUE) {
+      isolation_k = ee$Image(1)
+    } else {
+      isolation_k <- isolation$updateMask(isolation$eq(combinations[k,]$isolation))
+    }
+    
+    ## fire
+    if(is.na(combinations[k,]$fire) == TRUE) {
+      fire_k = ee$Image(1)
+    } else {
+      fire_k <- ee$Image(1)$updateMask(fire)
+    }
+    
+    # ## secondary
+    # if(is.na(combinations[k,]$secondary) == TRUE) {
+    #   secondary_k = ee$Image(1)
+    # } else {
+    #   secondary_k <- ee$Image(1)$updateMask(secondary)
+    # }
+    
+    ## get intersections
+    result_k <- edge_k$
+      updateMask(patch_k)$
+      updateMask(isolation_k)$
+      updateMask(fire_k)$
+      #updateMask(secondary_k)$
+      ## remap to reference id value
+      remap(
+        from= list(9999),
+        to = list(9999),
+        defaultValue= combinations[k,]$pixel_id
+      )
+    
+    ## store into temporary image
+    tempImage <- tempImage$blend(result_k)
+    
+ 
     
   }
   
+  ## rename
+  tempImage <- tempImage$rename(paste0('degradation_', yearsList[i]))$selfMask()
   
+  Map$addLayer(tempImage$randomVisualizer())
+  
+  # ## build task
+  # task <- ee$batch$Export$image$toAsset(
+  #   image= tempImage,
+  #   description= 'foo',
+  #   assetId= 'users/dh-conciani/foo',
+  #   scale= 30,
+  #   maxPixels= 1e13,
+  #   pyramidingPolicy= list('.default' = 'mode'),
+  #   region= ee$Image(assets$classification[1])$geometry()
+  # )
+  # 
+  # ## export 
+  # task$start()
   
 }
 

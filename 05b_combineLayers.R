@@ -18,12 +18,12 @@ assets <- list(
 )
 
 ## years to be processed
-yearList <- seq(1985, 2022)
+yearsList <- seq(1985, 2022)
 
-## get layer combinations
+# get layer combinations
 combinations <- expand.grid(
   edge= c(NA, 30, 60, 90, 120, 150, 300, 600, 1000),
-  size= c(NA, 3, 5, 10, 25, 50, 75),
+  patch= c(NA, 3, 5, 10, 25, 50, 75),
   isolation= c(NA, '05', '10', '20'),
   fire= c(NA, 1),
   secondary= c(NA,1)
@@ -35,7 +35,36 @@ combinations <- combinations[!apply(is.na(combinations), 1, all), ]
 ## place pixel id
 combinations$pixel_id <- 1:nrow(combinations)
 
+## set function to apply a vector/indicator only to a specific class
+filterIndicator <- function(input, compare, class_id) {
+  return(
+    input$updateMask(compare$eq(class_id))
+  )
+} 
+
+## for each year
+for(i in 1:length(yearsList)) {
+  ## get data for the year [i]
+  edge <- ee$Image(assets$edge[1])$select(paste0(assets$edge[2], yearsList[i]))
+  patch <- ee$Image(assets$patch[1])$select(paste0(assets$patch[2], yearsList[i]))
+  isolation <- ee$Image(assets$isolation[1])$select(paste0(assets$isolation[2], yearsList[i]))
+  fire <- ee$Image(assets$fire[1])$select(paste0(assets$fire[2], yearsList[i]))
+  secondary <- ee$Image(assets$secondary[1])$select(paste0(assets$secondary[2], yearsList[i]))
+  classification <- ee$Image(assets$classification[1])$select(paste0(assets$classification[2], yearsList[i]))
+  
+  ## apply mask to get fire only in forest 
+  fire <- filterIndicator(
+    input= fire,
+    compare= classification,
+    class_id= 3
+  )
+  
+  
+  
+}
 
 
+
+## precisa filtrar fire age com class
 
 

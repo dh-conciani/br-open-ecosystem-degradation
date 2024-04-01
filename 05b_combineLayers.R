@@ -9,7 +9,7 @@ ee_Initialize()
 
 ## list layers in which first position are the asset and 2nd position is the band pattern 
 assets <- list(
-  'edge' = c('projects/mapbiomas-workspace/DEGRADACAO/COLECAO/BETA/PROCESS/summary/edge_v2', 'edge_'),
+  'edge' = c('projects/mapbiomas-workspace/DEGRADACAO/COLECAO/BETA/PROCESS/summary/edge_v3', 'edge_'),
   'patch' = c('projects/mapbiomas-workspace/DEGRADACAO/COLECAO/BETA/PROCESS/summary/patch_v4', 'patch_'),
   'isolation' = c('projects/mapbiomas-workspace/DEGRADACAO/COLECAO/BETA/PROCESS/summary/isolation_v6', 'isolation_'),
   'fire' = c('projects/mapbiomas-workspace/DEGRADACAO/COLECAO/BETA/PROCESS/fire/age_v1', 'age_'),
@@ -120,33 +120,15 @@ for(i in 1:length(yearsList)) {
     ## store into temporary image
     tempImage <- tempImage$blend(result_k)
     
- 
-    
   }
   
   ## rename
   tempImage <- tempImage$rename(paste0('degradation_', yearsList[i]))$selfMask()
   
-  Map$addLayer(tempImage$randomVisualizer())
-  
-  # ## build task
-  # task <- ee$batch$Export$image$toAsset(
-  #   image= tempImage,
-  #   description= 'foo',
-  #   assetId= 'users/dh-conciani/foo',
-  #   scale= 30,
-  #   maxPixels= 1e13,
-  #   pyramidingPolicy= list('.default' = 'mode'),
-  #   region= ee$Image(assets$classification[1])$geometry()
-  # )
-  # 
-  # ## export 
-  # task$start()
+  ## merge with recipe
+  recipe <- recipe$addBands(tempImage)
   
 }
 
-
-
-## precisa filtrar fire age com class
-
+print(recipe$bandNames()$getInfo())
 

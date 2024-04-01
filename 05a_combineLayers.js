@@ -11,7 +11,7 @@ var classList = [3, 4, 5, 6, 11, 12, 49, 50];
 
 ////////////// edge size ************
 var edge_asset = 'projects/mapbiomas-workspace/DEGRADACAO/COLECAO/BETA/PROCESS/edge_area/';
-var edge_version = '2';
+var edge_version = '3';
 var edge_sizes = [1000, 600, 300, 150, 120, 90, 60, 30];
 
 // build recipe
@@ -56,7 +56,7 @@ Export.image.toAsset({
 
 ////////////// patch ************
 var patch_asset = 'projects/mapbiomas-workspace/DEGRADACAO/COLECAO/BETA/PROCESS/patch_size/';
-var patch_version = '3';
+var patch_version = '4';
 var patch_sizes = [75, 50, 25, 10, 5, 3];
 
 // build recipe

@@ -9,16 +9,16 @@ ee_Initialize()
 
 ## list layers in which first position are the asset and 2nd position is the band pattern 
 assets <- list(
-  'edge' = c('projects/mapbiomas-workspace/DEGRADACAO/COLECAO/BETA/PROCESS/summary/edge_v2', ''),
-  'patch' = 'projects/mapbiomas-workspace/DEGRADACAO/COLECAO/BETA/PROCESS/summary/patch_v3',
-  'isolation' = 'projects/mapbiomas-workspace/DEGRADACAO/COLECAO/BETA/PROCESS/summary/isolation_v6',
-  'fire' = 'projects/mapbiomas-workspace/DEGRADACAO/COLECAO/BETA/PROCESS/fire/age_v1',
-  'secondary' = 'projects/mapbiomas-workspace/DEGRADACAO/COLECAO/BETA/PROCESS/secondary_vegetation/secondary_vegetation_age_v1'
+  'edge' = c('projects/mapbiomas-workspace/DEGRADACAO/COLECAO/BETA/PROCESS/summary/edge_v2', 'edge_'),
+  'patch' = c('projects/mapbiomas-workspace/DEGRADACAO/COLECAO/BETA/PROCESS/summary/patch_v3', 'patch_'),
+  'isolation' = c('projects/mapbiomas-workspace/DEGRADACAO/COLECAO/BETA/PROCESS/summary/isolation_v6', 'isolation_'),
+  'fire' = c('projects/mapbiomas-workspace/DEGRADACAO/COLECAO/BETA/PROCESS/fire/age_v1', 'age_'),
+  'secondary' = c('projects/mapbiomas-workspace/DEGRADACAO/COLECAO/BETA/PROCESS/secondary_vegetation/secondary_vegetation_age_v1', 'age_'),
+  'classification' = c('projects/mapbiomas-workspace/public/collection8/mapbiomas_collection80_integration_v1', 'classification_')
 )
 
 ## years to be processed
 yearList <- seq(1985, 2022)
-
 
 ## get layer combinations
 combinations <- expand.grid(
@@ -35,7 +35,7 @@ combinations <- combinations[!apply(is.na(combinations), 1, all), ]
 ## place pixel id
 combinations$pixel_id <- 1:nrow(combinations)
 
-## build pér year image
+
 
 
 

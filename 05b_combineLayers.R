@@ -42,6 +42,9 @@ filterIndicator <- function(input, compare, class_id) {
   )
 } 
 
+## create an empty recipe 
+recipe <- ee$Image(0)
+
 ## for each year
 for(i in 1:length(yearsList)) {
   ## get data for the year [i]
@@ -58,6 +61,14 @@ for(i in 1:length(yearsList)) {
     compare= classification,
     class_id= 3
   )
+  
+  ## create an temporary image to receive processing
+  tempImage <- ee$Image(0)
+  
+  ## for each combination 
+  for(k in 1:nrow(combinations)) {
+    
+  }
   
   
   

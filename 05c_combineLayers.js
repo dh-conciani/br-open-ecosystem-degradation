@@ -27,7 +27,8 @@ var config = {
     'fire': 'projects/mapbiomas-workspace/DEGRADACAO/COLECAO/BETA/PROCESS/fire/age_v1',
     'secondary': 'projects/mapbiomas-workspace/DEGRADACAO/COLECAO/BETA/PROCESS/secondary_vegetation/secondary_vegetation_age_v1',
     'classification': 'projects/mapbiomas-workspace/public/collection8/mapbiomas_collection80_integration_v1'
-  }
+  },
+  'nativeClasses': [3, 4, 5, 6, 11, 12, 49, 50]
 };
 
 // set years
@@ -44,19 +45,19 @@ yearsList.forEach(function(year_i) {
   var edge = ee.Image(config.assets.edge)
     .select(config.bands.edge + year_i)
     .lte(config.params.edge)
-    .selfMask();
+    .unmask(0);
     
   // get patch size
   var patch = ee.Image(config.assets.patch)
     .select(config.bands.patch + year_i)
     .lte(config.params.patch)
-    .selfMask();
+    .unmask(0);
     
   // get isolation 
   var isolation = ee.Image(config.assets.isolation)
     .select(config.bands.isolation + year_i)
     .lte(config.params.isolation)
-    .selfMask();
+    .unmask(0);
   
   // fire 
   var fire = ee.Image(config.assets.fire)
@@ -68,19 +69,27 @@ yearsList.forEach(function(year_i) {
     // now, extrzct only the age and apply filter
     .divide(100)
     .round()
-    .gte(config.params.fire);
-    
-    
+    .gte(config.params.fire)
+    .unmask(0);
+  
+  // secondary vegetation
+  // * * * * * * * * * * *
+  
+  // build frequency 
+  var frequency = edge.add(patch).add(isolation).add(fire).selfMask();
+  
+  // get native mask
+  var nativeMask = ee.Image(config.assets.classification)
+    .select(config.bands.classification + year_i)
+    .remap({
+      'from': config.nativeClasses,
+      'to': [1, 1, 1, 1, 1, 1, 1, 1],
+      'defaultValue': 0
+    }).selfMask();
+  
+  Map.addLayer(nativeMask.randomVisualizer(), {}, 'nativeMask')
 
-
-
-  print(fire)
-  Map.addLayer(edge.randomVisualizer(), {}, 'edge')
-  Map.addLayer(patch.randomVisualizer(), {}, 'patch')
-  Map.addLayer(isolation.randomVisualizer(), {}, 'isolation')
-  Map.addLayer(fire.randomVisualizer(), {}, 'fire')
-
-
+  Map.addLayer(frequency, {palette: ['blue', 'green', 'yellow', 'red'], min:1, max:4}, 'frequency');
 
 });
 

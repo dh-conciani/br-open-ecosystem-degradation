@@ -65,9 +65,10 @@ yearsList.forEach(function(year_i) {
     .updateMask(ee.Image(config.assets.classification)
       .select(config.bands.classification + year_i)
       .eq(3))
-    // now, extrzct only the ag
-    
-    .gte(config.params.fire)
+    // now, extrzct only the age and apply filter
+    .divide(100)
+    .round()
+    .gte(config.params.fire);
     
     
 

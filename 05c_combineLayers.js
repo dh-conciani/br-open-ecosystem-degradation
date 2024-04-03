@@ -51,12 +51,35 @@ yearsList.forEach(function(year_i) {
     .select(config.bands.patch + year_i)
     .lte(config.params.patch)
     .selfMask();
+    
+  // get isolation 
+  var isolation = ee.Image(config.assets.isolation)
+    .select(config.bands.isolation + year_i)
+    .lte(config.params.isolation)
+    .selfMask();
+  
+  // fire 
+  var fire = ee.Image(config.assets.fire)
+    .select(config.bands.fire + year_i)
+    // get only fire in forests
+    .updateMask(ee.Image(config.assets.classification)
+      .select(config.bands.classification + year_i)
+      .eq(3))
+    // now, extrzct only the ag
+    
+    .gte(config.params.fire)
+    
+    
 
 
 
-  print(patch)
+  print(fire)
   Map.addLayer(edge.randomVisualizer(), {}, 'edge')
   Map.addLayer(patch.randomVisualizer(), {}, 'patch')
+  Map.addLayer(isolation.randomVisualizer(), {}, 'isolation')
+  Map.addLayer(fire.randomVisualizer(), {}, 'fire')
+
+
 
 });
 

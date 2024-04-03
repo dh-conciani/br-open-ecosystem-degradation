@@ -1,6 +1,8 @@
 // combine degradation layers
 // dhemerson.costa@ipam.org.br
 
+// note: fire was applied only into forest class (see lines XXX-YYY)
+
 // define params
 var config = {
   'params' : {
@@ -39,8 +41,22 @@ var yearsList = [
 // perform combination 
 yearsList.forEach(function(year_i) {
   // get edge
-  var edge = ee.Image(config.assets.edge).select(config.bands.edge + year_i).lte(config.params.edge).selfMask()
-  print(edge)
-  Map.addLayer(edge.randomVisualizer())
+  var edge = ee.Image(config.assets.edge)
+    .select(config.bands.edge + year_i)
+    .lte(config.params.edge)
+    .selfMask();
+    
+  // get patch size
+  var patch = ee.Image(config.assets.patch)
+    .select(config.bands.patch + year_i)
+    .lte(config.params.patch)
+    .selfMask();
+
+
+
+  print(patch)
+  Map.addLayer(edge.randomVisualizer(), {}, 'edge')
+  Map.addLayer(patch.randomVisualizer(), {}, 'patch')
+
 });
 

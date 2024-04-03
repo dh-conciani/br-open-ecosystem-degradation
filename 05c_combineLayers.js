@@ -33,13 +33,14 @@ var config = {
 
 // set years
 var yearsList = [
-  //1985, 1986, 1987, 1988, 1989, 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
-  //2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016,
-  //2017, 2018, 2019, 2020, 2021, 2022
-  2022
+  1986, 1987, 1988, 1989, 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
+  2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016,
+  2017, 2018, 2019, 2020, 2021, 2022
+  //2022
   ];
 
 // perform combination 
+var recipe = ee.Image([]);
 yearsList.forEach(function(year_i) {
   // get edge
   var edge = ee.Image(config.assets.edge)
@@ -83,13 +84,36 @@ yearsList.forEach(function(year_i) {
     .select(config.bands.classification + year_i)
     .remap({
       'from': config.nativeClasses,
-      'to': [1, 1, 1, 1, 1, 1, 1, 1],
-      'defaultValue': 0
-    }).selfMask();
+      'to': [5, 5, 5, 5, 5, 5, 5, 5],
+      //'defaultValue': 0
+    });
   
-  Map.addLayer(nativeMask.randomVisualizer(), {}, 'nativeMask')
-
-  Map.addLayer(frequency, {palette: ['blue', 'green', 'yellow', 'red'], min:1, max:4}, 'frequency');
-
+  //Map.addLayer(nativeMask.randomVisualizer(), {}, 'nativeMask')
+  
+  // add 'healthy' vegetation
+  frequency = nativeMask.blend(frequency).multiply(100)
+    // add native class
+    .add(ee.Image(config.assets.classification).select(config.bands.classification + year_i))
+    .rename('frequency_' + year_i);
+    
+  // store
+  recipe = recipe.addBands(frequency);
+  
 });
 
+// inspect
+print(recipe)
+
+// plot
+Map.addLayer(recipe.select('frequency_2022').divide(100).round(), {palette: ['#FFFF59', '#FCAD2B', '#F92611', '#E40887', '#32a65e', ], min:1, max:5}, 'frequency 2022');
+
+// export
+Export.image.toAsset({
+		image: recipe,
+    description: 'degradation_v2',
+    assetId: 'projects/mapbiomas-workspace/DEGRADACAO/COLECAO/BETA/PROCESS/summary/degradation_v2',
+    pyramidingPolicy: 'mode',
+    region: geometry,
+    scale: 30,
+    maxPixels: 1e13
+})

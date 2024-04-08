@@ -10,22 +10,42 @@ var withWater = '7';
 
 // set isolation grid params
 var params = {
-  'med': ['25', '50', '100'],
-  'dist': ['05', '10', '20'],
-  'gde': ['100', '500', '100']
+  'mediumFrag': ['25', '50', '100'],
+  'distance': ['05', '10', '20'],
+  'bigFrag': ['100', '500', '1000']
 };
-
-// set biomes id to apply water as native
-var biomesToApply = [3];  // only pantanal 
-
-
 
 // get biomes asset
 var biomes = ee.Image('projects/mapbiomas-workspace/AUXILIAR/biomas-2019-raster');
 
-params.dist.forEach(function(i) {
+// set biomes id to apply water as native
+var biomesToApply = [3];  // only pantanal 
+
+// for each med frag
+params.mediumFrag.forEach(function(medium_i) {
+  // for each distance 
+  params.distance.forEach(function(distance_j) {
+    // for each big frag
+    params.bigFrag.forEach(function(big_k) {
+      
+      // skip when mediumFrag and bigfrag have same values 
+      if(medium_i === big_k) {
+        return null;
+      }
+      
+      // read isolation for a given param - without water 
+      var isolWithoutWater = ee.Image(
+        root + 'nat_uso_frag' + medium_i + '__dist' + distance_j + 'k__' + big_k + '_v' + withoutWater + '_85_22'
+        );
+        
+       var isolWithWater = ee.Image(
+        root + 'nat_uso_frag' + medium_i + '__dist' + distance_j + 'k__' + big_k + '_v' + withWater + '_85_22');
+      print(isolWithWater);
+        
+    })
+  })
   
+
 })
 
 
-nat_uso_frag25__dist20k_1000

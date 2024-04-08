@@ -6,11 +6,11 @@
 // define params
 var config = {
   'params' : {
-    'edge': 90,
-    'patch': 25,
-    'isolation': 10,
-    'fire': 1,
-    'secondary': null,
+    'edge': 90,         // lte
+    'patch': 25,        // lte
+    'isolation': 10,    // lte
+    'fire': 1,          // gte
+    'secondary': 6,     // lte
   },
   'bands': {
     'edge' : 'edge_',
@@ -33,9 +33,10 @@ var config = {
 
 // set years
 var yearsList = [
-  1986, 1987, 1988, 1989, 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
-  2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016,
-  2017, 2018, 2019, 2020, 2021, 2022
+//  1986, 1987, 1988, 1989, 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
+//  2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016,
+//  2017, 2018, 2019, 2020, 2021, 2022
+2022
   //2022
   ];
 
@@ -74,17 +75,24 @@ yearsList.forEach(function(year_i) {
     .unmask(0);
   
   // secondary vegetation
-  // * * * * * * * * * * *
+  var secondary = ee.Image(config.assets.secondary)
+    .select(config.bands.secondary + year_i)
+    .divide(100)
+    .round()
+    .lte(config.params.secondary)
+    .unmask(0);
+    
+  //Map.addLayer(secondary.randomVisualizer())
   
   // build frequency 
-  var frequency = edge.add(patch).add(isolation).add(fire).selfMask();
+  var frequency = edge.add(patch).add(isolation).add(fire).add(secondary).selfMask();
   
   // get native mask
   var nativeMask = ee.Image(config.assets.classification)
     .select(config.bands.classification + year_i)
     .remap({
       'from': config.nativeClasses,
-      'to': [5, 5, 5, 5, 5, 5, 5, 5],
+      'to': [6, 6, 6, 6, 6, 6, 6, 6],
       //'defaultValue': 0
     });
   
@@ -102,10 +110,10 @@ yearsList.forEach(function(year_i) {
 });
 
 // inspect
-print(recipe)
+print(recipe);
 
 // plot
-Map.addLayer(recipe.select('frequency_2022').divide(100).round(), {palette: ['#FFFF59', '#FCAD2B', '#F92611', '#E40887', '#32a65e', ], min:1, max:5}, 'frequency 2022');
+Map.addLayer(recipe.select('frequency_2022').divide(100).round(), {palette: ['#FFFF59', '#FCAD2B', '#F92611', '#E40887', '#050004', '#32a65e', ], min:1, max:6}, 'frequency 2022');
 
 // export
 Export.image.toAsset({

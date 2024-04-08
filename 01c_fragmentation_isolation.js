@@ -89,6 +89,7 @@ params.mediumFrag.forEach(function(medium_i) {
       description: 'nat_uso_frag' + medium_i + '__dist' + distance_j + 'k__' + big_k + '_v' + output_version + '_85_22',
       assetId: root + 'nat_uso_frag' + medium_i + '__dist' + distance_j + 'k__' + big_k + '_v' + output_version + '_85_22',
       region: biomes.geometry(),
+      pyramidingPolicy: 'mode', 
       scale: 30,
       maxPixels: 1e13,
       priority: 999});

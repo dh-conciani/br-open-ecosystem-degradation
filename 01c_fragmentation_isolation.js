@@ -12,7 +12,8 @@ var withWater = '7';
 var params = {
   'mediumFrag': ['25', '50', '100'],
   'distance': ['05', '10', '20'],
-  'bigFrag': ['100', '500', '1000']
+  'bigFrag': ['100', '500', '1000'],
+  'bandName' : 'nat_'
 };
 
 // get biomes asset
@@ -20,6 +21,11 @@ var biomes = ee.Image('projects/mapbiomas-workspace/AUXILIAR/biomas-2019-raster'
 
 // set biomes id to apply water as native
 var biomesToApply = [3];  // only pantanal 
+
+// set years to be processed
+var yearsList = [1985, 1986, 1987, 1988, 1989, 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
+                 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014,
+                 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022];
 
 // for each med frag
 params.mediumFrag.forEach(function(medium_i) {
@@ -40,10 +46,23 @@ params.mediumFrag.forEach(function(medium_i) {
         
        var isolWithWater = ee.Image(
         root + 'nat_uso_frag' + medium_i + '__dist' + distance_j + 'k__' + big_k + '_v' + withWater + '_85_22');
-      print(isolWithWater);
+      
+      // for each biome to adjust 
+      biomesToApply.forEach(function(biome_m) {
+        // for each year
+        yearsList.forEach(function(year_n) {
+          // get data
+          var WithoutWater_ijkmn = isolWithoutWater.select(params.bandName + year_n).aside(print)
+          
+        })
         
-    })
-  })
+
+        
+        
+      });
+        
+    });
+  });
   
 
 })

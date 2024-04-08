@@ -101,7 +101,7 @@ Export.image.toAsset({
 
 ////////////// isolation ************
 var isolation_asset = 'projects/mapbiomas-workspace/DEGRADACAO/ISOLATION/';
-var isolation_version = '6';
+var isolation_version = '8';
 var isolation_bigSize = '500';
 var isolation_medSize = '25';
 var isolation_distances = ['05', '10', '20'];
@@ -138,7 +138,7 @@ Map.addLayer(recipe_isolation.select(37).randomVisualizer(), {}, 'isolation');
 // Edge area
 Export.image.toAsset({
   image: recipe_isolation,
-  description: 'isolation_v' + patch_version,
+  description: 'isolation_v' + isolation_version,
   assetId: 'projects/mapbiomas-workspace/DEGRADACAO/COLECAO/BETA/PROCESS/summary/isolation_v' + isolation_version,
   region: recipe_isolation.geometry(),
   scale: 30,

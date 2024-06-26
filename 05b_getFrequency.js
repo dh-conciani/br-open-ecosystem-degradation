@@ -1,20 +1,29 @@
-// combine degradation layers
+// combine degradation layers and get intersections
 // dhemerson.costa@ipam.org.br
 
 // note: fire was applied only into forest class (see lines XXX-YYY)
 
 // set output version
-var output_version = '3'; 
+var output_version = '11'; 
 
-// define params
+// define params 
 var config = {
+  // min
   'params' : {
-    'edge': 90,         // lte
-    'patch': 25,        // lte
-    'isolation': 10,    // lte
-    'fire': 1,          // gte
+    'edge': 30,         // lte
+    'patch': 10,        // lte
+    'isolation': 20,    // lte
+    'fire': 3,          // gte
     'secondary': 6,     // lte
   },
+  // max
+  //'params' : {
+  //  'edge': 150,         // lte
+  //  'patch': 50,        // lte
+  //  'isolation': 5,    // lte
+  //  'fire': 1,          // gte
+  //  'secondary': 37,     // lte
+  //},
   'bands': {
     'edge' : 'edge_',
     'patch': 'patch_',
@@ -26,7 +35,7 @@ var config = {
   'assets': {
     'edge' : 'projects/mapbiomas-workspace/DEGRADACAO/COLECAO/BETA/PROCESS/summary/edge_v3',
     'patch': 'projects/mapbiomas-workspace/DEGRADACAO/COLECAO/BETA/PROCESS/summary/patch_v4',
-    'isolation': 'projects/mapbiomas-workspace/DEGRADACAO/COLECAO/BETA/PROCESS/summary/isolation_v8',
+    'isolation': 'projects/mapbiomas-workspace/DEGRADACAO/COLECAO/BETA/PROCESS/summary/isolation_v9',
     'fire': 'projects/mapbiomas-workspace/DEGRADACAO/COLECAO/BETA/PROCESS/fire/age_v1',
     'secondary': 'projects/mapbiomas-workspace/DEGRADACAO/COLECAO/BETA/PROCESS/secondary_vegetation/secondary_vegetation_age_v1',
     'classification': 'projects/mapbiomas-workspace/public/collection8/mapbiomas_collection80_integration_v1'

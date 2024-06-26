@@ -102,8 +102,8 @@ Export.image.toAsset({
 ////////////// isolation ************
 var isolation_asset = 'projects/mapbiomas-workspace/DEGRADACAO/ISOLATION/';
 var isolation_version = '8';
-var isolation_bigSize = '500';
-var isolation_medSize = '25';
+var isolation_bigSize = '1000';
+var isolation_medSize = '100';
 var isolation_distances = ['05', '10', '20'];
 
 // build recipe

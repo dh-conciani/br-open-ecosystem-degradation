@@ -2,7 +2,7 @@
 // any issue and/or bug, please report to dhemerson.costa@ipam.org.br and mrosa@arcplan.com.br
 
 // set version
-var version = 4;
+var version = 1;
 
 // -- * definitions
 // set classes to be computed  
@@ -23,7 +23,7 @@ var patch_sizes = [3, 5, 10, 25, 50, 75];
 var years_list = [1985, 1986, 1987, 1988, 1989, 1990, 1991, 1992, 1993, 1994, 1995,
                   1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,
                   2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017,
-                  2018, 2019, 2020, 2021, 2022];
+                  2018, 2019, 2020, 2021, 2022, 2023];
 
 // read biomes
 var biomes = ee.Image('projects/mapbiomas-workspace/AUXILIAR/biomas-2019-raster');
@@ -55,7 +55,7 @@ patch_sizes.forEach(function(size_i) {
     var recipe_year = ee.Image(0);
     
     // read collection 
-    var collection = ee.Image('projects/mapbiomas-workspace/public/collection8/mapbiomas_collection80_integration_v1')
+    var collection = ee.Image('projects/mapbiomas-public/assets/brazil/lulc/collection9/mapbiomas_collection90_integration_v1')
       .select('classification_' + year_j);
       
     // for each biome
@@ -113,8 +113,8 @@ patch_sizes.forEach(function(size_i) {
   // Export
    Export.image.toAsset({
 		image: recipe_size,
-    description: 'size_' + size_i + 'ha_v' + version,
-    assetId: 'projects/mapbiomas-workspace/DEGRADACAO/COLECAO/BETA/PROCESS/patch_size/' + 'size_' + size_i + 'ha_v' + version,
+    description: 'size_' + size_i + 'ha_col9_v' + version,
+    assetId: 'projects/mapbiomas-workspace/DEGRADACAO/COLECAO/BETA/PROCESS/patch_size/' + 'size_' + size_i + 'ha_col9_v' + version,
     region: biomes.geometry(),
     scale: 30,
     maxPixels: 1e13,

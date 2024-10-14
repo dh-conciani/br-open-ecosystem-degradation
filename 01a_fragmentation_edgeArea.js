@@ -2,7 +2,7 @@
 // any issue, bug or report write to dhemerson.costa@ipam.org.br and/or mrosa@arcplan.com.br
 
 // set version
-var version = 3;
+var version = 1;
 
 // -- * definitions
 // set classes in which edge area will be applied 
@@ -34,7 +34,7 @@ var edge_rules = [30, 60, 90, 120, 150, 300, 600, 1000];
 var years_list = [1985, 1986, 1987, 1988, 1989, 1990, 1991, 1992, 1993, 1994, 1995,
                   1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,
                   2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017,
-                  2018, 2019, 2020, 2021, 2022];
+                  2018, 2019, 2020, 2021, 2022, 2023];
 
 // * -- end of definitions
 
@@ -74,7 +74,7 @@ edge_rules.forEach(function(distance_i) {
     var edge_anthropogenic_year = ee.Image(0);
       
     // read collection 
-    var collection = ee.Image('projects/mapbiomas-workspace/public/collection8/mapbiomas_collection80_integration_v1')
+    var collection = ee.Image('projects/mapbiomas-public/assets/brazil/lulc/collection9/mapbiomas_collection90_integration_v1')
       .select('classification_' + year_j);
       //.blend(dnit_roads);
   
@@ -156,8 +156,8 @@ edge_rules.forEach(function(distance_i) {
   // Edge area
   Export.image.toAsset({
 		image: edge_degrad,
-    description: 'edge_' + distance_i + 'm_v' + version,
-    assetId: 'projects/mapbiomas-workspace/DEGRADACAO/COLECAO/BETA/PROCESS/edge_area/' + 'edge_' + distance_i + 'm_v' + version,
+    description: 'edge_' + distance_i + 'm_col9_v' + version,
+    assetId: 'projects/mapbiomas-workspace/DEGRADACAO/COLECAO/BETA/PROCESS/edge_area/' + 'edge_' + distance_i + 'm_col9_v' + version,
     region: biomes.geometry(),
     scale: 30,
     maxPixels: 1e13,
@@ -168,8 +168,8 @@ edge_rules.forEach(function(distance_i) {
   if (distance_i === 30) {
     Export.image.toAsset({
 		image: edge_anthropogenic,
-    description: 'pressure_' + distance_i + 'm_v' + version,
-    assetId: 'projects/mapbiomas-workspace/DEGRADACAO/COLECAO/BETA/PROCESS/edge_pressure/' + 'pressure_' + distance_i + 'm_v' + version,
+    description: 'pressure_' + distance_i + 'm_col9_v' + version,
+    assetId: 'projects/mapbiomas-workspace/DEGRADACAO/COLECAO/BETA/PROCESS/edge_pressure/' + 'pressure_' + distance_i + 'm_col9_v' + version,
     region: biomes.geometry(),
     scale: 30,
     maxPixels: 1e13,

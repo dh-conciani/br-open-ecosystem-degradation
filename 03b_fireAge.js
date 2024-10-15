@@ -4,11 +4,11 @@
 
 
 // --- --- --- DATASETS
-// read coverage by mapbiomas collection 8 
-var coverage = ee.Image('projects/mapbiomas-workspace/public/collection8/mapbiomas_collection80_integration_v1');
+// read coverage by mapbiomas collection 9
+var coverage = ee.Image('projects/mapbiomas-public/assets/brazil/lulc/collection9/mapbiomas_collection90_integration_v1');
 // --- --- FIRE AGE
-// read age fire by mapbiomas fogo collection 2.1
-var age = ee.Image('projects/mapbiomas-workspace/FOGO_COL2/PRODUTOS_REGIME_DO_FOGO/mapbiomas-fire-collection2-time-after-fire-v2');
+// read age fire by mapbiomas fogo collection 3.1
+var age = ee.Image('projects/mapbiomas-public/assets/brazil/fire/collection3_1/mapbiomas_fire_collection31_time_after_fire_v1');
 
 // get geometry for export params
 var region = coverage.geometry();
@@ -16,7 +16,7 @@ var region = coverage.geometry();
 // --- --- --- PROCESS
 // formated image for age information
 var fire_age = age
-  .slice(0,-1);
+  // .slice(0,-1);
   // .aside(print);
 
 // --- --- NATIVE COVERAGE

@@ -94,7 +94,7 @@ var properties = {
 };
 // set export image
 var recipe = fire_age_native_coverege.set(properties);
-var description = 'frequency_v'+properties.version;
+var description = 'age_col9_v'+properties.version;
 var assetId = 'projects/mapbiomas-workspace/DEGRADACAO/COLECAO/BETA/PROCESS/fire/' + description;
 
 print(ui.Label('Exporting image:'),recipe,ui.Label(' for address:'+assetId));
@@ -102,11 +102,10 @@ print(ui.Label('Exporting image:'),recipe,ui.Label(' for address:'+assetId));
 // export
  Export.image.toAsset({
 	image: recipe,
-  description:'W-GT_Degradacao-'+description,
+  description:'fire-'+description,
   assetId: assetId,
   region: region,
   pyramidingPolicy:'mode',
   scale: 30,
   maxPixels: 1e13,
 });
-

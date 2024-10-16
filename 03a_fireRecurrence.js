@@ -90,12 +90,12 @@ Map.addLayer(fire_recurrence,visParams.recurrence_2,'fire_recurrence');
 
 // Set properties in metadata image
 var properties = {
-  'version':1,
+  'version': 1,
   'product':'recurrence'
 };
 // set export image
 var recipe = fire_recurrence_native_coverege.set(properties);
-var description = 'recurrence_v'+properties.version;
+var description = 'recurrence_col9_v'+ properties.version;
 var assetId = 'projects/mapbiomas-workspace/DEGRADACAO/COLECAO/BETA/PROCESS/fire/' + description;
 
 print(ui.Label('Exporting image:'),recipe,ui.Label(' for address:'+assetId));
@@ -103,11 +103,10 @@ print(ui.Label('Exporting image:'),recipe,ui.Label(' for address:'+assetId));
 // export
  Export.image.toAsset({
 	image: recipe,
-  description:'W-GT_Degradacao-'+description,
+  description:'fire-'+ description,
   assetId: assetId,
   region: region,
   pyramidingPolicy:'mode',
   scale: 30,
   maxPixels: 1e13,
 });
-

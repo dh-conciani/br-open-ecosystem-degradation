@@ -11,14 +11,14 @@
 
 
 // set output version
-var version = 2;
+var version = 1;
 
 // set output folder
 var output = 'projects/mapbiomas-workspace/DEGRADACAO/COLECAO/BETA/PROCESS/structure_change';
 
 // read collection 8
-var collection = ee.Image('projects/mapbiomas-workspace/public/collection8/mapbiomas_collection80_integration_v1');
-Map.addLayer(collection, {}, 'mapbiomas c8', false);
+var collection = ee.Image('projects/mapbiomas-public/assets/brazil/lulc/collection9/mapbiomas_collection90_integration_v1');
+Map.addLayer(collection, {}, 'mapbiomas c9', false);
 
 // set native classes
 var native_classes =          [3, 4, 5, 6, 49, 11, 12, 50];
@@ -494,8 +494,8 @@ step_e_structure = step_f_age.set({'version': version})
 // export
 Export.image.toAsset({
 		image: step_f_structure,
-    description: 'structure_change_v' + version,
-    assetId: output + '/' + 'structure_change_v' + version,
+    description: 'structure_change_col9_v' + version,
+    assetId: output + '/' + 'structure_change_col9_v' + version,
     region: collection.geometry(),
     scale: 30,
     maxPixels: 1e13
@@ -503,8 +503,8 @@ Export.image.toAsset({
 
 Export.image.toAsset({
 		image: step_f_age,
-    description: 'age_v' + version,
-    assetId: output + '/' + 'age_v' + version,
+    description: 'age_col9_v' + version,
+    assetId: output + '/' + 'age_col9_v' + version,
     region: collection.geometry(),
     scale: 30,
     maxPixels: 1e13

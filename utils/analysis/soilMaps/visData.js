@@ -29,6 +29,20 @@ var agreement = ee.Image(0).where(mapbiomas.eq(25).and(soil.eq(1)), 1)
                            .selfMask()
                            .updateMask(biomes.eq(4));
 
+// get mosaic
+// import landsat mosaic
+var landsat = ee.ImageCollection('projects/nexgenmap/MapBiomas2/LANDSAT/BRAZIL/mosaics-2')
+    .filterMetadata('year', 'equals', year)
+    .filterMetadata('biome', 'equals', 'CERRADO')
+    .mosaic()
+    .updateMask(biomes.eq(4))
 
+// Plot Landsat
+Map.addLayer(landsat, {
+        bands: ['swir1_median', 'nir_median', 'red_median'],
+        gain: [0.08, 0.07, 0.2],
+        gamma: 0.85
+    },
+    'Landsat ' + year, true);
 
 Map.addLayer(agreement, {palette: ['white', 'red', 'blue'], min:1, max:3}, 'MapSoil')

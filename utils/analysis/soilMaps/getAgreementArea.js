@@ -85,7 +85,7 @@ var geometry = territory.geometry();
         var soil = ee.ImageCollection('projects/nexgenmap/MapBiomas2/LANDSAT/DEGRADACAO/LAYER_SOILV4')
           .filterMetadata('biome', 'equals', 'CERRADO')
           .filterMetadata('version', 'equals', '4')
-          .filterMetadata('year', 'equals', 2021)
+          .filterMetadata('year', 'equals', year)
           .mosaic()
           .gt(0)
           .rename('soil_' + year)

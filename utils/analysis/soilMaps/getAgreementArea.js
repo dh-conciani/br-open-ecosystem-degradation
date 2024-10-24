@@ -6,6 +6,8 @@
 // define the years to bem computed 
 var years = ee.List.sequence({'start': 1985, 'end': 2022, 'step':1}).getInfo()
 // *-- 
+// set probability
+var prob = 0.80
 
 // -- *
 // compute areas in hectares
@@ -90,14 +92,17 @@ var geometry = territory.geometry();
             return image.rename('classification_' + year)
           })
           .mosaic()
-          .gt(0)
+          .gte(prob)
           .rename('soil_' + year)
           .unmask(0);
         
         // get agrement
-        var image = ee.Image(0).where(lcluc.eq(25).and(soil.eq(1)), 1)
-                         .where(lcluc.eq(25).and(soil.eq(0)), 2)
-                         .where(lcluc.neq(25).and(soil.eq(1)), 3)
+        var image = ee.Image(0).where(lcluc.eq(25).and(soil.eq(1)), 1) // agreeement
+                         .where(lcluc.eq(25).and(soil.eq(0)), 2)       // only col 9
+                         .where(lcluc.neq(25).and(soil.eq(1)), 3)      // only soilMaps
+                         .where(lcluc.eq(24).and(soil.eq(1)), 4)       // urban area
+                         .where(lcluc.eq(30).and(soil.eq(1)), 5)       // mining
+                         .where(lcluc.eq(33).and(soil.eq(1)), 5)       // water
                          .selfMask()
                          .updateMask(biomes.eq(4));
         
@@ -118,7 +123,7 @@ var geometry = territory.geometry();
 // export data
 Export.table.toDrive({
       collection: areas,
-      description: 'agreement_soilMaps_v4',
+      description: 'agreement_soilMaps_v4_' + String(prob*100),
       folder: driverFolder,
       fileFormat: 'CSV'
 });

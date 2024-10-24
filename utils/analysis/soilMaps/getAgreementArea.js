@@ -4,7 +4,7 @@
 // -- * 
 
 // define the years to bem computed 
-var years = ee.List.sequence({'start': 1985, 'end': 2022, 'step': 1}).getInfo();
+var years = ee.List.sequence({'start': 1985, 'end': 2022, 'step':1}).getInfo()
 // *-- 
 
 // -- *
@@ -86,6 +86,9 @@ var geometry = territory.geometry();
           .filterMetadata('biome', 'equals', 'CERRADO')
           .filterMetadata('version', 'equals', '4')
           .filterMetadata('year', 'equals', year)
+          .map(function(image) {
+            return image.rename('classification_' + year)
+          })
           .mosaic()
           .gt(0)
           .rename('soil_' + year)

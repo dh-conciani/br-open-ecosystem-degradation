@@ -48,7 +48,8 @@ var geometry = territory.geometry();
               var tableColumns = ee.Feature(null)
                   .set('state_id', territory)
                   .set('class_id', classId)
-                  .set('area', area);
+                  .set('area', area)
+                  .set('limiar', String(prob*100));
                   
               return tableColumns;
           }

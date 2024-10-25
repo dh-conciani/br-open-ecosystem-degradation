@@ -7,7 +7,7 @@
 var years = ee.List.sequence({'start': 1985, 'end': 2022, 'step':1}).getInfo()
 // *-- 
 // set probability
-var prob = 0.80
+var prob = 0.95
 
 // -- *
 // compute areas in hectares
@@ -103,7 +103,7 @@ var geometry = territory.geometry();
                          .where(lcluc.neq(25).and(soil.eq(1)), 3)      // only soilMaps
                          .where(lcluc.eq(24).and(soil.eq(1)), 4)       // urban area
                          .where(lcluc.eq(30).and(soil.eq(1)), 5)       // mining
-                         .where(lcluc.eq(33).and(soil.eq(1)), 5)       // water
+                         .where(lcluc.eq(33).and(soil.eq(1)), 6)       // water
                          .selfMask()
                          .updateMask(biomes.eq(4));
         

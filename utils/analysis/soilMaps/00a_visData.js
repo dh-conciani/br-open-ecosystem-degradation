@@ -52,3 +52,15 @@ Map.addLayer(landsat, {
     'Landsat ' + year, true);
 
 Map.addLayer(agreement, {palette: ['white', 'red', 'green', '#d4271e', '#9c0027', '#2532e4'], min:1, max:6}, 'MapSoil')
+
+//get probs
+// get soil maps
+var soil = ee.ImageCollection('projects/nexgenmap/MapBiomas2/LANDSAT/DEGRADACAO/LAYER_SOILV4')
+  .filterMetadata('biome', 'equals', 'CERRADO')
+  .filterMetadata('version', 'equals', '4')
+  .filterMetadata('year', 'equals', year)
+  .mosaic()
+  //.gt(prob)
+  .rename('soil_' + year)
+  
+Map.addLayer(soil, {palette: ['green', 'yellow', 'orange', 'red'], min:0, max:1}, 'Probability')

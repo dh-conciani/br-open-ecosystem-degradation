@@ -5,7 +5,7 @@
 var year = 2021;
 
 //set probability
-var prob = 0.8
+var prob = 0.9
 
 // read biomes
 var biomes = ee.Image('projects/mapbiomas-workspace/AUXILIAR/biomas-2019-raster');
@@ -14,7 +14,17 @@ var biomes = ee.Image('projects/mapbiomas-workspace/AUXILIAR/biomas-2019-raster'
 // read lulc
 var mapbiomas = ee.Image('projects/mapbiomas-public/assets/brazil/lulc/collection9/mapbiomas_collection90_integration_v1')
   .select('classification_' + year);
-  
+
+// import the color ramp module from mapbiomas 
+var palettes = require('users/mapbiomas/modules:Palettes.js');
+var vis = {
+    'min': 0,
+    'max': 62,
+    'palette': palettes.get('classification7')
+};
+
+
+
 // get soil maps
 var soil = ee.ImageCollection('projects/nexgenmap/MapBiomas2/LANDSAT/DEGRADACAO/LAYER_SOILV4')
   .filterMetadata('biome', 'equals', 'CERRADO')
@@ -29,9 +39,9 @@ var soil = ee.ImageCollection('projects/nexgenmap/MapBiomas2/LANDSAT/DEGRADACAO/
 var agreement = ee.Image(0).where(mapbiomas.eq(25).and(soil.eq(1)), 1)     // agreeement
                          .where(mapbiomas.eq(25).and(soil.eq(0)), 2)       // only col 9
                          .where(mapbiomas.neq(25).and(soil.eq(1)), 3)      // only soilMaps
-                         .where(mapbiomas.eq(24).and(soil.eq(1)), 4)       // urban area
-                         .where(mapbiomas.eq(30).and(soil.eq(1)), 5)       // mining
-                         .where(mapbiomas.eq(33).and(soil.eq(1)), 6)       // water
+                         //.where(mapbiomas.eq(24).and(soil.eq(1)), 4)       // urban area
+                         //.where(mapbiomas.eq(30).and(soil.eq(1)), 5)       // mining
+                         //.where(mapbiomas.eq(33).and(soil.eq(1)), 6)       // water
                          .selfMask()
                          .updateMask(biomes.eq(4));
 
@@ -51,7 +61,10 @@ Map.addLayer(landsat, {
     },
     'Landsat ' + year, true);
 
-Map.addLayer(agreement, {palette: ['white', 'red', 'green', '#d4271e', '#9c0027', '#2532e4'], min:1, max:6}, 'MapSoil')
+Map.addLayer(agreement, {palette: ['white', 'red', 'green', '#d4271e', '#9c0027', '#2532e4'], min:1, max:6}, 'Agreement')
+
+Map.addLayer(mapbiomas.updateMask(soil.eq(1)), vis, 'LULC')
+
 
 //get probs
 // get soil maps

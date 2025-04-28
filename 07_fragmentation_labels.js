@@ -2,7 +2,7 @@
 // any issue and/or bug, please report to dhemerson.costa@ipam.org.br and mrosa@arcplan.com.br
 
 // set version
-var version = 4;
+var version = 5;
 
 // -- * definitions
 // set classes to be computed  
@@ -17,7 +17,9 @@ var native_classes = {
 };
 
 // Set years to be processed 
-var years_list = [2023];
+var years_list = [1985, 1986, 1987, 1988, 1989, 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 
+                  1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+                  2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023];
 
 // read biomes
 var biomes = ee.Image('projects/mapbiomas-workspace/AUXILIAR/biomas-2019-raster');
@@ -73,9 +75,9 @@ var recipe_id = ee.Image([]);
       // recipe_year = recipe_year.blend(connect).selfMask();
       
       // store into recipe
-      recipe_id = recipe_id.addBands(connect.select('labels')).rename('labels_' + year_j)
+      recipe_id = recipe_id.addBands(connect.select('labels').rename('labels_' + year_j))
         .reproject('EPSG:4326', null, 30);
-      
+        
       Map.addLayer(recipe_id.randomVisualizer(), {}, 'recipe')
       
       });

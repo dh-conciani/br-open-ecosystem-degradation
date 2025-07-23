@@ -90,4 +90,12 @@ print(recipe)
 Map.addLayer(recipe.select('classification_1985').randomVisualizer(), {}, '1985')
 Map.addLayer(recipe.select('classification_2024').randomVisualizer(), {}, '2024')
 
-
+Export.image.toAsset({
+	image: recipe,
+  description: 'nativeMask_' + 'col10_v' + version,
+  assetId: 'projects/mapbiomas-workspace/DEGRADACAO/COLECAO/BETA/PROCESS/native_mask/' + 'nativeMask_' + 'col10_v' + version,
+  region: biomes.geometry(),
+  scale: 30,
+  maxPixels: 1e13,
+  priority: 999
+  });

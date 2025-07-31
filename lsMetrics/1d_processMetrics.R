@@ -15,7 +15,7 @@ library(parallel)
 # list mapbiomas files
 files <- list.files(path = "./tif", pattern = ".tif", full.names = TRUE)
 years <- seq(1985, 2024)
-prefix <- 'nativeMask-classification_'
+prefix <- 'nativeMask_classification_'
 
 ## prepare grassdb ---------------------------------------------------------
 # find grass
@@ -42,21 +42,6 @@ mclapply(
     output = sub('.tif$', '', basename(x))
   ),
   mc.cores = detectCores() - 1  # Use all but one core
-)
-
-### COMPUTE METRICS
-## FRAGMENT AREA ----
-mclapply(
-  years,
-  function(x) lsmetrics::lsm_area_fragment(
-    input = paste0(prefix, x),
-    zero_as_null = FALSE,
-    area_round_digit = 2,
-    area_unit = 'ha',
-    map_fragment_id = TRUE,
-    map_fragment_ncell = TRUE,
-    table_fragment_area = TRUE
-  )
 )
 
 # metrics -----------------------------------------------------------------
@@ -160,6 +145,3 @@ mclapply(
   ),
   mc.cores = detectCores() - 1
 )
-
-
-

@@ -47,7 +47,7 @@ var pasture = trainingPoints.filterMetadata('reference', 'equals', 15)
 // merge
 var samples = savanna.merge(grassland).merge(pasture);
 samples = samples.merge(urochloa).merge(melinis);
-
+print(samples.size())
 //  load landsat mosaic
 var mosaic = ee.ImageCollection('projects/nexgenmap/MapBiomas2/LANDSAT/BRAZIL/mosaics-2')
   .filterMetadata('biome', 'equals', 'CERRADO')
@@ -61,7 +61,8 @@ var samplesWithSpectra = mosaic.sampleRegions({
   collection: samples,
   properties: ['reference'],   // keep your label column(s); add more if you need
   scale: scale,
-  geometries: true            // set false if you don't want lon/lat geometry in output
+  geometries: false ,           // set false if you don't want lon/lat geometry in output
+  tileScale: 8
 });
 
 print('Samples w/ spectra:', samplesWithSpectra.limit(5));

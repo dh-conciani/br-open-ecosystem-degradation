@@ -6,22 +6,6 @@ var year = 2024;
 var biomas = ee.FeatureCollection('projects/mapbiomas-workspace/AUXILIAR/biomas-2019')
   .filterMetadata('Bioma', 'equals', 'Cerrado');
 
-// get reference points of invasive species
-var urochloa = ee.FeatureCollection('users/dh-conciani/degradation/invasive_spp/urochloa')
-  .filterBounds(biomas)
-  .map(function(f) {
-    return ee.Feature(f.geometry(), {
-      'reference': 'urochloa'});
-  });
-  
-var melinis = ee.FeatureCollection('users/dh-conciani/degradation/invasive_spp/melinis')
-  .filterBounds(biomas)
-  .map(function(f) {
-    return ee.Feature(f.geometry(), {
-      'reference': 'melinis'});
-  });
-  
-
 // get collection 10
 var collection = ee.Image('projects/mapbiomas-public/assets/brazil/lulc/collection10/mapbiomas_brazil_collection10_integration_v2');
 

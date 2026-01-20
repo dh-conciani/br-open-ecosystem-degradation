@@ -46,4 +46,7 @@ Export.table.toAsset({
   assetId: 'users/dh-conciani/degradation/invasive_spp/samplesSpectra_v1'
 });
 
-
+Map.addLayer(urochloa, {color: 'red'}, 'urochloa')
+Map.addLayer(melinis, {color: 'purple'}, 'melinis')
+print(urochloa.size())
+print(melinis.size())
